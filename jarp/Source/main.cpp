@@ -1,7 +1,7 @@
 // Define NOMINMAX to prevent the min and max function of the windows.h header to be defined
 #define NOMINMAX
 
-#define VK_USE_PLATFORM_WIN32_KHR
+#define VK_USE_PLATFORM_WIN32_KHR // TODO is this define really needed ?
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
@@ -29,6 +29,25 @@
 
 #define WIDTH 800
 #define HEIGHT 600
+
+GLFWwindow* Window;
+
+int StartGlfwWindow()
+{
+	if (!glfwInit())
+		return 1;
+
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO add window resizing possibility with swapchain recreation etc.
+	Window = glfwCreateWindow(WIDTH, HEIGHT, "jarp", NULL, NULL);
+
+	return 0;
+}
+
+void ShutdownGlfw()
+{
+	glfwDestroyWindow(Window);
+}
 
 struct SQueueFamilyIndices
 {
@@ -68,7 +87,6 @@ struct SSwapchainSupportDetails
 	std::vector<VkPresentModeKHR> PresentModes;
 };
 
-GLFWwindow* Window;
 VkInstance Instance;
 VkSurfaceKHR SurfaceKHR;
 
@@ -89,25 +107,11 @@ VkPipelineLayout PipelineLayout;
 VkPipeline Pipeline;
 std::vector<VkFramebuffer> Framebuffers;
 
-int CreateGlfwWindow()
-{
-	if (!glfwInit())
-		return 1;
+VkCommandPool CommandPool;
+std::vector<VkCommandBuffer> CommandBuffers;
 
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO add window resizing possibility with swapchain recreation etc.
-	Window = glfwCreateWindow(WIDTH, HEIGHT, "jarp", NULL, NULL);
-
-	return 0;
-}
-
-void MainLoop()
-{
-	while (!glfwWindowShouldClose(Window))
-	{
-		glfwPollEvents();
-	}
-}
+VkSemaphore SignalSemaphore;
+VkSemaphore WaitSemaphore;
 
 std::vector<char> ReadFile(const std::string& Filename)
 {
@@ -118,7 +122,7 @@ std::vector<char> ReadFile(const std::string& Filename)
 	}
 	std::streampos Size = File.tellg();
 	std::vector<char> Buffer(Size);
-	
+
 	File.seekg(0);
 	File.read(Buffer.data(), Size);
 	File.close();
@@ -140,10 +144,8 @@ VkShaderModule CreateShaderModule(const std::vector<char>& Code)
 	return ShaderModule;
 }
 
-int main()
+void StartVulkan()
 {
-	CreateGlfwWindow();
-
 	// Use validation layers if this is a debug build
 	std::vector<const char*> Layers;
 #if defined(_DEBUG)
@@ -151,7 +153,7 @@ int main()
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, NULL);
 	std::vector<VkLayerProperties> LayerProperties(LayerPropertyCount);
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, LayerProperties.data());
-	
+
 	Layers.push_back("VK_LAYER_LUNARG_standard_validation"); // Standard validation layer always available
 
 	uint32_t ExtensionPropertyCount;
@@ -195,7 +197,7 @@ int main()
 	std::vector<VkPhysicalDevice> PhysicalDevices(PhysicalDeviceCount);
 	VK_ASSERT(vkEnumeratePhysicalDevices(Instance, &PhysicalDeviceCount, PhysicalDevices.data()));
 
-	// TODO pick physical device
+	// Pick physical device
 	VkPhysicalDeviceFeatures PhysicalDeviceFeatures;
 
 	// TODO actually pick the best physical device
@@ -446,6 +448,15 @@ int main()
 	SubpassDescription.preserveAttachmentCount = 0;
 	SubpassDescription.pPreserveAttachments = NULL;
 
+	VkSubpassDependency SubpassDependency = {};
+	SubpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	SubpassDependency.dstSubpass = 0; // Refers to our one and only subpass
+	SubpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	SubpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	SubpassDependency.srcAccessMask = 0;
+	SubpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	SubpassDependency.dependencyFlags = 0;
+
 	VkRenderPassCreateInfo RenderPassCreateInfo = {};
 	RenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	RenderPassCreateInfo.pNext = NULL;
@@ -454,14 +465,14 @@ int main()
 	RenderPassCreateInfo.pAttachments = &AttachmentDescription;
 	RenderPassCreateInfo.subpassCount = 1;
 	RenderPassCreateInfo.pSubpasses = &SubpassDescription;
-	RenderPassCreateInfo.dependencyCount = 0;
-	RenderPassCreateInfo.pDependencies = NULL;
+	RenderPassCreateInfo.dependencyCount = 1;
+	RenderPassCreateInfo.pDependencies = &SubpassDependency;
 
 	VK_ASSERT(vkCreateRenderPass(LogicalDevice, &RenderPassCreateInfo, NULL, &RenderPass));
 
 	// Create shader modules
-	auto VertShaderCode = ReadFile("Shaders/vert.spv");
-	auto FragShaderCode = ReadFile("Shaders/frag.spv");
+	auto VertShaderCode = ReadFile("Shaders/Shader.vert.spv");
+	auto FragShaderCode = ReadFile("Shaders/Shader.frag.spv");
 
 	VkShaderModule VertShaderModule = CreateShaderModule(VertShaderCode);
 	VkShaderModule FragShaderModule = CreateShaderModule(FragShaderCode);
@@ -610,7 +621,7 @@ int main()
 	// Destroy shader modules of the pipeline
 	vkDestroyShaderModule(LogicalDevice, VertShaderModule, NULL);
 	vkDestroyShaderModule(LogicalDevice, FragShaderModule, NULL);
-	
+
 	// Create framebuffer
 	Framebuffers.resize(SwapchainImageViews.size());
 	for (size_t i = 0; i < SwapchainImageViews.size(); ++i)
@@ -629,108 +640,147 @@ int main()
 		VK_ASSERT(vkCreateFramebuffer(LogicalDevice, &FramebufferCreateInfo, NULL, &Framebuffers[i]));
 	}
 
+	// Create a command pool
+	VkCommandPoolCreateInfo CommandPoolCreateInfo = {};
+	CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CommandPoolCreateInfo.pNext = NULL;
+	CommandPoolCreateInfo.flags = 0;
+	CommandPoolCreateInfo.queueFamilyIndex = QueueFamilyIndices.GraphicsFamily;
 
+	VK_ASSERT(vkCreateCommandPool(LogicalDevice, &CommandPoolCreateInfo, NULL, &CommandPool));
 
-	
+	// Allocate command buffers
+	CommandBuffers.resize(Framebuffers.size());
 
-	
-	//// Create semaphores for command submission
-	//VkSemaphoreCreateInfo SemaphoreCreateInfo = {};
-	//SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	//SemaphoreCreateInfo.flags = 0;
-	//SemaphoreCreateInfo.pNext = NULL;
+	VkCommandBufferAllocateInfo CommandBufferAllocateInfo = {};
+	CommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	CommandBufferAllocateInfo.pNext = NULL;
+	CommandBufferAllocateInfo.commandPool = CommandPool;
+	CommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	CommandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(CommandBuffers.size());
 
-	//VkSemaphore SignalSemaphore;
-	//VK_ASSERT(vkCreateSemaphore(LogicalDevice, &SemaphoreCreateInfo, NULL, &SignalSemaphore));
+	VK_ASSERT(vkAllocateCommandBuffers(LogicalDevice, &CommandBufferAllocateInfo, CommandBuffers.data()));
 
-	//VkSemaphore WaitSemaphore;
-	//VK_ASSERT(vkCreateSemaphore(LogicalDevice, &SemaphoreCreateInfo, NULL, &WaitSemaphore));
+	// Record on the command buffers
+	for (size_t i = 0; i < CommandBuffers.size(); ++i)
+	{
+		VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
+		CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		CommandBufferBeginInfo.pNext = NULL;
+		CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		CommandBufferBeginInfo.pInheritanceInfo = NULL; // This is a primary command buffer, so the value can be ignored
 
-	//// Create a command pool
-	//VkCommandPoolCreateInfo CommandPoolCreateInfo = {};
-	//CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	//CommandPoolCreateInfo.pNext = NULL;
-	//CommandPoolCreateInfo.flags = 0;
-	//CommandPoolCreateInfo.queueFamilyIndex = QueueFamilyIndex;
+		VK_ASSERT(vkBeginCommandBuffer(CommandBuffers[i], &CommandBufferBeginInfo));
 
-	//VkCommandPool CommandPool = 0;
-	//VK_ASSERT(vkCreateCommandPool(LogicalDevice, &CommandPoolCreateInfo, NULL, &CommandPool));
+		VkRenderPassBeginInfo RenderPassBeginInfo = {};
+		RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		RenderPassBeginInfo.pNext = NULL;
+		RenderPassBeginInfo.renderPass = RenderPass;
+		RenderPassBeginInfo.framebuffer = Framebuffers[i];
+		RenderPassBeginInfo.renderArea.extent = ImageExtent;
+		RenderPassBeginInfo.renderArea.offset = { 0, 0 };
+		VkClearValue ClearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
+		RenderPassBeginInfo.clearValueCount = 1;
+		RenderPassBeginInfo.pClearValues = &ClearValue;
 
-	//// Allocate command buffers
-	//std::vector<VkCommandBuffer> CommandBuffers(1);
+		vkCmdBeginRenderPass(CommandBuffers[i], &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // Only primary command buffers, so inline subpass suffices
+		// START RECORD
+		vkCmdBindPipeline(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline);
+		vkCmdDraw(CommandBuffers[i], 3, 1, 0, 0);
+		// END RECORD
+		vkCmdEndRenderPass(CommandBuffers[i]);
 
-	//VkCommandBufferAllocateInfo CommandBufferAllocateInfo = {};
-	//CommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	//CommandBufferAllocateInfo.pNext = NULL;
-	//CommandBufferAllocateInfo.commandPool = CommandPool;
-	//CommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	//CommandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(CommandBuffers.size());
-	//
-	//VK_ASSERT(vkAllocateCommandBuffers(LogicalDevice, &CommandBufferAllocateInfo, CommandBuffers.data()));
+		VK_ASSERT(vkEndCommandBuffer(CommandBuffers[i]));
+	}
 
-	//// Start recording on the command buffer
-	//VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
-	//CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	//CommandBufferBeginInfo.pNext = NULL;
-	//CommandBufferBeginInfo.flags = 0;
-	//CommandBufferBeginInfo.pInheritanceInfo = NULL; // This is a primary command buffer, so the value can be ignored
+	// Create semaphores for command submission
+	VkSemaphoreCreateInfo SemaphoreCreateInfo = {};
+	SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	SemaphoreCreateInfo.flags = 0;
+	SemaphoreCreateInfo.pNext = NULL;
 
-	//VK_ASSERT(vkBeginCommandBuffer(CommandBuffers[0], &CommandBufferBeginInfo));
+	VK_ASSERT(vkCreateSemaphore(LogicalDevice, &SemaphoreCreateInfo, NULL, &SignalSemaphore));
+	VK_ASSERT(vkCreateSemaphore(LogicalDevice, &SemaphoreCreateInfo, NULL, &WaitSemaphore));
+}
 
-	//// Submit commands to the command buffer
-	//VkSubmitInfo SubmitInfo = {};
-	//SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	//SubmitInfo.pNext = NULL;
-	//SubmitInfo.waitSemaphoreCount = 1;
-	//SubmitInfo.pWaitSemaphores = &WaitSemaphore;
-	//SubmitInfo.pWaitDstStageMask = 0;
-	//SubmitInfo.commandBufferCount = static_cast<uint32_t>(CommandBuffers.size());
-	//SubmitInfo.pCommandBuffers = CommandBuffers.data();
-	//SubmitInfo.signalSemaphoreCount = 1;
-	//SubmitInfo.pSignalSemaphores = &SignalSemaphore;
-
-	//std::vector<VkSubmitInfo> SubmitInfos(1);
-	//SubmitInfos.push_back(SubmitInfo);
-
-	//// Create a fence for the submit
-	//VkFenceCreateInfo FenceCreateInfo = {};
-	//FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	//FenceCreateInfo.pNext = NULL;
-	//FenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // TODO check if signaled state is correct to begin with
-
-	//VkFence Fence = 0;
-	//VK_ASSERT(vkCreateFence(LogicalDevice, &FenceCreateInfo, NULL, &Fence));
-
-	//VK_ASSERT(vkQueueSubmit(Queue, static_cast<uint32_t>(SubmitInfos.size()), SubmitInfos.data(), Fence));
-
-	//// End recording
-	//VK_ASSERT(vkEndCommandBuffer(CommandBuffers[0]));
-
-	// Start the real application
-	MainLoop();
-
+void ShutdownVulkan()
+{
 	// Free all resources
 	vkDeviceWaitIdle(LogicalDevice);
-	
-	//vkDestroyFence(LogicalDevice, Fence, NULL);
-	//vkFreeCommandBuffers(LogicalDevice, CommandPool, 1, CommandBuffers.data());
-	//vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
-	//vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
-	//vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
 
+	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
+	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
+	vkFreeCommandBuffers(LogicalDevice, CommandPool, static_cast<uint32_t>(CommandBuffers.size()), CommandBuffers.data());
+	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
 	for (const auto& Framebuffer : Framebuffers)
+	{
 		vkDestroyFramebuffer(LogicalDevice, Framebuffer, NULL);
+	}
 	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
 	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
 	vkDestroyRenderPass(LogicalDevice, RenderPass, NULL);
 	for (const auto& ImageView : SwapchainImageViews)
+	{
 		vkDestroyImageView(LogicalDevice, ImageView, NULL);
+	}
 	vkDestroySwapchainKHR(LogicalDevice, SwapchainKHR, NULL);
 	vkDestroyDevice(LogicalDevice, NULL);
 	vkDestroySurfaceKHR(Instance, SurfaceKHR, NULL);
 	vkDestroyInstance(Instance, NULL);
+}
 
-	glfwDestroyWindow(Window);
+void DrawFrame()
+{
+	// Get the next available image to work on
+	uint32_t ImageIndex;
+	vkAcquireNextImageKHR(LogicalDevice, SwapchainKHR, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ImageIndex);
+
+	// Submit commands to the queue
+	VkSubmitInfo SubmitInfo = {};
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.pNext = NULL;
+	SubmitInfo.waitSemaphoreCount = 1;
+	SubmitInfo.pWaitSemaphores = &WaitSemaphore;
+	const VkPipelineStageFlags WaitDstStageMask = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	SubmitInfo.pWaitDstStageMask = &WaitDstStageMask;
+	SubmitInfo.commandBufferCount = 1;
+	SubmitInfo.pCommandBuffers = &CommandBuffers[ImageIndex];
+	SubmitInfo.signalSemaphoreCount = 1;
+	SubmitInfo.pSignalSemaphores = &SignalSemaphore;
+
+	VK_ASSERT(vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE));
+
+	VkPresentInfoKHR PresentInfoKHR = {};
+	PresentInfoKHR.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	PresentInfoKHR.pNext = NULL;
+	PresentInfoKHR.waitSemaphoreCount = 1;
+	PresentInfoKHR.pWaitSemaphores = &SignalSemaphore;
+	PresentInfoKHR.swapchainCount = 1;
+	PresentInfoKHR.pSwapchains = &SwapchainKHR;
+	PresentInfoKHR.pImageIndices = &ImageIndex;
+	PresentInfoKHR.pResults = NULL;
+
+	VK_ASSERT(vkQueuePresentKHR(GraphicsQueue, &PresentInfoKHR));
+}
+
+void MainLoop()
+{
+	while (!glfwWindowShouldClose(Window))
+	{
+		glfwPollEvents();
+		DrawFrame();
+	}
+}
+
+int main()
+{
+	StartGlfwWindow();
+	StartVulkan();
+
+	MainLoop();
+
+	ShutdownVulkan();
+	ShutdownGlfw();	
 
 	return 0;
 }
