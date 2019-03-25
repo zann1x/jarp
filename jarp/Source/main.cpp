@@ -198,14 +198,14 @@ VkShaderModule CreateShaderModule(const std::vector<char>& Code)
 void StartVulkan()
 {
 	// Use validation layers if this is a debug build
-	std::vector<const char*> Layers;
+	std::vector<const char*> InstanceLayers;
 #if defined(_DEBUG)
 	uint32_t LayerPropertyCount;
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, NULL);
 	std::vector<VkLayerProperties> LayerProperties(LayerPropertyCount);
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, LayerProperties.data());
 
-	Layers.push_back("VK_LAYER_LUNARG_standard_validation"); // Standard validation layer always available
+	InstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // Standard validation layer always available
 
 	uint32_t ExtensionPropertyCount;
 	vkEnumerateInstanceExtensionProperties(NULL, &ExtensionPropertyCount, NULL);
@@ -215,7 +215,9 @@ void StartVulkan()
 	uint32_t GlfwExtensionCount;
 	const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&GlfwExtensionCount);
 	std::vector<const char*> InstanceExtensions(GlfwExtensions, GlfwExtensions + GlfwExtensionCount);
+#if defined(_DEBUG)
 	InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
 	std::vector<const char*> DeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
@@ -237,11 +239,12 @@ void StartVulkan()
 	InstInfo.pApplicationInfo = &AppInfo;
 	InstInfo.enabledExtensionCount = static_cast<uint32_t>(InstanceExtensions.size());
 	InstInfo.ppEnabledExtensionNames = InstanceExtensions.data();
-	InstInfo.enabledLayerCount = static_cast<uint32_t>(Layers.size());
-	InstInfo.ppEnabledLayerNames = Layers.data();
+	InstInfo.enabledLayerCount = static_cast<uint32_t>(InstanceLayers.size());
+	InstInfo.ppEnabledLayerNames = InstanceLayers.data();
 
 	VK_ASSERT(vkCreateInstance(&InstInfo, NULL, &Instance));
 
+#if defined(_DEBUG)
 	// Setup debug callback
 	VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfoEXT = {};
 	DebugUtilsMessengerCreateInfoEXT.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -253,6 +256,7 @@ void StartVulkan()
 	DebugUtilsMessengerCreateInfoEXT.pUserData = NULL;
 
 	VK_ASSERT(CreateDebugUtilsMessengerEXT(Instance, &DebugUtilsMessengerCreateInfoEXT, NULL, &DebugUtilsMessengerEXT));
+#endif
 
 	// Create the Win32 Surface KHR
 	VK_ASSERT(glfwCreateWindowSurface(Instance, Window, NULL, &SurfaceKHR));
