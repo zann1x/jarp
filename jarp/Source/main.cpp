@@ -200,17 +200,28 @@ void StartVulkan()
 	// Use validation layers if this is a debug build
 	std::vector<const char*> InstanceLayers;
 #if defined(_DEBUG)
+	InstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // Standard validation layer is always available
+
+	// Check validation layer support
 	uint32_t LayerPropertyCount;
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, NULL);
 	std::vector<VkLayerProperties> LayerProperties(LayerPropertyCount);
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, LayerProperties.data());
 
-	InstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // Standard validation layer always available
-
-	uint32_t ExtensionPropertyCount;
-	vkEnumerateInstanceExtensionProperties(NULL, &ExtensionPropertyCount, NULL);
-	std::vector<VkExtensionProperties> ExtensionProperties(ExtensionPropertyCount);
-	vkEnumerateInstanceExtensionProperties(NULL, &ExtensionPropertyCount, ExtensionProperties.data());
+	for (const char* LayerName : InstanceLayers)
+	{
+		bool LayerFound = false;
+		for (const auto& LayerProperty : LayerProperties)
+		{
+			if (strcmp(LayerName, LayerProperty.layerName) == 0)
+			{
+				LayerFound = true;
+				break;
+			}
+		}
+		if (!LayerFound)
+			throw std::runtime_error("Not all validation layers supported!");
+	}
 #endif
 	uint32_t GlfwExtensionCount;
 	const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&GlfwExtensionCount);
@@ -250,7 +261,7 @@ void StartVulkan()
 	DebugUtilsMessengerCreateInfoEXT.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	DebugUtilsMessengerCreateInfoEXT.pNext = NULL;
 	DebugUtilsMessengerCreateInfoEXT.flags = 0;
-	DebugUtilsMessengerCreateInfoEXT.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	DebugUtilsMessengerCreateInfoEXT.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	DebugUtilsMessengerCreateInfoEXT.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	DebugUtilsMessengerCreateInfoEXT.pfnUserCallback = DebugCallback;
 	DebugUtilsMessengerCreateInfoEXT.pUserData = NULL;
