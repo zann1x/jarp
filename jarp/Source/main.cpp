@@ -34,14 +34,37 @@
 
 GLFWwindow* Window;
 
+bool IsFramebufferResized;
+bool IsWindowIconified;
+
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+	IsFramebufferResized = true;
+}
+
+void WindowIconifyCallback(GLFWwindow* window, int iconified)
+{
+	if (iconified)
+	{
+		IsWindowIconified = true;
+	}
+	else
+	{
+		IsWindowIconified = false;
+	}
+}
+
 int StartGlfwWindow()
 {
 	if (!glfwInit())
 		return 1;
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO add window resizing possibility with swapchain recreation etc.
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // TODO add window resizing possibility with swapchain recreation etc.
 	Window = glfwCreateWindow(WIDTH, HEIGHT, "jarp", NULL, NULL);
+
+	glfwSetFramebufferSizeCallback(Window, FramebufferSizeCallback);
+	glfwSetWindowIconifyCallback(Window, WindowIconifyCallback);
 
 	return 0;
 }
@@ -125,11 +148,7 @@ std::vector<VkCommandBuffer> CommandBuffers;
 VkSemaphore SignalSemaphore;
 VkSemaphore WaitSemaphore;
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT messageType,
-	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-	void* pUserData)
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
 	std::string Severity;
 	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
@@ -292,6 +311,25 @@ void CreateSurface()
 	VK_ASSERT(glfwCreateWindowSurface(Instance, Window, NULL, &SurfaceKHR));
 }
 
+SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice Device)
+{
+	SSwapchainSupportDetails SupportDetails;
+
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Device, SurfaceKHR, &SupportDetails.SurfaceCapabilities);
+
+	uint32_t SurfaceFormatCount;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(Device, SurfaceKHR, &SurfaceFormatCount, NULL);
+	SupportDetails.SurfaceFormats.resize(SurfaceFormatCount);
+	vkGetPhysicalDeviceSurfaceFormatsKHR(Device, SurfaceKHR, &SurfaceFormatCount, SupportDetails.SurfaceFormats.data());
+
+	uint32_t PresentModeCount;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(Device, SurfaceKHR, &PresentModeCount, NULL);
+	SupportDetails.PresentModes.resize(PresentModeCount);
+	vkGetPhysicalDeviceSurfacePresentModesKHR(Device, SurfaceKHR, &PresentModeCount, SupportDetails.PresentModes.data());
+
+	return SupportDetails;
+}
+
 /* Depends on:
  *	- Instance
  *  - SurfaceKHR
@@ -365,18 +403,7 @@ void CreateDevice()
 			continue;
 
 		// Check swapchain support
-		SSwapchainSupportDetails SwapchainSupport;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Device, SurfaceKHR, &SwapchainSupport.SurfaceCapabilities);
-
-		uint32_t SurfaceFormatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(Device, SurfaceKHR, &SurfaceFormatCount, NULL);
-		SwapchainSupport.SurfaceFormats.resize(SurfaceFormatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(Device, SurfaceKHR, &SurfaceFormatCount, SwapchainSupport.SurfaceFormats.data());
-
-		uint32_t PresentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(Device, SurfaceKHR, &PresentModeCount, NULL);
-		SwapchainSupport.PresentModes.resize(PresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(Device, SurfaceKHR, &PresentModeCount, SwapchainSupport.PresentModes.data());
+		SSwapchainSupportDetails SwapchainSupport = QuerySwapchainSupport(Device);
 
 		// Check if device is suitable
 		if (QueueIndices.IsComplete() && DeviceExtensionsSupported
@@ -385,7 +412,6 @@ void CreateDevice()
 			PhysicalDevice = Device;
 			PhysicalDeviceFeatures = DeviceFeatures;
 			QueueFamilyIndices = QueueIndices;
-			SwapchainSupportDetails = SwapchainSupport;
 
 			// Prefer the use of discrete GPUs
 			if (PhysicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
@@ -436,6 +462,8 @@ void CreateDevice()
  */
 void CreateSwapchain()
 {
+	SwapchainSupportDetails = QuerySwapchainSupport(PhysicalDevice);
+
 	// Check image count of swapchain
 	// If max image count is 0 then there are no limits besides memory requirements
 	uint32_t SwapchainMinImageCount = SwapchainSupportDetails.SurfaceCapabilities.minImageCount + 1;
@@ -469,7 +497,11 @@ void CreateSwapchain()
 	}
 	else
 	{
-		VkExtent2D ActualExtent = { WIDTH, HEIGHT };
+		int Width, Height;
+		glfwGetFramebufferSize(Window, &Width, &Height);
+
+		//VkExtent2D ActualExtent = { WIDTH, HEIGHT };
+		VkExtent2D ActualExtent = { Width, Height };
 		ActualExtent.width = std::max(SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.width, std::min(SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.width, ActualExtent.width));
 		ActualExtent.height = std::max(SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.height, std::min(SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.height, ActualExtent.height));
 
@@ -900,15 +932,9 @@ void StartVulkan()
 	CreateSyncObjects();
 }
 
-void ShutdownVulkan()
+void CleanupSwapchain()
 {
-	// Free all resources
-	vkDeviceWaitIdle(LogicalDevice);
-
-	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
-	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
 	vkFreeCommandBuffers(LogicalDevice, CommandPool, static_cast<uint32_t>(CommandBuffers.size()), CommandBuffers.data());
-	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
 	for (const auto& Framebuffer : Framebuffers)
 	{
 		vkDestroyFramebuffer(LogicalDevice, Framebuffer, NULL);
@@ -921,9 +947,46 @@ void ShutdownVulkan()
 		vkDestroyImageView(LogicalDevice, ImageView, NULL);
 	}
 	vkDestroySwapchainKHR(LogicalDevice, SwapchainKHR, NULL);
+}
+
+void RecreateSwapchain()
+{
+	CONSOLE_LOG("Recreating swapchain");
+
+	int Width = 0;
+	int Height = 0;
+	while (Width == 0 || Height == 0)
+	{
+		glfwGetFramebufferSize(Window, &Width, &Height);
+		glfwWaitEvents();
+	}
+
+	vkDeviceWaitIdle(LogicalDevice);
+	CleanupSwapchain();
+
+	CreateSwapchain();
+	CreateImageViews();
+	CreateRenderPass();
+	CreateGraphicsPipeline();
+	CreateFramebuffers();
+	CreateCommandBuffers();
+}
+
+void ShutdownVulkan()
+{
+	// Free all resources
+	vkDeviceWaitIdle(LogicalDevice);
+
+	CleanupSwapchain();
+
+	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
+	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
+	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
 	vkDestroyDevice(LogicalDevice, NULL);
 	vkDestroySurfaceKHR(Instance, SurfaceKHR, NULL);
+#if defined(_DEBUG)
 	DestroyDebugUtilsMessengerEXT(Instance, DebugUtilsMessengerEXT, nullptr);
+#endif
 	vkDestroyInstance(Instance, NULL);
 }
 
@@ -935,9 +998,24 @@ void ShutdownVulkan()
  */
 void DrawFrame()
 {
+	// Don't try to draw to a minimized window
+	if (IsWindowIconified)
+		return;
+
 	// Get the next available image to work on
 	uint32_t ImageIndex;
-	vkAcquireNextImageKHR(LogicalDevice, SwapchainKHR, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ImageIndex);
+	{
+		VkResult Result = vkAcquireNextImageKHR(LogicalDevice, SwapchainKHR, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ImageIndex);
+		if (Result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			RecreateSwapchain();
+			return;
+		}
+		else
+		{
+			VK_ASSERT(Result);
+		}
+	}
 
 	// Submit commands to the queue
 	VkSubmitInfo SubmitInfo = {};
@@ -964,7 +1042,18 @@ void DrawFrame()
 	PresentInfoKHR.pImageIndices = &ImageIndex;
 	PresentInfoKHR.pResults = NULL;
 
-	VK_ASSERT(vkQueuePresentKHR(GraphicsQueue, &PresentInfoKHR));
+	{
+		VkResult Result = vkQueuePresentKHR(GraphicsQueue, &PresentInfoKHR);
+		if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || IsFramebufferResized)
+		{
+			IsFramebufferResized = false;
+			RecreateSwapchain();
+		}
+		else
+		{
+			VK_ASSERT(Result);
+		}
+	}
 }
 
 ///////////////// APP /////////////////
