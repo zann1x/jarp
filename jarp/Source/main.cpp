@@ -88,6 +88,7 @@ struct SSwapchainSupportDetails
 };
 
 VkInstance Instance;
+VkDebugUtilsMessengerEXT DebugUtilsMessengerEXT;
 VkSurfaceKHR SurfaceKHR;
 
 VkPhysicalDevice PhysicalDevice;
@@ -112,6 +113,56 @@ std::vector<VkCommandBuffer> CommandBuffers;
 
 VkSemaphore SignalSemaphore;
 VkSemaphore WaitSemaphore;
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	VkDebugUtilsMessageTypeFlagsEXT messageType,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData)
+{
+	std::string Severity;
+	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+		Severity = "VERBOSE";
+	else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+		Severity = "INFO";
+	else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+		Severity = "WARNING";
+	else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		Severity = "ERROR";
+
+	std::string Type;
+	if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
+		Type = "GENERAL";
+	else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+		Type = "VALIDATION";
+	else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+		Type = "PERFORMANCE";
+
+	std::cerr << Severity << " | " << Type << " - Validation layer: " << pCallbackData->pMessage << std::endl;
+	return VK_FALSE;
+}
+
+VkResult CreateDebugUtilsMessengerEXT(VkInstance Instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback)
+{
+	auto Func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkCreateDebugUtilsMessengerEXT");
+	if (Func != nullptr)
+	{
+		return Func(Instance, pCreateInfo, pAllocator, pCallback);
+	}
+	else
+	{
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+}
+
+void DestroyDebugUtilsMessengerEXT(VkInstance Instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator)
+{
+	auto Func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkDestroyDebugUtilsMessengerEXT");
+	if (Func != nullptr)
+	{
+		return Func(Instance, callback, pAllocator);
+	}
+}
 
 std::vector<char> ReadFile(const std::string& Filename)
 {
@@ -189,6 +240,19 @@ void StartVulkan()
 	InstInfo.ppEnabledLayerNames = Layers.data();
 
 	VK_ASSERT(vkCreateInstance(&InstInfo, NULL, &Instance));
+
+	// TODO
+	//// Setup debug callback
+	//VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfoEXT = {};
+	//DebugUtilsMessengerCreateInfoEXT.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	//DebugUtilsMessengerCreateInfoEXT.pNext = NULL;
+	//DebugUtilsMessengerCreateInfoEXT.flags = 0;
+	//DebugUtilsMessengerCreateInfoEXT.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	//DebugUtilsMessengerCreateInfoEXT.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	//DebugUtilsMessengerCreateInfoEXT.pfnUserCallback = DebugCallback;
+	//DebugUtilsMessengerCreateInfoEXT.pUserData = NULL;
+
+	//VK_ASSERT(CreateDebugUtilsMessengerEXT(Instance, &DebugUtilsMessengerCreateInfoEXT, NULL, &DebugUtilsMessengerEXT));
 
 	// Create the Win32 Surface KHR
 	VK_ASSERT(glfwCreateWindowSurface(Instance, Window, NULL, &SurfaceKHR));
@@ -743,6 +807,7 @@ void ShutdownVulkan()
 	vkDestroySwapchainKHR(LogicalDevice, SwapchainKHR, NULL);
 	vkDestroyDevice(LogicalDevice, NULL);
 	vkDestroySurfaceKHR(Instance, SurfaceKHR, NULL);
+	DestroyDebugUtilsMessengerEXT(Instance, DebugUtilsMessengerEXT, nullptr);
 	vkDestroyInstance(Instance, NULL);
 }
 
