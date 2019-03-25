@@ -215,6 +215,7 @@ void StartVulkan()
 	uint32_t GlfwExtensionCount;
 	const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&GlfwExtensionCount);
 	std::vector<const char*> InstanceExtensions(GlfwExtensions, GlfwExtensions + GlfwExtensionCount);
+	InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	std::vector<const char*> DeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
@@ -241,18 +242,17 @@ void StartVulkan()
 
 	VK_ASSERT(vkCreateInstance(&InstInfo, NULL, &Instance));
 
-	// TODO
-	//// Setup debug callback
-	//VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfoEXT = {};
-	//DebugUtilsMessengerCreateInfoEXT.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	//DebugUtilsMessengerCreateInfoEXT.pNext = NULL;
-	//DebugUtilsMessengerCreateInfoEXT.flags = 0;
-	//DebugUtilsMessengerCreateInfoEXT.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	//DebugUtilsMessengerCreateInfoEXT.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	//DebugUtilsMessengerCreateInfoEXT.pfnUserCallback = DebugCallback;
-	//DebugUtilsMessengerCreateInfoEXT.pUserData = NULL;
+	// Setup debug callback
+	VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfoEXT = {};
+	DebugUtilsMessengerCreateInfoEXT.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	DebugUtilsMessengerCreateInfoEXT.pNext = NULL;
+	DebugUtilsMessengerCreateInfoEXT.flags = 0;
+	DebugUtilsMessengerCreateInfoEXT.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	DebugUtilsMessengerCreateInfoEXT.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	DebugUtilsMessengerCreateInfoEXT.pfnUserCallback = DebugCallback;
+	DebugUtilsMessengerCreateInfoEXT.pUserData = NULL;
 
-	//VK_ASSERT(CreateDebugUtilsMessengerEXT(Instance, &DebugUtilsMessengerCreateInfoEXT, NULL, &DebugUtilsMessengerEXT));
+	VK_ASSERT(CreateDebugUtilsMessengerEXT(Instance, &DebugUtilsMessengerCreateInfoEXT, NULL, &DebugUtilsMessengerEXT));
 
 	// Create the Win32 Surface KHR
 	VK_ASSERT(glfwCreateWindowSurface(Instance, Window, NULL, &SurfaceKHR));
