@@ -501,7 +501,7 @@ void CreateSwapchain()
 		glfwGetFramebufferSize(Window, &Width, &Height);
 
 		//VkExtent2D ActualExtent = { WIDTH, HEIGHT };
-		VkExtent2D ActualExtent = { Width, Height };
+		VkExtent2D ActualExtent = { static_cast<uint32_t>(Width), static_cast<uint32_t>(Height) };
 		ActualExtent.width = std::max(SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.width, std::min(SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.width, ActualExtent.width));
 		ActualExtent.height = std::max(SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.height, std::min(SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.height, ActualExtent.height));
 
@@ -780,6 +780,18 @@ void CreateGraphicsPipeline()
 
 	VK_ASSERT(vkCreatePipelineLayout(LogicalDevice, &PipelineLayoutCreateInfo, NULL, &PipelineLayout));
 
+	std::vector<VkDynamicState> DynamicStates = {
+		VK_DYNAMIC_STATE_VIEWPORT,
+		VK_DYNAMIC_STATE_SCISSOR
+	};
+
+	VkPipelineDynamicStateCreateInfo PipelineDynamicStateCreateInfo = {};
+	PipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	PipelineDynamicStateCreateInfo.pNext = NULL;
+	PipelineDynamicStateCreateInfo.flags = 0;
+	PipelineDynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(DynamicStates.size());
+	PipelineDynamicStateCreateInfo.pDynamicStates = DynamicStates.data();
+
 	VkGraphicsPipelineCreateInfo GraphicsPipelineCreateInfo = {};
 	GraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	GraphicsPipelineCreateInfo.pNext = NULL;
@@ -794,7 +806,7 @@ void CreateGraphicsPipeline()
 	GraphicsPipelineCreateInfo.pMultisampleState = &PipelineMultisampleStateCreateInfo;
 	GraphicsPipelineCreateInfo.pDepthStencilState = NULL;
 	GraphicsPipelineCreateInfo.pColorBlendState = &PipelineColorBlendStateCreateInfo;
-	GraphicsPipelineCreateInfo.pDynamicState = NULL;
+	GraphicsPipelineCreateInfo.pDynamicState = &PipelineDynamicStateCreateInfo;
 	GraphicsPipelineCreateInfo.layout = PipelineLayout;
 	GraphicsPipelineCreateInfo.renderPass = RenderPass;
 	GraphicsPipelineCreateInfo.subpass = 0;
@@ -892,6 +904,21 @@ void CreateCommandBuffers()
 		vkCmdBeginRenderPass(CommandBuffers[i], &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // Only primary command buffers, so inline subpass suffices
 		// START RECORD
 		vkCmdBindPipeline(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline);
+		
+		VkViewport Viewport = {};
+		Viewport.x = 0.0f;
+		Viewport.y = 0.0f;
+		Viewport.width = static_cast<float>(SwapchainDetails.Extent.width);
+		Viewport.height = static_cast<float>(SwapchainDetails.Extent.height);
+		Viewport.minDepth = 0.0f;
+		Viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(CommandBuffers[i], 0, 1, &Viewport);
+
+		VkRect2D Scissor = {};
+		Scissor.offset = { 0, 0 };
+		Scissor.extent = SwapchainDetails.Extent;
+		vkCmdSetScissor(CommandBuffers[i], 0, 1, &Scissor);
+
 		vkCmdDraw(CommandBuffers[i], 3, 1, 0, 0);
 		// END RECORD
 		vkCmdEndRenderPass(CommandBuffers[i]);
@@ -939,8 +966,6 @@ void CleanupSwapchain()
 	{
 		vkDestroyFramebuffer(LogicalDevice, Framebuffer, NULL);
 	}
-	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
-	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
 	vkDestroyRenderPass(LogicalDevice, RenderPass, NULL);
 	for (const auto& ImageView : SwapchainImageViews)
 	{
@@ -967,7 +992,6 @@ void RecreateSwapchain()
 	CreateSwapchain();
 	CreateImageViews();
 	CreateRenderPass();
-	CreateGraphicsPipeline();
 	CreateFramebuffers();
 	CreateCommandBuffers();
 }
@@ -982,6 +1006,8 @@ void ShutdownVulkan()
 	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
 	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
 	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
+	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
+	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
 	vkDestroyDevice(LogicalDevice, NULL);
 	vkDestroySurfaceKHR(Instance, SurfaceKHR, NULL);
 #if defined(_DEBUG)
