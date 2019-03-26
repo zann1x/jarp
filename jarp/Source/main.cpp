@@ -61,7 +61,7 @@ void StartGlfwWindow()
 		throw std::runtime_error("Could not initialize GLFW!");
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // TODO add window resizing possibility with swapchain recreation etc.
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	Window = glfwCreateWindow(WIDTH, HEIGHT, "jarp", NULL, NULL);
 
 	glfwSetFramebufferSizeCallback(Window, FramebufferSizeCallback);
@@ -931,15 +931,15 @@ void CreateCommandBuffers()
 /* Depends on:
  *	- Device
  */
-void CreateVertexBuffer()
+void CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkBuffer& Buffer, VkMemoryPropertyFlags MemoryProperties, VkDeviceMemory& DeviceMemory)
 {
 	// Create the buffer
 	VkBufferCreateInfo BufferCreateInfo = {};
 	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	BufferCreateInfo.pNext = NULL;
 	BufferCreateInfo.flags = 0;
-	BufferCreateInfo.size = sizeof(Vertices[0]) * Vertices.size();
-	BufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	BufferCreateInfo.size = Size;
+	BufferCreateInfo.usage = Usage;
 
 	if (QueueFamilyIndices.HasMultipleQueueFamilies())
 	{
@@ -954,24 +954,27 @@ void CreateVertexBuffer()
 		BufferCreateInfo.pQueueFamilyIndices = NULL;
 	}
 
-	VK_ASSERT(vkCreateBuffer(LogicalDevice, &BufferCreateInfo, NULL, &VertexBuffer));
+	VK_ASSERT(vkCreateBuffer(LogicalDevice, &BufferCreateInfo, NULL, &Buffer));
 
 	// Allocate the buffer's memory
 	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements(LogicalDevice, VertexBuffer, &MemoryRequirements);
+	vkGetBufferMemoryRequirements(LogicalDevice, Buffer, &MemoryRequirements);
 
-	uint32_t MemoryTypeIndex;
+	uint32_t MemoryTypeIndex = ~0;
 	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
 	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &PhysicalDeviceMemoryProperties);
 
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
 	{
-		if ((MemoryRequirements.memoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) == (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)))
+		if ((MemoryRequirements.memoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & MemoryProperties) == MemoryProperties))
 		{
 			MemoryTypeIndex = i;
 			break;
 		}
 	}
+
+	if (MemoryTypeIndex == ~0)
+		throw std::runtime_error("Failed to find suitable memory type for buffer!");
 
 	VkMemoryAllocateInfo MemoryAllocateInfo = {};
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -979,16 +982,87 @@ void CreateVertexBuffer()
 	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
 	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
-	VK_ASSERT(vkAllocateMemory(LogicalDevice, &MemoryAllocateInfo, NULL, &VertexBufferDeviceMemory));
+	VK_ASSERT(vkAllocateMemory(LogicalDevice, &MemoryAllocateInfo, NULL, &DeviceMemory));
 
 	// Bind the buffer to the allocated memory
-	vkBindBufferMemory(LogicalDevice, VertexBuffer, VertexBufferDeviceMemory, 0);
+	vkBindBufferMemory(LogicalDevice, Buffer, DeviceMemory, 0);
+}
 
-	// Map data to device memory
+/* Depends on:
+ *	- Device
+ *  - CommandPool
+ */
+void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
+{
+	VkCommandBufferAllocateInfo CommandBufferAllocateInfo = {};
+	CommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	CommandBufferAllocateInfo.pNext = NULL;
+	CommandBufferAllocateInfo.commandPool = CommandPool;
+	CommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	CommandBufferAllocateInfo.commandBufferCount = 1;
+
+	VkCommandBuffer CommandBuffer;
+	VK_ASSERT(vkAllocateCommandBuffers(LogicalDevice, &CommandBufferAllocateInfo, &CommandBuffer));
+
+	VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
+	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	CommandBufferBeginInfo.pNext = NULL;
+	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	CommandBufferBeginInfo.pInheritanceInfo = NULL;
+
+	// START OF RECORD //
+	VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
+
+	VkBufferCopy BufferCopy = {};
+	BufferCopy.srcOffset = 0;
+	BufferCopy.dstOffset = 0;
+	BufferCopy.size = Size;
+
+	vkCmdCopyBuffer(CommandBuffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
+
+	VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
+	// END OF RECORD //
+
+	VkSubmitInfo SubmitInfo = {};
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.pNext = NULL;
+	SubmitInfo.waitSemaphoreCount = 0;
+	SubmitInfo.pWaitSemaphores = NULL;
+	SubmitInfo.pWaitDstStageMask = NULL;
+	SubmitInfo.commandBufferCount = 1;
+	SubmitInfo.pCommandBuffers = &CommandBuffer;
+	SubmitInfo.signalSemaphoreCount = 0;
+	SubmitInfo.pSignalSemaphores = NULL;
+
+	VK_ASSERT(vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE));
+	VK_ASSERT(vkQueueWaitIdle(GraphicsQueue)); // TODO change to fences ?
+
+	vkFreeCommandBuffers(LogicalDevice, CommandPool, 1, &CommandBuffer);
+}
+
+/* Depends on:
+ *	- Device
+ */
+void CreateVertexBuffer()
+{
+	// Create the staging buffer
+	VkDeviceSize BufferSize = sizeof(Vertices[0]) * Vertices.size();
+	VkBuffer StagingBuffer;
+	VkDeviceMemory StagingBufferMemory;
+	CreateBuffer(BufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, StagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, StagingBufferMemory);
+
 	void* Data;
-	vkMapMemory(LogicalDevice, VertexBufferDeviceMemory, 0, BufferCreateInfo.size, 0, &Data);
-	memcpy(Data, Vertices.data(), static_cast<size_t>(BufferCreateInfo.size));
-	vkUnmapMemory(LogicalDevice, VertexBufferDeviceMemory);
+	vkMapMemory(LogicalDevice, StagingBufferMemory, 0, BufferSize, 0, &Data);
+	memcpy(Data, Vertices.data(), static_cast<size_t>(BufferSize));
+	vkUnmapMemory(LogicalDevice, StagingBufferMemory);
+
+	// Create the actual vertex buffer
+	CreateBuffer(BufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VertexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBufferDeviceMemory);
+
+	CopyBuffer(StagingBuffer, VertexBuffer, BufferSize);
+
+	vkFreeMemory(LogicalDevice, StagingBufferMemory, NULL);
+	vkDestroyBuffer(LogicalDevice, StagingBuffer, NULL);
 }
 
 /* Depends on:
@@ -1007,6 +1081,7 @@ void RecordCommandBuffers()
 		CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 		CommandBufferBeginInfo.pInheritanceInfo = NULL; // This is a primary command buffer, so the value can be ignored
 
+		// START OF RECORD //
 		VK_ASSERT(vkBeginCommandBuffer(CommandBuffers[i], &CommandBufferBeginInfo));
 
 		VkClearValue ClearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -1022,7 +1097,7 @@ void RecordCommandBuffers()
 		RenderPassBeginInfo.pClearValues = &ClearValue;
 
 		vkCmdBeginRenderPass(CommandBuffers[i], &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // Only primary command buffers, so inline subpass suffices
-		// START OF RECORD
+
 		vkCmdBindPipeline(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline);
 
 		VkViewport Viewport = {};
@@ -1044,10 +1119,11 @@ void RecordCommandBuffers()
 		vkCmdBindVertexBuffers(CommandBuffers[i], 0, 1, VertexBuffers, Offsets);
 
 		vkCmdDraw(CommandBuffers[i], 3, 1, 0, 0);
-		// END OF RECORD
+		
 		vkCmdEndRenderPass(CommandBuffers[i]);
 
 		VK_ASSERT(vkEndCommandBuffer(CommandBuffers[i]));
+		// END OF RECORD //
 	}
 }
 
@@ -1175,12 +1251,13 @@ void DrawFrame()
 	}
 
 	// Submit commands to the queue
+	VkPipelineStageFlags WaitDstStageMask = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
 	VkSubmitInfo SubmitInfo = {};
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.pNext = NULL;
 	SubmitInfo.waitSemaphoreCount = 1;
 	SubmitInfo.pWaitSemaphores = &WaitSemaphore;
-	const VkPipelineStageFlags WaitDstStageMask = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	SubmitInfo.pWaitDstStageMask = &WaitDstStageMask;
 	SubmitInfo.commandBufferCount = 1;
 	SubmitInfo.pCommandBuffers = &CommandBuffers[ImageIndex];
