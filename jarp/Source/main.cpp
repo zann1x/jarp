@@ -5,12 +5,14 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 #include <vector>
 #include <set>
 #include <algorithm>
 #include <limits>
+#include <chrono>
 
 #include <string>
 #include <fstream>
@@ -128,6 +130,20 @@ std::vector<uint32_t> Indices = {
 
 VkBuffer IndexBuffer;
 VkDeviceMemory IndexBufferDeviceMemory;
+
+VkDescriptorPool DescriptorPool;
+VkDescriptorSetLayout DescriptorSetLayout;
+std::vector<VkDescriptorSet> DescriptorSets;
+
+struct SUniformBufferObject
+{
+	glm::mat4 MVP;
+};
+
+SUniformBufferObject MVP;
+
+std::vector<VkBuffer> UniformBuffers;
+std::vector<VkDeviceMemory> UniformBufferMemories;
 
 ///////////////// VULKAN /////////////////
 
@@ -706,6 +722,92 @@ void CreateRenderPass()
 
 /* Depends on:
  *	- Device
+ */
+void CreateDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding = {};
+	DescriptorSetLayoutBinding.binding = 0;
+	DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	DescriptorSetLayoutBinding.descriptorCount = 1;
+	DescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	DescriptorSetLayoutBinding.pImmutableSamplers = NULL;
+
+	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo = {};
+	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	DescriptorSetLayoutCreateInfo.pNext = NULL;
+	DescriptorSetLayoutCreateInfo.flags = 0;
+	DescriptorSetLayoutCreateInfo.bindingCount = 1;
+	DescriptorSetLayoutCreateInfo.pBindings = &DescriptorSetLayoutBinding;
+
+	VK_ASSERT(vkCreateDescriptorSetLayout(LogicalDevice, &DescriptorSetLayoutCreateInfo, NULL, &DescriptorSetLayout));
+}
+
+/* Depends on:
+ *	- Device
+ *  - SwapchainKHR
+ */
+void CreateDescriptorPool()
+{
+	VkDescriptorPoolSize DescriptorPoolSize = {};
+	DescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	DescriptorPoolSize.descriptorCount = static_cast<uint32_t>(SwapchainImages.size());
+
+	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo = {};
+	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	DescriptorPoolCreateInfo.pNext = NULL;
+	DescriptorPoolCreateInfo.flags = 0;
+	DescriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(SwapchainImages.size());
+	DescriptorPoolCreateInfo.poolSizeCount = 1;
+	DescriptorPoolCreateInfo.pPoolSizes = &DescriptorPoolSize;
+
+	VK_ASSERT(vkCreateDescriptorPool(LogicalDevice, &DescriptorPoolCreateInfo, NULL, &DescriptorPool));
+}
+
+/* Depends on:
+ *	- Device
+ *  - SwapchainKHR
+ *  - DescriptorPool
+ *  - DescriptorSetLayout
+ */
+void CreateDescriptorSets()
+{
+	std::vector<VkDescriptorSetLayout> DescriptorSetLayouts(SwapchainImages.size(), DescriptorSetLayout);
+
+	VkDescriptorSetAllocateInfo DescriptorSetAllocateInfo = {};
+	DescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	DescriptorSetAllocateInfo.pNext = NULL;
+	DescriptorSetAllocateInfo.descriptorPool = DescriptorPool;
+	DescriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(DescriptorSetLayouts.size());
+	DescriptorSetAllocateInfo.pSetLayouts = DescriptorSetLayouts.data();
+
+	DescriptorSets.resize(SwapchainImages.size());
+	VK_ASSERT(vkAllocateDescriptorSets(LogicalDevice, &DescriptorSetAllocateInfo, DescriptorSets.data()));
+
+	for (size_t i = 0; i < SwapchainImages.size(); ++i)
+	{
+		VkDescriptorBufferInfo DescriptorBufferInfo = {};
+		DescriptorBufferInfo.buffer = UniformBuffers[i];
+		DescriptorBufferInfo.offset = 0;
+		DescriptorBufferInfo.range = sizeof(MVP);
+
+		VkWriteDescriptorSet WriteDescriptorSet = {};
+		WriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		WriteDescriptorSet.pNext = NULL;
+		WriteDescriptorSet.dstSet = DescriptorSets[i];
+		WriteDescriptorSet.dstBinding = 0;
+		WriteDescriptorSet.dstArrayElement = 0;
+		WriteDescriptorSet.descriptorCount = 1;
+		WriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		WriteDescriptorSet.pImageInfo = NULL;
+		WriteDescriptorSet.pBufferInfo = &DescriptorBufferInfo;
+		WriteDescriptorSet.pTexelBufferView = NULL;
+
+		vkUpdateDescriptorSets(LogicalDevice, 1, &WriteDescriptorSet, 0, NULL);
+	}
+}
+
+/* Depends on:
+ *	- Device
  *  - SwapchainKHR
  */
 void CreateGraphicsPipeline()
@@ -786,7 +888,7 @@ void CreateGraphicsPipeline()
 	PipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	PipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	PipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	PipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	PipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	PipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 	PipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
 	PipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
@@ -831,8 +933,8 @@ void CreateGraphicsPipeline()
 	PipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	PipelineLayoutCreateInfo.pNext = NULL;
 	PipelineLayoutCreateInfo.flags = 0;
-	PipelineLayoutCreateInfo.setLayoutCount = 0;
-	PipelineLayoutCreateInfo.pSetLayouts = NULL;
+	PipelineLayoutCreateInfo.setLayoutCount = 1;
+	PipelineLayoutCreateInfo.pSetLayouts = &DescriptorSetLayout;
 	PipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 	PipelineLayoutCreateInfo.pPushConstantRanges = NULL;
 
@@ -1085,6 +1187,19 @@ void CreateIndexBuffer()
 	CreateAndUploadBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, IndexBuffer, IndexBufferDeviceMemory, Indices);
 }
 
+void CreateUniformBuffer()
+{
+	VkDeviceSize BufferSize = sizeof(MVP);
+	
+	UniformBuffers.resize(SwapchainImages.size());
+	UniformBufferMemories.resize(SwapchainImages.size());
+
+	for (size_t i = 0; i < SwapchainImages.size(); ++i)
+	{
+		CreateBuffer(BufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, UniformBuffers[i], VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, UniformBufferMemories[i]);
+	}
+}
+
 /* Depends on:
  *	- CommandBuffer
  *  - RenderPass
@@ -1138,6 +1253,7 @@ void RecordCommandBuffers()
 		VkDeviceSize Offsets[] = { 0 };
 		vkCmdBindVertexBuffers(CommandBuffers[i], 0, 1, VertexBuffers, Offsets);
 		vkCmdBindIndexBuffer(CommandBuffers[i], IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindDescriptorSets(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayout, 0, 1, &DescriptorSets[i], 0, NULL);
 
 		vkCmdDrawIndexed(CommandBuffers[i], static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
 		
@@ -1173,14 +1289,19 @@ void StartVulkan()
 
 	CreateSwapchain();
 	CreateImageViews();
+	CreateDescriptorSetLayout();
 	CreateRenderPass();
 	CreateGraphicsPipeline();
 	CreateFramebuffers();
 
+	CreateDescriptorPool();
 	CreateCommandPool();
+
 	CreateCommandBuffers();
 	CreateVertexBuffer();
 	CreateIndexBuffer();
+	CreateUniformBuffer();
+	CreateDescriptorSets();
 
 	CreateSyncObjects();
 
@@ -1207,8 +1328,6 @@ void CleanupSwapchain()
 
 void RecreateSwapchain()
 {
-	CONSOLE_LOG("Recreating swapchain");
-
 	int Width = 0;
 	int Height = 0;
 	while (Width == 0 || Height == 0)
@@ -1241,14 +1360,21 @@ void ShutdownVulkan()
 	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
 	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
 	
+	// Even though the uniform buffer depends on the number of swapchain images, it seems that it doesn't need to be recreated with the swapchain
+	for (size_t i = 0; i < SwapchainImages.size(); ++i)
+	{
+		vkFreeMemory(LogicalDevice, UniformBufferMemories[i], NULL);
+		vkDestroyBuffer(LogicalDevice, UniformBuffers[i], NULL);
+	}
 	vkFreeMemory(LogicalDevice, IndexBufferDeviceMemory, NULL);
 	vkDestroyBuffer(LogicalDevice, IndexBuffer, NULL);
 	vkFreeMemory(LogicalDevice, VertexBufferDeviceMemory, NULL);
 	vkDestroyBuffer(LogicalDevice, VertexBuffer, NULL);
 
 	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
-	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
-	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
+	vkDestroyDescriptorPool(LogicalDevice, DescriptorPool, NULL); // Implicitly destroys the descriptor sets created from it
+
+	vkDestroyDescriptorSetLayout(LogicalDevice, DescriptorSetLayout, NULL);
 	
 	vkDestroyDevice(LogicalDevice, NULL);
 	vkDestroySurfaceKHR(Instance, SurfaceKHR, NULL);
@@ -1256,6 +1382,26 @@ void ShutdownVulkan()
 	DestroyDebugUtilsMessengerEXT(Instance, DebugUtilsMessengerEXT, nullptr);
 #endif
 	vkDestroyInstance(Instance, NULL);
+}
+
+void UpdateMVP(uint32_t CurrentImage)
+{
+	static auto StartTime = std::chrono::high_resolution_clock::now();
+
+	auto CurrentTime = std::chrono::high_resolution_clock::now();
+	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+
+	glm::mat4 Model = glm::rotate(glm::mat4(1.0f), TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 View = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), SwapchainDetails.Extent.width / static_cast<float>(SwapchainDetails.Extent.height), 0.1f, 10.0f);
+	Projection[1][1] *= -1;
+
+	MVP.MVP = Projection * View * Model;
+
+	void* RawData;
+	vkMapMemory(LogicalDevice, UniformBufferMemories[CurrentImage], 0, sizeof(MVP), 0, &RawData);
+	memcpy(RawData, &MVP, sizeof(MVP));
+	vkUnmapMemory(LogicalDevice, UniformBufferMemories[CurrentImage]);
 }
 
 /* Depends on:
@@ -1284,6 +1430,8 @@ void DrawFrame()
 			VK_ASSERT(Result);
 		}
 	}
+
+	UpdateMVP(ImageIndex);
 
 	// Submit commands to the queue
 	VkPipelineStageFlags WaitDstStageMask = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
