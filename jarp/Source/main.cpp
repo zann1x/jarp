@@ -4,6 +4,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR // TODO is this define really needed ?
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <iostream>
 #include <vector>
