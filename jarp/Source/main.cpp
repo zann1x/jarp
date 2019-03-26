@@ -55,10 +55,10 @@ void WindowIconifyCallback(GLFWwindow* window, int iconified)
 	}
 }
 
-int StartGlfwWindow()
+void StartGlfwWindow()
 {
 	if (!glfwInit())
-		return 1;
+		throw std::runtime_error("Could not initialize GLFW!");
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // TODO add window resizing possibility with swapchain recreation etc.
@@ -66,13 +66,12 @@ int StartGlfwWindow()
 
 	glfwSetFramebufferSizeCallback(Window, FramebufferSizeCallback);
 	glfwSetWindowIconifyCallback(Window, WindowIconifyCallback);
-
-	return 0;
 }
 
 void ShutdownGlfw()
 {
 	glfwDestroyWindow(Window);
+	glfwTerminate();
 }
 
 ///////////////// VULKAN /////////////////
