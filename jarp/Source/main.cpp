@@ -112,13 +112,22 @@ struct SVertex
 };
 
 std::vector<SVertex> Vertices = {
-	{ {  0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-	{ {  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f } },
-	{ { -0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } }
+	{ { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } }, // 0
+	{ {  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } }, // 1
+	{ {  0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } }, // 2
+	{ { -0.5f,  0.5f }, { 1.0f, 1.0f, 1.0f } }  // 3
 };
 
 VkBuffer VertexBuffer;
 VkDeviceMemory VertexBufferDeviceMemory;
+
+std::vector<uint32_t> Indices = {
+	0, 1, 2,
+	2, 3, 0
+};
+
+VkBuffer IndexBuffer;
+VkDeviceMemory IndexBufferDeviceMemory;
 
 ///////////////// VULKAN /////////////////
 
@@ -1043,26 +1052,37 @@ void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
 /* Depends on:
  *	- Device
  */
-void CreateVertexBuffer()
+template <typename T>
+void CreateAndUploadBuffer(VkBufferUsageFlags Usage, VkBuffer& Buffer, VkDeviceMemory& DeviceMemory, std::vector<T>& Data)
 {
 	// Create the staging buffer
-	VkDeviceSize BufferSize = sizeof(Vertices[0]) * Vertices.size();
+	VkDeviceSize BufferSize = sizeof(Data[0]) * Data.size();
 	VkBuffer StagingBuffer;
 	VkDeviceMemory StagingBufferMemory;
 	CreateBuffer(BufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, StagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, StagingBufferMemory);
 
-	void* Data;
-	vkMapMemory(LogicalDevice, StagingBufferMemory, 0, BufferSize, 0, &Data);
-	memcpy(Data, Vertices.data(), static_cast<size_t>(BufferSize));
+	void* RawData;
+	vkMapMemory(LogicalDevice, StagingBufferMemory, 0, BufferSize, 0, &RawData);
+	memcpy(RawData, Data.data(), static_cast<size_t>(BufferSize));
 	vkUnmapMemory(LogicalDevice, StagingBufferMemory);
 
 	// Create the actual vertex buffer
-	CreateBuffer(BufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VertexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBufferDeviceMemory);
+	CreateBuffer(BufferSize, Usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, Buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, DeviceMemory);
 
-	CopyBuffer(StagingBuffer, VertexBuffer, BufferSize);
+	CopyBuffer(StagingBuffer, Buffer, BufferSize);
 
 	vkFreeMemory(LogicalDevice, StagingBufferMemory, NULL);
 	vkDestroyBuffer(LogicalDevice, StagingBuffer, NULL);
+}
+
+void CreateVertexBuffer()
+{
+	CreateAndUploadBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VertexBuffer, VertexBufferDeviceMemory, Vertices);
+}
+
+void CreateIndexBuffer()
+{
+	CreateAndUploadBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, IndexBuffer, IndexBufferDeviceMemory, Indices);
 }
 
 /* Depends on:
@@ -1117,8 +1137,9 @@ void RecordCommandBuffers()
 		VkBuffer VertexBuffers[] = { VertexBuffer };
 		VkDeviceSize Offsets[] = { 0 };
 		vkCmdBindVertexBuffers(CommandBuffers[i], 0, 1, VertexBuffers, Offsets);
+		vkCmdBindIndexBuffer(CommandBuffers[i], IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdDraw(CommandBuffers[i], 3, 1, 0, 0);
+		vkCmdDrawIndexed(CommandBuffers[i], static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
 		
 		vkCmdEndRenderPass(CommandBuffers[i]);
 
@@ -1149,14 +1170,18 @@ void StartVulkan()
 #endif
 	CreateSurface();
 	CreateDevice();
+
 	CreateSwapchain();
 	CreateImageViews();
 	CreateRenderPass();
 	CreateGraphicsPipeline();
 	CreateFramebuffers();
+
 	CreateCommandPool();
 	CreateCommandBuffers();
 	CreateVertexBuffer();
+	CreateIndexBuffer();
+
 	CreateSyncObjects();
 
 	RecordCommandBuffers();
@@ -1210,11 +1235,16 @@ void ShutdownVulkan()
 
 	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
 	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
+	
+	vkFreeMemory(LogicalDevice, IndexBufferDeviceMemory, NULL);
+	vkDestroyBuffer(LogicalDevice, IndexBuffer, NULL);
 	vkFreeMemory(LogicalDevice, VertexBufferDeviceMemory, NULL);
 	vkDestroyBuffer(LogicalDevice, VertexBuffer, NULL);
+
 	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
 	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
 	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
+	
 	vkDestroyDevice(LogicalDevice, NULL);
 	vkDestroySurfaceKHR(Instance, SurfaceKHR, NULL);
 #if defined(_DEBUG)
