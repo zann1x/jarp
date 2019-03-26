@@ -74,6 +74,52 @@ void ShutdownGlfw()
 	glfwTerminate();
 }
 
+///////////////// VULKAN APPLICATION /////////////////
+
+struct SVertex
+{
+	glm::vec2 Position;
+	glm::vec3 Color;
+
+	static VkVertexInputBindingDescription GetBindingDescription()
+	{
+		VkVertexInputBindingDescription VertexInputBindingDescription = {};
+		VertexInputBindingDescription.binding = 0;
+		VertexInputBindingDescription.stride = sizeof(SVertex);
+		VertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return VertexInputBindingDescription;
+	}
+
+	static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
+	{
+		std::vector<VkVertexInputAttributeDescription> VertexInputAttributeDescriptions(2);
+
+		VertexInputAttributeDescriptions[0] = {};
+		VertexInputAttributeDescriptions[0].location = 0;
+		VertexInputAttributeDescriptions[0].binding = 0;
+		VertexInputAttributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		VertexInputAttributeDescriptions[0].offset = offsetof(SVertex, Position);
+
+		VertexInputAttributeDescriptions[1] = {};
+		VertexInputAttributeDescriptions[1].location = 1;
+		VertexInputAttributeDescriptions[1].binding = 0;
+		VertexInputAttributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		VertexInputAttributeDescriptions[1].offset = offsetof(SVertex, Color);
+
+		return VertexInputAttributeDescriptions;
+	}
+};
+
+std::vector<SVertex> Vertices = {
+	{ {  0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+	{ {  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f } },
+	{ { -0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } }
+};
+
+VkBuffer VertexBuffer;
+VkDeviceMemory VertexBufferDeviceMemory;
+
 ///////////////// VULKAN /////////////////
 
 struct SQueueFamilyIndices
@@ -683,14 +729,17 @@ void CreateGraphicsPipeline()
 	PipelineShaderStageCreateInfos[1].pName = "main";
 	PipelineShaderStageCreateInfos[1].pSpecializationInfo = NULL;
 
+	auto VertexBindingDescription = SVertex::GetBindingDescription();
+	auto VertexAttributeDescriptions = SVertex::GetAttributeDescriptions();
+
 	VkPipelineVertexInputStateCreateInfo PipelineVertexInputStateCreateInfo = {};
 	PipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	PipelineVertexInputStateCreateInfo.pNext = NULL;
 	PipelineVertexInputStateCreateInfo.flags = 0;
-	PipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
-	PipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = NULL;
-	PipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
-	PipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = NULL;
+	PipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+	PipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = &VertexBindingDescription;
+	PipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(VertexAttributeDescriptions.size());
+	PipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = VertexAttributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo = {};
 	PipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -863,7 +912,6 @@ void CreateCommandPool()
 /* Depends on:
  *	- Device
  *  - CommandPool
- *  - SwapchainKHR
  */
 void CreateCommandBuffers()
 {
@@ -877,8 +925,79 @@ void CreateCommandBuffers()
 	CommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	CommandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(CommandBuffers.size());
 
-	VK_ASSERT(vkAllocateCommandBuffers(LogicalDevice, &CommandBufferAllocateInfo, CommandBuffers.data()));
+	VK_ASSERT(vkAllocateCommandBuffers(LogicalDevice, &CommandBufferAllocateInfo, CommandBuffers.data()));	
+}
 
+/* Depends on:
+ *	- Device
+ */
+void CreateVertexBuffer()
+{
+	// Create the buffer
+	VkBufferCreateInfo BufferCreateInfo = {};
+	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	BufferCreateInfo.pNext = NULL;
+	BufferCreateInfo.flags = 0;
+	BufferCreateInfo.size = sizeof(Vertices[0]) * Vertices.size();
+	BufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+	if (QueueFamilyIndices.HasMultipleQueueFamilies())
+	{
+		BufferCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+		BufferCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(QueueFamilyIndices.GetNumberOfUniqueQueueFamilies());
+		BufferCreateInfo.pQueueFamilyIndices = QueueFamilyIndices.GetIndices().data();
+	}
+	else
+	{
+		BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		BufferCreateInfo.queueFamilyIndexCount = 1;
+		BufferCreateInfo.pQueueFamilyIndices = NULL;
+	}
+
+	VK_ASSERT(vkCreateBuffer(LogicalDevice, &BufferCreateInfo, NULL, &VertexBuffer));
+
+	// Allocate the buffer's memory
+	VkMemoryRequirements MemoryRequirements;
+	vkGetBufferMemoryRequirements(LogicalDevice, VertexBuffer, &MemoryRequirements);
+
+	uint32_t MemoryTypeIndex;
+	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
+	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &PhysicalDeviceMemoryProperties);
+
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
+	{
+		if ((MemoryRequirements.memoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) == (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)))
+		{
+			MemoryTypeIndex = i;
+			break;
+		}
+	}
+
+	VkMemoryAllocateInfo MemoryAllocateInfo = {};
+	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	MemoryAllocateInfo.pNext = NULL;
+	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
+	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
+
+	VK_ASSERT(vkAllocateMemory(LogicalDevice, &MemoryAllocateInfo, NULL, &VertexBufferDeviceMemory));
+
+	// Bind the buffer to the allocated memory
+	vkBindBufferMemory(LogicalDevice, VertexBuffer, VertexBufferDeviceMemory, 0);
+
+	// Map data to device memory
+	void* Data;
+	vkMapMemory(LogicalDevice, VertexBufferDeviceMemory, 0, BufferCreateInfo.size, 0, &Data);
+	memcpy(Data, Vertices.data(), static_cast<size_t>(BufferCreateInfo.size));
+	vkUnmapMemory(LogicalDevice, VertexBufferDeviceMemory);
+}
+
+/* Depends on:
+ *	- CommandBuffer
+ *  - RenderPass
+ *  - SwapchainKHR
+ */
+void RecordCommandBuffers()
+{
 	// Record on the command buffers
 	for (size_t i = 0; i < CommandBuffers.size(); ++i)
 	{
@@ -890,6 +1009,8 @@ void CreateCommandBuffers()
 
 		VK_ASSERT(vkBeginCommandBuffer(CommandBuffers[i], &CommandBufferBeginInfo));
 
+		VkClearValue ClearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
+
 		VkRenderPassBeginInfo RenderPassBeginInfo = {};
 		RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		RenderPassBeginInfo.pNext = NULL;
@@ -897,14 +1018,13 @@ void CreateCommandBuffers()
 		RenderPassBeginInfo.framebuffer = Framebuffers[i];
 		RenderPassBeginInfo.renderArea.extent = SwapchainDetails.Extent;
 		RenderPassBeginInfo.renderArea.offset = { 0, 0 };
-		VkClearValue ClearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
 		RenderPassBeginInfo.clearValueCount = 1;
 		RenderPassBeginInfo.pClearValues = &ClearValue;
 
 		vkCmdBeginRenderPass(CommandBuffers[i], &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // Only primary command buffers, so inline subpass suffices
-		// START RECORD
+		// START OF RECORD
 		vkCmdBindPipeline(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline);
-		
+
 		VkViewport Viewport = {};
 		Viewport.x = 0.0f;
 		Viewport.y = 0.0f;
@@ -919,8 +1039,12 @@ void CreateCommandBuffers()
 		Scissor.extent = SwapchainDetails.Extent;
 		vkCmdSetScissor(CommandBuffers[i], 0, 1, &Scissor);
 
+		VkBuffer VertexBuffers[] = { VertexBuffer };
+		VkDeviceSize Offsets[] = { 0 };
+		vkCmdBindVertexBuffers(CommandBuffers[i], 0, 1, VertexBuffers, Offsets);
+
 		vkCmdDraw(CommandBuffers[i], 3, 1, 0, 0);
-		// END RECORD
+		// END OF RECORD
 		vkCmdEndRenderPass(CommandBuffers[i]);
 
 		VK_ASSERT(vkEndCommandBuffer(CommandBuffers[i]));
@@ -956,7 +1080,10 @@ void StartVulkan()
 	CreateFramebuffers();
 	CreateCommandPool();
 	CreateCommandBuffers();
+	CreateVertexBuffer();
 	CreateSyncObjects();
+
+	RecordCommandBuffers();
 }
 
 void CleanupSwapchain()
@@ -994,6 +1121,8 @@ void RecreateSwapchain()
 	CreateRenderPass();
 	CreateFramebuffers();
 	CreateCommandBuffers();
+
+	RecordCommandBuffers();
 }
 
 void ShutdownVulkan()
@@ -1005,6 +1134,8 @@ void ShutdownVulkan()
 
 	vkDestroySemaphore(LogicalDevice, WaitSemaphore, NULL);
 	vkDestroySemaphore(LogicalDevice, SignalSemaphore, NULL);
+	vkFreeMemory(LogicalDevice, VertexBufferDeviceMemory, NULL);
+	vkDestroyBuffer(LogicalDevice, VertexBuffer, NULL);
 	vkDestroyCommandPool(LogicalDevice, CommandPool, NULL);
 	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
 	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
