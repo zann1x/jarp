@@ -1190,10 +1190,13 @@ void StartVulkan()
 void CleanupSwapchain()
 {
 	vkFreeCommandBuffers(LogicalDevice, CommandPool, static_cast<uint32_t>(CommandBuffers.size()), CommandBuffers.data());
+
 	for (const auto& Framebuffer : Framebuffers)
 	{
 		vkDestroyFramebuffer(LogicalDevice, Framebuffer, NULL);
 	}
+	vkDestroyPipeline(LogicalDevice, Pipeline, NULL);
+	vkDestroyPipelineLayout(LogicalDevice, PipelineLayout, NULL);
 	vkDestroyRenderPass(LogicalDevice, RenderPass, NULL);
 	for (const auto& ImageView : SwapchainImageViews)
 	{
@@ -1220,7 +1223,9 @@ void RecreateSwapchain()
 	CreateSwapchain();
 	CreateImageViews();
 	CreateRenderPass();
+	CreateGraphicsPipeline();
 	CreateFramebuffers();
+
 	CreateCommandBuffers();
 
 	RecordCommandBuffers();
