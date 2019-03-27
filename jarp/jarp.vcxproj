@@ -94,7 +94,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,7 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,7 +130,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,11 +164,47 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Model.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanCommandPool.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanDebug.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanDescriptorPool.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanDescriptorSet.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanDescriptorSetLayout.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanFramebuffer.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanGraphicsPipeline.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanCommandBuffer.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanDevice.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanInstance.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanQueue.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanRenderPass.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanShader.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanSwapchain.cpp" />
+    <ClCompile Include="Source\CrossPlatformWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Shader.frag" />
     <None Include="Shaders\Shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Model.h" />
+    <ClInclude Include="Source\Utils.hpp" />
+    <ClInclude Include="Source\VulkanRHI\VulkanCommandBuffer.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanCommandPool.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanDebug.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanDescriptorPool.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanDescriptorSet.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanDescriptorSetLayout.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanDevice.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanFramebuffer.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanGraphicsPipeline.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanInstance.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanQueue.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanRenderPass.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanShader.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanSwapchain.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanUtils.hpp" />
+    <ClInclude Include="Source\CrossPlatformWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
