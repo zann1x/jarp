@@ -28,6 +28,7 @@
 #include "VulkanRHI/VulkanInstance.h"
 #include "VulkanRHI/VulkanQueue.h"
 #include "VulkanRHI/VulkanRenderPass.h"
+#include "VulkanRHI/VulkanSemaphore.h"
 #include "VulkanRHI/VulkanShader.h"
 #include "VulkanRHI/VulkanSwapchain.h"
 #include "VulkanRHI/VulkanUtils.hpp"
@@ -78,8 +79,8 @@ std::vector<VulkanCommandBuffer*> pCommandBuffers;
 VulkanCommandPool* pTransientCommandPool;
 VulkanCommandBuffer* pTransientCommandBuffer;
 
-VkSemaphore SignalSemaphore;
-VkSemaphore WaitSemaphore;
+VulkanSemaphore* pSignalSemaphore;
+VulkanSemaphore* pWaitSemaphore;
 
 /* Depends on:
  *	- CommandBuffer
@@ -130,22 +131,6 @@ void RecordCommandBuffers()
 		VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
 		// END OF RECORD //
 	}
-}
-
-/* Depends on:
- *	- Device
- */
-void CreateSyncObjects()
-{
-	// TODO add fences
-
-	VkSemaphoreCreateInfo SemaphoreCreateInfo = {};
-	SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	SemaphoreCreateInfo.flags = 0;
-	SemaphoreCreateInfo.pNext = nullptr;
-
-	VK_ASSERT(vkCreateSemaphore(pLogicalDevice->GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &SignalSemaphore));
-	VK_ASSERT(vkCreateSemaphore(pLogicalDevice->GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &WaitSemaphore));
 }
 
 void StartVulkan()
@@ -220,7 +205,10 @@ void StartVulkan()
 	pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
 	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers);
 
-	CreateSyncObjects();
+	pSignalSemaphore = new VulkanSemaphore(*pLogicalDevice);
+	pSignalSemaphore->CreateSemaphore();
+	pWaitSemaphore = new VulkanSemaphore(*pLogicalDevice);
+	pWaitSemaphore->CreateSemaphore();
 
 	RecordCommandBuffers();
 }
@@ -287,8 +275,10 @@ void ShutdownVulkan()
 	pShader->Destroy();
 	delete pShader;
 
-	vkDestroySemaphore(pLogicalDevice->GetInstanceHandle(), WaitSemaphore, nullptr);
-	vkDestroySemaphore(pLogicalDevice->GetInstanceHandle(), SignalSemaphore, nullptr);
+	pSignalSemaphore->Destroy();
+	delete pSignalSemaphore;
+	pWaitSemaphore->Destroy();
+	delete pWaitSemaphore;
 	
 	// Even though the uniform buffer depends on the number of swapchain images, it seems that it doesn't need to be recreated with the swapchain
 	for (auto& UniformBuffer : UniformBuffers)
@@ -354,7 +344,7 @@ void DrawFrame()
 
 	// Get the next available image to work on
 	{
-		VkResult Result = pSwapchain->AcquireNextImage(WaitSemaphore);
+		VkResult Result = pSwapchain->AcquireNextImage(pWaitSemaphore->GetHandle());
 		if (Result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			RecreateSwapchain();
@@ -369,10 +359,10 @@ void DrawFrame()
 	UpdateMVP(pSwapchain->GetActiveImageIndex());
 
 	// Submit commands to the queue
-	pLogicalDevice->GetGraphicsQueue().QueueSubmit({ pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { WaitSemaphore }, { SignalSemaphore });
+	pLogicalDevice->GetGraphicsQueue().QueueSubmit({ pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pWaitSemaphore->GetHandle() }, { pSignalSemaphore->GetHandle() });
 
 	{
-		VkResult Result = pSwapchain->QueuePresent(pLogicalDevice->GetPresentQueue().GetHandle(), SignalSemaphore);
+		VkResult Result = pSwapchain->QueuePresent(pLogicalDevice->GetPresentQueue().GetHandle(), pSignalSemaphore->GetHandle());
 		if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Window.IsFramebufferResized())
 		{
 			Window.SetFramebufferResized(false);

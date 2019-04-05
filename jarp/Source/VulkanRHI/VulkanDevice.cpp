@@ -160,7 +160,6 @@ void VulkanDevice::CreateLogicalDevice()
 
 void VulkanDevice::PickPhysicalDevice()
 {
-	VkPhysicalDevice PhysicalDevice;
 	uint32_t PhysicalDeviceCount;
 	VK_ASSERT(vkEnumeratePhysicalDevices(Instance.GetHandle(), &PhysicalDeviceCount, nullptr));
 	std::vector<VkPhysicalDevice> PhysicalDevices(PhysicalDeviceCount);

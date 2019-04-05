@@ -182,6 +182,7 @@
     <ClCompile Include="Source\VulkanRHI\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\CrossPlatformWindow.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanBuffer.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanSemaphore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Shader.frag" />
@@ -207,6 +208,7 @@
     <ClInclude Include="Source\VulkanRHI\VulkanUtils.hpp" />
     <ClInclude Include="Source\CrossPlatformWindow.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanBuffer.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanSemaphore.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
