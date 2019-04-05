@@ -21,6 +21,8 @@ public:
 	inline const VkPipelineVertexInputStateCreateInfo GetPipelineVertexInputStateCreateInfo() const { return PipelineVertexInputStateCreateInfo; };
 	inline const std::vector<SVertex>& GetVertices() const { return Vertices; }
 	inline const std::vector<uint32_t>& GetIndices() const { return Indices; }
+	inline const VkDeviceSize GetVerticesDeviceSize() const { return sizeof(Vertices[0]) * Vertices.size(); }
+	inline const VkDeviceSize GetIndicesDeviceSize() const { return sizeof(Indices[0]) * Indices.size(); }
 
 private:
 	VulkanShader& Shader;

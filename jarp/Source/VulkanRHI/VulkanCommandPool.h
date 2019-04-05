@@ -14,7 +14,7 @@ public:
 	VulkanCommandPool(VulkanDevice& OutDevice);
 	~VulkanCommandPool();
 
-	void CreateCommandPool();
+	void CreateCommandPool(const VkCommandPoolCreateFlags Flags = 0);
 	void Destroy();
 
 	inline VkCommandPool GetHandle() { return CommandPool; };

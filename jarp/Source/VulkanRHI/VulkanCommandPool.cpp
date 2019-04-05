@@ -13,12 +13,12 @@ VulkanCommandPool::~VulkanCommandPool()
 {
 }
 
-void VulkanCommandPool::CreateCommandPool()
+void VulkanCommandPool::CreateCommandPool(const VkCommandPoolCreateFlags Flags)
 {
 	VkCommandPoolCreateInfo CommandPoolCreateInfo = {};
 	CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	CommandPoolCreateInfo.pNext = nullptr;
-	CommandPoolCreateInfo.flags = 0;
+	CommandPoolCreateInfo.flags = Flags;
 	CommandPoolCreateInfo.queueFamilyIndex = Device.GetGraphicsQueue().GetFamilyIndex();
 
 	VK_ASSERT(vkCreateCommandPool(Device.GetInstanceHandle(), &CommandPoolCreateInfo, nullptr, &CommandPool));

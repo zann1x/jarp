@@ -13,13 +13,16 @@ public:
 	VulkanDevice(VkPhysicalDevice PhysicalDevice);
 	~VulkanDevice();
 
+	void SetupPresentQueue(VkSurfaceKHR Surface);
+	void CreateLogicalDevice();
+
 	inline VkDevice GetInstanceHandle() { return LogicalDevice; }
 	inline VkPhysicalDevice GetPhysicalHandle() { return PhysicalDevice; }
 	inline const VulkanQueue& GetGraphicsQueue() const { return *GraphicsQueue; }
 	inline const VulkanQueue& GetPresentQueue() const { return *PresentQueue; }
 
-	void SetupPresentQueue(VkSurfaceKHR Surface);
-	void CreateLogicalDevice();
+	uint32_t GetMemoryTypeIndex(uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const;
+
 	void WaitUntilIdle();
 
 private:

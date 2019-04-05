@@ -22,6 +22,8 @@ public:
 
 	inline const VkCommandBuffer& GetHandle() const { return CommandBuffer; }
 
+	void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
+
 private:
 	VulkanDevice& Device;
 	VulkanCommandPool& CommandPool;

@@ -155,6 +155,18 @@ void VulkanDevice::CreateLogicalDevice()
 	TransferQueue = new VulkanQueue(*this, TransferFamilyIndex);
 }
 
+uint32_t VulkanDevice::GetMemoryTypeIndex(const uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const
+{
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
+	{
+		if ((MemoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & MemoryProperties) == MemoryProperties))
+		{
+			return i;
+		}
+	}
+	throw std::runtime_error("Failed to find suitable memory type for buffer!");
+}
+
 void VulkanDevice::WaitUntilIdle()
 {
 	VK_ASSERT(vkDeviceWaitIdle(LogicalDevice));

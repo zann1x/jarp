@@ -66,6 +66,9 @@
     <ClCompile Include="Source\VulkanRHI\VulkanDebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\VulkanRHI\VulkanBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Shader.vert" />
@@ -124,6 +127,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\VulkanRHI\VulkanDebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VulkanRHI\VulkanBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -15,6 +15,7 @@
 #include <fstream>
 
 #include "CrossPlatformWindow.h"
+#include "VulkanRHI/VulkanBuffer.h"
 #include "VulkanRHI/VulkanCommandBuffer.h"
 #include "VulkanRHI/VulkanCommandPool.h"
 #include "VulkanRHI/VulkanDebug.h"
@@ -38,11 +39,8 @@
 
 Model* pModel;
 
-VkBuffer VertexBuffer;
-VkDeviceMemory VertexBufferDeviceMemory;
-
-VkBuffer IndexBuffer;
-VkDeviceMemory IndexBufferDeviceMemory;
+VulkanBuffer* pVertexBuffer;
+VulkanBuffer* pIndexBuffer;
 
 VulkanDescriptorPool* pDescriptorPool;
 VulkanDescriptorSetLayout* pDescriptorSetLayout;
@@ -55,8 +53,7 @@ struct SUniformBufferObject
 
 SUniformBufferObject MVP;
 
-std::vector<VkBuffer> UniformBuffers;
-std::vector<VkDeviceMemory> UniformBufferMemories;
+std::vector<VulkanBuffer*> UniformBuffers;
 
 ///////////////// VULKAN /////////////////
 
@@ -78,6 +75,8 @@ std::vector<VulkanFramebuffer*> pFramebuffers;
 
 VulkanCommandPool* pCommandPool;
 std::vector<VulkanCommandBuffer*> pCommandBuffers;
+VulkanCommandPool* pTransientCommandPool;
+VulkanCommandBuffer* pTransientCommandBuffer;
 
 VkSemaphore SignalSemaphore;
 VkSemaphore WaitSemaphore;
@@ -115,155 +114,9 @@ VkPhysicalDevice PickPhysicalDevice()
 	return PhysicalDevice;
 }
 
-/* Depends on:
- *	- Device
- */
-void CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkBuffer& Buffer, VkMemoryPropertyFlags MemoryProperties, VkDeviceMemory& DeviceMemory)
-{
-	// Create the buffer
-	VkBufferCreateInfo BufferCreateInfo = {};
-	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	BufferCreateInfo.pNext = nullptr;
-	BufferCreateInfo.flags = 0;
-	BufferCreateInfo.size = Size;
-	BufferCreateInfo.usage = Usage;
-	BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	BufferCreateInfo.queueFamilyIndexCount = 0;
-	BufferCreateInfo.pQueueFamilyIndices = nullptr;
-
-	VK_ASSERT(vkCreateBuffer(pLogicalDevice->GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
-
-	// Allocate the buffer's memory
-	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements(pLogicalDevice->GetInstanceHandle(), Buffer, &MemoryRequirements);
-
-	uint32_t MemoryTypeIndex = ~0;
-	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
-	vkGetPhysicalDeviceMemoryProperties(pLogicalDevice->GetPhysicalHandle(), &PhysicalDeviceMemoryProperties);
-
-	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
-	{
-		if ((MemoryRequirements.memoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & MemoryProperties) == MemoryProperties))
-		{
-			MemoryTypeIndex = i;
-			break;
-		}
-	}
-
-	if (MemoryTypeIndex == ~0)
-		throw std::runtime_error("Failed to find suitable memory type for buffer!");
-
-	VkMemoryAllocateInfo MemoryAllocateInfo = {};
-	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	MemoryAllocateInfo.pNext = nullptr;
-	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
-	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
-
-	VK_ASSERT(vkAllocateMemory(pLogicalDevice->GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
-
-	// Bind the buffer to the allocated memory
-	vkBindBufferMemory(pLogicalDevice->GetInstanceHandle(), Buffer, DeviceMemory, 0);
-}
-
-/* Depends on:
- *	- Device
- *  - CommandPool
- */
-void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
-{
-	VkCommandBufferAllocateInfo CommandBufferAllocateInfo = {};
-	CommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	CommandBufferAllocateInfo.pNext = nullptr;
-	CommandBufferAllocateInfo.commandPool = pCommandPool->GetHandle();
-	CommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	CommandBufferAllocateInfo.commandBufferCount = 1;
-
-	VkCommandBuffer CommandBuffer;
-	VK_ASSERT(vkAllocateCommandBuffers(pLogicalDevice->GetInstanceHandle(), &CommandBufferAllocateInfo, &CommandBuffer));
-
-	VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
-	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	CommandBufferBeginInfo.pNext = nullptr;
-	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	CommandBufferBeginInfo.pInheritanceInfo = nullptr;
-
-	// START OF RECORD //
-	VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
-
-	VkBufferCopy BufferCopy = {};
-	BufferCopy.srcOffset = 0;
-	BufferCopy.dstOffset = 0;
-	BufferCopy.size = Size;
-
-	vkCmdCopyBuffer(CommandBuffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
-
-	VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
-	// END OF RECORD //
-
-	VkSubmitInfo SubmitInfo = {};
-	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	SubmitInfo.pNext = nullptr;
-	SubmitInfo.waitSemaphoreCount = 0;
-	SubmitInfo.pWaitSemaphores = nullptr;
-	SubmitInfo.pWaitDstStageMask = nullptr;
-	SubmitInfo.commandBufferCount = 1;
-	SubmitInfo.pCommandBuffers = &CommandBuffer;
-	SubmitInfo.signalSemaphoreCount = 0;
-	SubmitInfo.pSignalSemaphores = nullptr;
-
-	pLogicalDevice->GetGraphicsQueue().QueueSubmit({ CommandBuffer }, 0, {}, {});
-	pLogicalDevice->GetGraphicsQueue().WaitUntilIdle();
-
-	vkFreeCommandBuffers(pLogicalDevice->GetInstanceHandle(), pCommandPool->GetHandle(), 1, &CommandBuffer);
-}
-
-/* Depends on:
- *	- Device
- */
-template <typename T>
-void CreateAndUploadBuffer(VkBufferUsageFlags Usage, VkBuffer& Buffer, VkDeviceMemory& DeviceMemory, const std::vector<T>& Data)
-{
-	// Create the staging buffer
-	VkDeviceSize BufferSize = sizeof(Data[0]) * Data.size();
-	VkBuffer StagingBuffer;
-	VkDeviceMemory StagingBufferMemory;
-	CreateBuffer(BufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, StagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, StagingBufferMemory);
-
-	void* RawData;
-	vkMapMemory(pLogicalDevice->GetInstanceHandle(), StagingBufferMemory, 0, BufferSize, 0, &RawData);
-	memcpy(RawData, Data.data(), static_cast<size_t>(BufferSize));
-	vkUnmapMemory(pLogicalDevice->GetInstanceHandle(), StagingBufferMemory);
-
-	// Create the actual vertex buffer
-	CreateBuffer(BufferSize, Usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, Buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, DeviceMemory);
-
-	CopyBuffer(StagingBuffer, Buffer, BufferSize);
-
-	vkFreeMemory(pLogicalDevice->GetInstanceHandle(), StagingBufferMemory, nullptr);
-	vkDestroyBuffer(pLogicalDevice->GetInstanceHandle(), StagingBuffer, nullptr);
-}
-
-void CreateVertexBuffer()
-{
-	CreateAndUploadBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VertexBuffer, VertexBufferDeviceMemory, pModel->GetVertices());
-}
-
-void CreateIndexBuffer()
-{
-	CreateAndUploadBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, IndexBuffer, IndexBufferDeviceMemory, pModel->GetIndices());
-}
-
-void CreateUniformBuffer()
-{
-	VkDeviceSize BufferSize = sizeof(MVP);
+void CreateUniformBuffers()
+{	
 	
-	UniformBuffers.resize(pSwapchain->GetImages().size());
-	UniformBufferMemories.resize(pSwapchain->GetImages().size());
-
-	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
-	{
-		CreateBuffer(BufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, UniformBuffers[i], VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, UniformBufferMemories[i]);
-	}
 }
 
 /* Depends on:
@@ -273,7 +126,6 @@ void CreateUniformBuffer()
  */
 void RecordCommandBuffers()
 {
-	// Record on the command buffers
 	for (size_t i = 0; i < pCommandBuffers.size(); ++i)
 	{
 		const VkCommandBuffer& CommandBuffer = pCommandBuffers[i]->GetHandle();
@@ -303,10 +155,10 @@ void RecordCommandBuffers()
 
 		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
 
-		VkBuffer VertexBuffers[] = { VertexBuffer };
+		VkBuffer VertexBuffers[] = { pVertexBuffer->GetHandle() };
 		VkDeviceSize Offsets[] = { 0 };
 		vkCmdBindVertexBuffers(CommandBuffer, 0, 1, VertexBuffers, Offsets);
-		vkCmdBindIndexBuffer(CommandBuffer, IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(CommandBuffer, pIndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetLayoutHandle(), 0, 1, &pDescriptorSet->At(i), 0, nullptr);
 
 		vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(pModel->GetIndices().size()), 1, 0, 0, 0);
@@ -371,8 +223,11 @@ void StartVulkan()
 
 	pDescriptorPool = new VulkanDescriptorPool(*pLogicalDevice, *pSwapchain);
 	pDescriptorPool->CreateDescriptorPool();
+
 	pCommandPool = new VulkanCommandPool(*pLogicalDevice);
 	pCommandPool->CreateCommandPool();
+	pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
+	pTransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
 
 	pCommandBuffers.resize(pFramebuffers.size());
 	for (size_t i = 0; i < pFramebuffers.size(); ++i)
@@ -381,11 +236,28 @@ void StartVulkan()
 		pCommandBuffers[i]->CreateCommandBuffer();
 	}
 
-	CreateVertexBuffer();
-	CreateIndexBuffer();
-	CreateUniformBuffer();
+	pVertexBuffer = new VulkanBuffer(*pLogicalDevice);
+	pVertexBuffer->CreateBuffer(pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	pIndexBuffer = new VulkanBuffer(*pLogicalDevice);
+	pIndexBuffer->CreateBuffer(pModel->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	
+	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
+	pVertexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetVertices());
+	pIndexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetIndices());
+	delete pTransientCommandBuffer;
+
+	UniformBuffers.resize(pSwapchain->GetImages().size());
+	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
+	{
+		UniformBuffers[i] = new VulkanBuffer(*pLogicalDevice);
+		UniformBuffers[i]->CreateBuffer(sizeof(MVP), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		UniformBuffers[i]->Bind();
+	}
+	std::vector<VkBuffer> UniBuffers;
+	for (auto& UniformBuffer : UniformBuffers)
+		UniBuffers.push_back(UniformBuffer->GetHandle());
 	pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
-	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniformBuffers);
+	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers);
 
 	CreateSyncObjects();
 
@@ -458,21 +330,24 @@ void ShutdownVulkan()
 	vkDestroySemaphore(pLogicalDevice->GetInstanceHandle(), SignalSemaphore, nullptr);
 	
 	// Even though the uniform buffer depends on the number of swapchain images, it seems that it doesn't need to be recreated with the swapchain
-	for (size_t i = 0; i < UniformBuffers.size(); ++i)
+	for (auto& UniformBuffer : UniformBuffers)
 	{
-		vkFreeMemory(pLogicalDevice->GetInstanceHandle(), UniformBufferMemories[i], nullptr);
-		vkDestroyBuffer(pLogicalDevice->GetInstanceHandle(), UniformBuffers[i], nullptr);
+		UniformBuffer->Destroy();
+		delete UniformBuffer;
 	}
-	vkFreeMemory(pLogicalDevice->GetInstanceHandle(), IndexBufferDeviceMemory, nullptr);
-	vkDestroyBuffer(pLogicalDevice->GetInstanceHandle(), IndexBuffer, nullptr);
-	vkFreeMemory(pLogicalDevice->GetInstanceHandle(), VertexBufferDeviceMemory, nullptr);
-	vkDestroyBuffer(pLogicalDevice->GetInstanceHandle(), VertexBuffer, nullptr);
+	pIndexBuffer->Destroy();
+	delete pIndexBuffer;
+	pVertexBuffer->Destroy();
+	delete pVertexBuffer;
 
+	pTransientCommandPool->Destroy();
+	delete pTransientCommandPool;
 	pCommandPool->Destroy();
 	delete pCommandPool;
+
 	pDescriptorPool->Destroy();
 	delete pDescriptorPool;
-	delete pDescriptorSet;
+	delete pDescriptorSet; // Vulkan objects are implicitly destroyed by the owning pool
 	pDescriptorSetLayout->Destroy();
 	delete pDescriptorSetLayout;
 	
@@ -499,9 +374,9 @@ void UpdateMVP(uint32_t CurrentImage)
 	MVP.MVP = Projection * View * Model;
 
 	void* RawData;
-	vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBufferMemories[CurrentImage], 0, sizeof(MVP), 0, &RawData);
+	vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(MVP), 0, &RawData);
 	memcpy(RawData, &MVP, sizeof(MVP));
-	vkUnmapMemory(pLogicalDevice->GetInstanceHandle(), UniformBufferMemories[CurrentImage]);
+	vkUnmapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle());
 }
 
 /* Depends on:
