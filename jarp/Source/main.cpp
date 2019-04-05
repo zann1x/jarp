@@ -82,44 +82,6 @@ VkSemaphore SignalSemaphore;
 VkSemaphore WaitSemaphore;
 
 /* Depends on:
- *	- Instance
- *  - SurfaceKHR
- */
-VkPhysicalDevice PickPhysicalDevice()
-{
-	// Find the physical device to use
-	VkPhysicalDevice PhysicalDevice;
-	uint32_t PhysicalDeviceCount;
-	VK_ASSERT(vkEnumeratePhysicalDevices(pInstance->GetHandle(), &PhysicalDeviceCount, nullptr));
-	std::vector<VkPhysicalDevice> PhysicalDevices(PhysicalDeviceCount);
-	VK_ASSERT(vkEnumeratePhysicalDevices(pInstance->GetHandle(), &PhysicalDeviceCount, PhysicalDevices.data()));
-
-	// Get info about the available physical devices and pick one for use
-	for (size_t i = 0; i < PhysicalDevices.size(); ++i)
-	{
-		VkPhysicalDeviceProperties PhysicalDeviceProperties;
-		vkGetPhysicalDeviceProperties(PhysicalDevices[i], &PhysicalDeviceProperties);
-
-		uint32_t QueueFamilyCount;
-		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevices[i], &QueueFamilyCount, nullptr);
-		if (QueueFamilyCount < 1)
-			continue;
-
-		PhysicalDevice = PhysicalDevices[i];
-
-		if (PhysicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-			break;
-	}
-
-	return PhysicalDevice;
-}
-
-void CreateUniformBuffers()
-{	
-	
-}
-
-/* Depends on:
  *	- CommandBuffer
  *  - RenderPass
  *  - SwapchainKHR
@@ -194,8 +156,7 @@ void StartVulkan()
 	VulkanDebug::SetupDebugCallback(pInstance->GetHandle());
 #endif
 
-	VkPhysicalDevice PhysicalDevice = PickPhysicalDevice();
-	pLogicalDevice = new VulkanDevice(PhysicalDevice);
+	pLogicalDevice = new VulkanDevice(*pInstance);
 	pLogicalDevice->CreateLogicalDevice();
 	pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
 	pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);

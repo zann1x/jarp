@@ -1,13 +1,16 @@
 #include "VulkanDevice.h"
 
+#include "VulkanInstance.h"
 #include "VulkanQueue.h"
 #include "VulkanUtils.hpp"
 
 #include <assert.h>
 
-VulkanDevice::VulkanDevice(VkPhysicalDevice PhysicalDevice)
-	: PhysicalDevice(PhysicalDevice)
+VulkanDevice::VulkanDevice(VulkanInstance& Instance)
+	: Instance(Instance), PhysicalDevice(VK_NULL_HANDLE)
 {
+	PickPhysicalDevice();
+
 	vkGetPhysicalDeviceProperties(PhysicalDevice, &PhysicalDeviceProperties);
 	vkGetPhysicalDeviceFeatures(PhysicalDevice, &PhysicalDeviceFeatures);
 	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &PhysicalDeviceMemoryProperties);
@@ -153,6 +156,35 @@ void VulkanDevice::CreateLogicalDevice()
 	GraphicsQueue = new VulkanQueue(*this, GraphicsFamilyIndex);
 	ComputeQueue = new VulkanQueue(*this, ComputeFamilyIndex);
 	TransferQueue = new VulkanQueue(*this, TransferFamilyIndex);
+}
+
+void VulkanDevice::PickPhysicalDevice()
+{
+	VkPhysicalDevice PhysicalDevice;
+	uint32_t PhysicalDeviceCount;
+	VK_ASSERT(vkEnumeratePhysicalDevices(Instance.GetHandle(), &PhysicalDeviceCount, nullptr));
+	std::vector<VkPhysicalDevice> PhysicalDevices(PhysicalDeviceCount);
+	VK_ASSERT(vkEnumeratePhysicalDevices(Instance.GetHandle(), &PhysicalDeviceCount, PhysicalDevices.data()));
+
+	// Get info about the available physical devices and pick one for use
+	for (size_t i = 0; i < PhysicalDevices.size(); ++i)
+	{
+		VkPhysicalDeviceProperties PhysicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(PhysicalDevices[i], &PhysicalDeviceProperties);
+
+		uint32_t QueueFamilyCount;
+		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevices[i], &QueueFamilyCount, nullptr);
+		if (QueueFamilyCount < 1)
+			continue;
+
+		PhysicalDevice = PhysicalDevices[i];
+
+		if (PhysicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+			break;
+	}
+
+	if (PhysicalDevice == VK_NULL_HANDLE)
+		throw std::runtime_error("No suitable physical device found!");
 }
 
 uint32_t VulkanDevice::GetMemoryTypeIndex(const uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const

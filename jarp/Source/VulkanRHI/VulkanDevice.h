@@ -5,12 +5,13 @@
 #include <string>
 #include <set>
 
+class VulkanInstance;
 class VulkanQueue;
 
 class VulkanDevice
 {
 public:
-	VulkanDevice(VkPhysicalDevice PhysicalDevice);
+	VulkanDevice(VulkanInstance& Instance);
 	~VulkanDevice();
 
 	void SetupPresentQueue(VkSurfaceKHR Surface);
@@ -20,6 +21,8 @@ public:
 	inline VkPhysicalDevice GetPhysicalHandle() { return PhysicalDevice; }
 	inline const VulkanQueue& GetGraphicsQueue() const { return *GraphicsQueue; }
 	inline const VulkanQueue& GetPresentQueue() const { return *PresentQueue; }
+
+	void PickPhysicalDevice();
 
 	uint32_t GetMemoryTypeIndex(uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const;
 
@@ -34,6 +37,7 @@ private:
 	std::vector<std::string> SupportedExtensions;
 	std::vector<const char*> EnabledExtensions;
 
+	VulkanInstance& Instance;
 	VkPhysicalDevice PhysicalDevice;
 	VkDevice LogicalDevice;
 
