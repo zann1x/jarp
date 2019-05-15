@@ -155,6 +155,7 @@ void StartVulkan()
 	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Shader.frag.spv");
 
 	pModel = new Model(*pShader);
+	pModel->LoadModel("Content/monkey.obj");
 
 	pRenderPass = new VulkanRenderPass(*pLogicalDevice, *pSwapchain);
 	pRenderPass->CreateRenderPass();

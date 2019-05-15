@@ -262,3 +262,6 @@ __pycache__/
 
 # Exclude Dependencies
 ![Dd]ependencies/
+
+# Exclude own content files
+![Cc]ontent/

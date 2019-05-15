@@ -7,7 +7,7 @@ class VulkanDevice;
 class VulkanRenderPass;
 class VulkanShader;
 
-class Mesh;
+class Model;
 
 /*
 Depends on:

@@ -94,7 +94,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\tinyobjloader;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,7 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\tinyobjloader;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,7 +130,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\tinyobjloader;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win32\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jarp;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include;$(SolutionDir)Dependencies\tinyobjloader;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\GLFW\Win64\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
