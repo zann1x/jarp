@@ -190,6 +190,8 @@
     <ClCompile Include="Source\VulkanRHI\VulkanSemaphore.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Phong.frag" />
+    <None Include="Shaders\Phong.vert" />
     <None Include="Shaders\Shader.frag" />
     <None Include="Shaders\Shader.vert" />
   </ItemGroup>

@@ -44,6 +44,7 @@
 ///////////////// VULKAN APPLICATION /////////////////
 
 Model* pModel;
+Texture* pTexture;
 
 VulkanBuffer* pVertexBuffer;
 VulkanBuffer* pIndexBuffer;
@@ -54,10 +55,13 @@ VulkanDescriptorSet* pDescriptorSet;
 
 struct SUniformBufferObject
 {
-	alignas(16) glm::mat4 MVP;
+	alignas(16) glm::mat4 Model;
+	alignas(16) glm::mat4 View;
+	alignas(16) glm::mat4 Projection;
+	alignas(16) glm::vec3 LightPosition;
 };
 
-SUniformBufferObject MVP;
+SUniformBufferObject UBO;
 
 std::vector<VulkanBuffer*> UniformBuffers;
 
@@ -161,8 +165,8 @@ void StartVulkan()
 
 	pShader = new VulkanShader(*pLogicalDevice);
 	pShader->AddDescriptorSetLayout(*pDescriptorSetLayout);
-	pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Shader.vert.spv");
-	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Shader.frag.spv");
+	pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Phong.vert.spv");
+	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Phong.frag.spv");
 
 	pCommandPool = new VulkanCommandPool(*pLogicalDevice);
 	pCommandPool->CreateCommandPool();
@@ -171,6 +175,7 @@ void StartVulkan()
 	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
 
 	pModel = new Model(*pLogicalDevice, *pShader);
+	pTexture = new Texture(*pLogicalDevice);
 
 	pDepthImage = new VulkanImage(*pLogicalDevice);
 	pDepthImageView = new VulkanImageView(*pLogicalDevice);
@@ -200,7 +205,8 @@ void StartVulkan()
 		pCommandBuffers[i]->CreateCommandBuffer();
 	}
 
-	pModel->Load(*pTransientCommandBuffer, "Content/monkey.obj", "Content/texture.jpg");
+	pModel->Load(*pTransientCommandBuffer, "Content/dog.obj");
+	pTexture->Load(*pTransientCommandBuffer, "Content/dog_diffuse.jpg");
 	pVertexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 	pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	pVertexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetVertices());
@@ -212,14 +218,14 @@ void StartVulkan()
 	UniformBuffers.resize(pSwapchain->GetImages().size());
 	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 	{
-		UniformBuffers[i] = new VulkanBuffer(*pLogicalDevice, sizeof(MVP), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+		UniformBuffers[i] = new VulkanBuffer(*pLogicalDevice, sizeof(UBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 		UniformBuffers[i]->CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	}
 	std::vector<VkBuffer> UniBuffers;
 	for (auto& UniformBuffer : UniformBuffers)
 		UniBuffers.push_back(UniformBuffer->GetHandle());
 	pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
-	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers, pModel->GetTexture().GetSampler(), pModel->GetTexture().GetImageView().GetHandle());
+	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(UBO), UniBuffers, pTexture->GetSampler(), pTexture->GetImageView().GetHandle());
 
 	pSignalSemaphore = new VulkanSemaphore(*pLogicalDevice);
 	pSignalSemaphore->CreateSemaphore();
@@ -263,7 +269,9 @@ void RecreateSwapchain()
 	VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
 	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
 	pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	delete pTransientCommandBuffer;
 
 	pRenderPass->CreateRenderPass();
 	pGraphicsPipeline->CreateGraphicsPipeline(pModel->GetPipelineVertexInputStateCreateInfo(), pSwapchain->GetDetails().Extent);
@@ -297,6 +305,8 @@ void ShutdownVulkan()
 	delete pDepthImageView;
 	delete pDepthImage;
 
+	pTexture->Destroy();
+	delete pTexture;
 	delete pModel;
 
 	pShader->Destroy();
@@ -344,16 +354,15 @@ void UpdateMVP(uint32_t CurrentImage)
 	auto CurrentTime = std::chrono::high_resolution_clock::now();
 	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
 
-	glm::mat4 Model = glm::rotate(glm::mat4(1.0f), TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 View = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height), 0.1f, 10.0f);
-	Projection[1][1] *= -1;
-
-	MVP.MVP = Projection * View * Model;
+	UBO.Model = glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1f, 0.1f)), TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	UBO.View = glm::lookAt(glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	UBO.Projection = glm::perspective(glm::radians(60.0f), pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height), 0.1f, 100.0f);
+	UBO.Projection[1][1] *= -1;
+	UBO.LightPosition = glm::vec3(5.0f, 3.0f, 1.0f);
 
 	void* RawData;
-	vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(MVP), 0, &RawData);
-	memcpy(RawData, &MVP, sizeof(MVP));
+	vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData);
+	memcpy(RawData, &UBO, sizeof(UBO));
 	vkUnmapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle());
 }
 
