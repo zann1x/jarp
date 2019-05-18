@@ -12,8 +12,14 @@ VulkanDevice::VulkanDevice(VulkanInstance& Instance)
 	PickPhysicalDevice();
 
 	vkGetPhysicalDeviceProperties(PhysicalDevice, &PhysicalDeviceProperties);
-	vkGetPhysicalDeviceFeatures(PhysicalDevice, &PhysicalDeviceFeatures);
 	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &PhysicalDeviceMemoryProperties);
+
+	// Check for desired features
+	vkGetPhysicalDeviceFeatures(PhysicalDevice, &PhysicalDeviceFeatures);
+	EnabledPhysicalDeviceFeatures = {};
+	if (!PhysicalDeviceFeatures.samplerAnisotropy)
+		throw std::runtime_error("Not all enabled features are supported");
+	EnabledPhysicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
 	
 	uint32_t QueueFamilyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, nullptr);
@@ -148,7 +154,7 @@ void VulkanDevice::CreateLogicalDevice()
 	DeviceCreateInfo.ppEnabledLayerNames = nullptr; // deprecated
 	DeviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(EnabledExtensions.size());
 	DeviceCreateInfo.ppEnabledExtensionNames = EnabledExtensions.data();
-	//DeviceCreateInfo.pEnabledFeatures = &EnabledPhysicalDeviceFeatures;
+	DeviceCreateInfo.pEnabledFeatures = &EnabledPhysicalDeviceFeatures;
 
 	VK_ASSERT(vkCreateDevice(PhysicalDevice, &DeviceCreateInfo, nullptr, &LogicalDevice));
 

@@ -2,8 +2,8 @@
 #include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
 
-VulkanBuffer::VulkanBuffer(VulkanDevice& Device)
-	: Device(Device), Size(0), Usage(0)
+VulkanBuffer::VulkanBuffer(VulkanDevice& Device, VkDeviceSize Size, VkBufferUsageFlags Usage)
+	: Device(Device), Size(Size), Usage(Usage)
 {
 }
 
@@ -42,11 +42,8 @@ void VulkanBuffer::CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkB
 	VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
 }
 
-void VulkanBuffer::CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkMemoryPropertyFlags MemoryProperties)
+void VulkanBuffer::CreateBuffer(VkMemoryPropertyFlags MemoryProperties)
 {
-	this->Size = Size;
-	this->Usage = Usage;
-
 	// Create the buffer
 	VkBufferCreateInfo BufferCreateInfo = {};
 	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -72,6 +69,8 @@ void VulkanBuffer::CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkM
 	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
 	VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &BufferMemory));
+
+	VK_ASSERT(vkBindBufferMemory(Device.GetInstanceHandle(), Buffer, BufferMemory, 0));
 }
 
 void VulkanBuffer::Destroy()
@@ -79,14 +78,4 @@ void VulkanBuffer::Destroy()
 	vkFreeMemory(Device.GetInstanceHandle(), BufferMemory, nullptr);
 	vkDestroyBuffer(Device.GetInstanceHandle(), Buffer, nullptr);
 	Buffer = VK_NULL_HANDLE;
-}
-
-void VulkanBuffer::Bind()
-{
-	VK_ASSERT(vkBindBufferMemory(Device.GetInstanceHandle(), this->Buffer, this->BufferMemory, 0));
-}
-
-void VulkanBuffer::Bind(const VkBuffer& Buffer, const VkDeviceMemory& DeviceMemory)
-{
-	VK_ASSERT(vkBindBufferMemory(Device.GetInstanceHandle(), Buffer, DeviceMemory, 0));
 }

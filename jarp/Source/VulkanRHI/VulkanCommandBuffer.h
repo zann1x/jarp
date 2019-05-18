@@ -22,6 +22,9 @@ public:
 
 	inline const VkCommandBuffer& GetHandle() const { return CommandBuffer; }
 
+	void BeginOneTimeSubmitCommand();
+	void EndOneTimeSubmitCommand();
+
 	void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
 
 private:

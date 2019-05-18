@@ -12,7 +12,19 @@ VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout()
 {
 }
 
-void VulkanDescriptorSetLayout::CreateDescriptorSetLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags)
+void VulkanDescriptorSetLayout::CreateDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo = {};
+	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	DescriptorSetLayoutCreateInfo.pNext = nullptr;
+	DescriptorSetLayoutCreateInfo.flags = 0;
+	DescriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(DescriptorSetLayoutBindings.size());
+	DescriptorSetLayoutCreateInfo.pBindings = DescriptorSetLayoutBindings.data();
+
+	VK_ASSERT(vkCreateDescriptorSetLayout(Device.GetInstanceHandle(), &DescriptorSetLayoutCreateInfo, nullptr, &DescriptorSetLayout));
+}
+
+void VulkanDescriptorSetLayout::AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags)
 {
 	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding = {};
 	DescriptorSetLayoutBinding.binding = Binding;
@@ -21,14 +33,7 @@ void VulkanDescriptorSetLayout::CreateDescriptorSetLayout(uint32_t Binding, VkDe
 	DescriptorSetLayoutBinding.stageFlags = StageFlags;
 	DescriptorSetLayoutBinding.pImmutableSamplers = nullptr;
 
-	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo = {};
-	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	DescriptorSetLayoutCreateInfo.pNext = nullptr;
-	DescriptorSetLayoutCreateInfo.flags = 0;
-	DescriptorSetLayoutCreateInfo.bindingCount = 1;
-	DescriptorSetLayoutCreateInfo.pBindings = &DescriptorSetLayoutBinding;
-
-	VK_ASSERT(vkCreateDescriptorSetLayout(Device.GetInstanceHandle(), &DescriptorSetLayoutCreateInfo, nullptr, &DescriptorSetLayout));
+	DescriptorSetLayoutBindings.push_back(DescriptorSetLayoutBinding);
 }
 
 void VulkanDescriptorSetLayout::Destroy()

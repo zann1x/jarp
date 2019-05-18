@@ -4,6 +4,8 @@
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
 
+#include <array>
+
 VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
 	: Device(OutDevice), Swapchain(OutSwapchain)
 {
@@ -15,17 +17,21 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 
 void VulkanDescriptorPool::CreateDescriptorPool()
 {
-	VkDescriptorPoolSize DescriptorPoolSize = {};
-	DescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	DescriptorPoolSize.descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
+	std::array<VkDescriptorPoolSize, 2> DescriptorPoolSizes;
+	DescriptorPoolSizes[0] = {};
+	DescriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	DescriptorPoolSizes[0].descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
+	DescriptorPoolSizes[1] = {};
+	DescriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	DescriptorPoolSizes[1].descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
 
 	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo = {};
 	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	DescriptorPoolCreateInfo.pNext = nullptr;
 	DescriptorPoolCreateInfo.flags = 0;
 	DescriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(Swapchain.GetImages().size());
-	DescriptorPoolCreateInfo.poolSizeCount = 1;
-	DescriptorPoolCreateInfo.pPoolSizes = &DescriptorPoolSize;
+	DescriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolSizes.size());
+	DescriptorPoolCreateInfo.pPoolSizes = DescriptorPoolSizes.data();
 
 	VK_ASSERT(vkCreateDescriptorPool(Device.GetInstanceHandle(), &DescriptorPoolCreateInfo, nullptr, &DescriptorPool));
 }

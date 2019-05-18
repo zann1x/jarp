@@ -165,6 +165,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Model.cpp" />
+    <ClCompile Include="Source\Texture.cpp" />
+    <ClCompile Include="Source\Vendor\stbi_image.cpp" />
+    <ClCompile Include="Source\Vendor\tiny_obj_loader.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanCommandPool.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanDebug.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanDescriptorPool.cpp" />
@@ -190,6 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Model.h" />
+    <ClInclude Include="Source\Texture.h" />
     <ClInclude Include="Source\Utils.hpp" />
     <ClInclude Include="Source\VulkanRHI\VulkanCommandBuffer.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanCommandPool.h" />

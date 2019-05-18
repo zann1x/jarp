@@ -72,6 +72,15 @@
     <ClCompile Include="Source\VulkanRHI\VulkanSemaphore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Vendor\tiny_obj_loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vendor\stbi_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Shader.vert" />
@@ -136,6 +145,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\VulkanRHI\VulkanSemaphore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

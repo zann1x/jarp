@@ -31,7 +31,7 @@ void VulkanCommandBuffer::Destroy()
 	vkFreeCommandBuffers(Device.GetInstanceHandle(), CommandPool.GetHandle(), 1, &CommandBuffer);
 }
 
-void VulkanCommandBuffer::CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
+void VulkanCommandBuffer::BeginOneTimeSubmitCommand()
 {
 	CreateCommandBuffer();
 
@@ -41,18 +41,12 @@ void VulkanCommandBuffer::CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkD
 	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 	CommandBufferBeginInfo.pInheritanceInfo = nullptr;
 
-	// START OF RECORD //
 	VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
+}
 
-	VkBufferCopy BufferCopy = {};
-	BufferCopy.srcOffset = 0;
-	BufferCopy.dstOffset = 0;
-	BufferCopy.size = Size;
-
-	vkCmdCopyBuffer(CommandBuffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
-
+void VulkanCommandBuffer::EndOneTimeSubmitCommand()
+{
 	VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
-	// END OF RECORD //
 
 	VkSubmitInfo SubmitInfo = {};
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -69,4 +63,18 @@ void VulkanCommandBuffer::CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkD
 	Device.GetGraphicsQueue().WaitUntilIdle();
 
 	Destroy();
+}
+
+void VulkanCommandBuffer::CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
+{
+	BeginOneTimeSubmitCommand();
+
+	VkBufferCopy BufferCopy = {};
+	BufferCopy.srcOffset = 0;
+	BufferCopy.dstOffset = 0;
+	BufferCopy.size = Size;
+
+	vkCmdCopyBuffer(CommandBuffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
+
+	EndOneTimeSubmitCommand();
 }

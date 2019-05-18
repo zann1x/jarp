@@ -3,6 +3,8 @@
 
 #include <vulkan/vulkan.h>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -34,6 +36,7 @@
 #include "VulkanRHI/VulkanUtils.hpp"
 
 #include "Model.h"
+#include "Texture.h"
 #include "Utils.hpp"
 
 ///////////////// VULKAN APPLICATION /////////////////
@@ -99,10 +102,9 @@ void RecordCommandBuffers()
 		CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 		CommandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
 
-		// START OF RECORD //
 		VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
 
-		VkClearValue ClearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
+		VkClearValue ClearValue = { 0.2f, 0.3f, 0.8f, 1.0f };
 
 		VkRenderPassBeginInfo RenderPassBeginInfo = {};
 		RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -129,7 +131,6 @@ void RecordCommandBuffers()
 		vkCmdEndRenderPass(CommandBuffer);
 
 		VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
-		// END OF RECORD //
 	}
 }
 
@@ -147,15 +148,16 @@ void StartVulkan()
 	pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
 
 	pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
-	pDescriptorSetLayout->CreateDescriptorSetLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	pDescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	pDescriptorSetLayout->CreateDescriptorSetLayout();
 
 	pShader = new VulkanShader(*pLogicalDevice);
 	pShader->AddDescriptorSetLayout(*pDescriptorSetLayout);
 	pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Shader.vert.spv");
 	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Shader.frag.spv");
 
-	pModel = new Model(*pShader);
-	pModel->LoadModel("Content/monkey.obj");
+	pModel = new Model(*pLogicalDevice, *pShader);
 
 	pRenderPass = new VulkanRenderPass(*pLogicalDevice, *pSwapchain);
 	pRenderPass->CreateRenderPass();
@@ -183,28 +185,27 @@ void StartVulkan()
 		pCommandBuffers[i]->CreateCommandBuffer();
 	}
 
-	pVertexBuffer = new VulkanBuffer(*pLogicalDevice);
-	pVertexBuffer->CreateBuffer(pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	pIndexBuffer = new VulkanBuffer(*pLogicalDevice);
-	pIndexBuffer->CreateBuffer(pModel->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	
 	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
+	pModel->Load(*pTransientCommandBuffer, "Content/monkey.obj", "Content/texture.jpg");
+	pVertexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+	pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	pVertexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetVertices());
+	pIndexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+	pIndexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	pIndexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetIndices());
 	delete pTransientCommandBuffer;
 
 	UniformBuffers.resize(pSwapchain->GetImages().size());
 	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 	{
-		UniformBuffers[i] = new VulkanBuffer(*pLogicalDevice);
-		UniformBuffers[i]->CreateBuffer(sizeof(MVP), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		UniformBuffers[i]->Bind();
+		UniformBuffers[i] = new VulkanBuffer(*pLogicalDevice, sizeof(MVP), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+		UniformBuffers[i]->CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	}
 	std::vector<VkBuffer> UniBuffers;
 	for (auto& UniformBuffer : UniformBuffers)
 		UniBuffers.push_back(UniformBuffer->GetHandle());
 	pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
-	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers);
+	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers, pModel->GetTexture().GetSampler(), pModel->GetTexture().GetImageView());
 
 	pSignalSemaphore = new VulkanSemaphore(*pLogicalDevice);
 	pSignalSemaphore->CreateSemaphore();

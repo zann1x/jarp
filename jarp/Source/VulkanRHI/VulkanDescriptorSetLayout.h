@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vector>
 
 class VulkanDevice;
 
@@ -14,14 +15,17 @@ public:
 	VulkanDescriptorSetLayout(VulkanDevice& OutDevice);
 	~VulkanDescriptorSetLayout();
 
-	void CreateDescriptorSetLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags);
+	void CreateDescriptorSetLayout();
 	void Destroy();
+
+	void AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags);
 
 	inline const VkDescriptorSetLayout& GetHandle() const { return DescriptorSetLayout; }
 
 private:
 	VulkanDevice& Device;
 
+	std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
 	VkDescriptorSetLayout DescriptorSetLayout;
 };
 
