@@ -25,6 +25,20 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline(const VkPipelineVertexInputS
 	PipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	PipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
 
+	VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilCreateInfo = {};
+	PipelineDepthStencilCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	PipelineDepthStencilCreateInfo.pNext = nullptr;
+	PipelineDepthStencilCreateInfo.flags = 0;
+	PipelineDepthStencilCreateInfo.depthTestEnable = VK_TRUE;
+	PipelineDepthStencilCreateInfo.depthWriteEnable = VK_TRUE;
+	PipelineDepthStencilCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	PipelineDepthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
+	PipelineDepthStencilCreateInfo.stencilTestEnable = VK_FALSE;
+	PipelineDepthStencilCreateInfo.front = {};
+	PipelineDepthStencilCreateInfo.back = {};
+	PipelineDepthStencilCreateInfo.minDepthBounds = 0.0f;
+	PipelineDepthStencilCreateInfo.maxDepthBounds = 1.0f;
+
 	VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo = {};
 	PipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	PipelineRasterizationStateCreateInfo.pNext = nullptr;
@@ -127,7 +141,7 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline(const VkPipelineVertexInputS
 	GraphicsPipelineCreateInfo.pViewportState = &PipelineViewportStateCreateInfo;
 	GraphicsPipelineCreateInfo.pRasterizationState = &PipelineRasterizationStateCreateInfo;
 	GraphicsPipelineCreateInfo.pMultisampleState = &PipelineMultisampleStateCreateInfo;
-	GraphicsPipelineCreateInfo.pDepthStencilState = nullptr;
+	GraphicsPipelineCreateInfo.pDepthStencilState = &PipelineDepthStencilCreateInfo;
 	GraphicsPipelineCreateInfo.pColorBlendState = &PipelineColorBlendStateCreateInfo;
 	GraphicsPipelineCreateInfo.pDynamicState = &PipelineDynamicStateCreateInfo;
 	GraphicsPipelineCreateInfo.layout = PipelineLayout;

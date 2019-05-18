@@ -6,6 +6,8 @@
 
 class VulkanCommandBuffer;
 class VulkanDevice;
+class VulkanImage;
+class VulkanImageView;
 
 class Texture
 {
@@ -17,17 +19,12 @@ public:
 	void Destroy();
 
 	inline const VkSampler GetSampler() const { return Sampler; }
-	inline const VkImageView GetImageView() const { return ImageView; }
-
-private:
-	void CreateImage(uint32_t Width, uint32_t Height, VkFormat Format, VkImageTiling ImageTiling, VkImageUsageFlags ImageUsageFlags, VkMemoryPropertyFlags MemoryPropertyFlags);
-	void TransitionImageLayout(VulkanCommandBuffer& CommandBuffer, VkImageLayout OldLayout, VkImageLayout NewLayout);
+	inline const VulkanImageView& GetImageView() const { return *pTextureImageView; }
 
 private:
 	VulkanDevice& Device;
+	VulkanImage* pTextureImage;
+	VulkanImageView* pTextureImageView;
 
-	VkImage Image;
-	VkImageView ImageView;
-	VkDeviceMemory DeviceMemory;
 	VkSampler Sampler;
 };

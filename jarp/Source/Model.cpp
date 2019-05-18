@@ -66,6 +66,7 @@ Model::Model(VulkanDevice& Device, VulkanShader& Shader)
 Model::~Model()
 {
 	pTexture->Destroy();
+	delete pTexture;
 }
 
 void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFile, const std::string& TextureFile)

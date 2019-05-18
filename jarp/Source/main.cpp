@@ -28,6 +28,8 @@
 #include "VulkanRHI/VulkanFramebuffer.h"
 #include "VulkanRHI/VulkanGraphicsPipeline.h"
 #include "VulkanRHI/VulkanInstance.h"
+#include "VulkanRHI/VulkanImage.h"
+#include "VulkanRHI/VulkanImageView.h"
 #include "VulkanRHI/VulkanQueue.h"
 #include "VulkanRHI/VulkanRenderPass.h"
 #include "VulkanRHI/VulkanSemaphore.h"
@@ -77,6 +79,9 @@ VulkanRenderPass* pRenderPass;
 VulkanGraphicsPipeline* pGraphicsPipeline;
 std::vector<VulkanFramebuffer*> pFramebuffers;
 
+VulkanImage* pDepthImage;
+VulkanImageView* pDepthImageView;
+
 VulkanCommandPool* pCommandPool;
 std::vector<VulkanCommandBuffer*> pCommandBuffers;
 VulkanCommandPool* pTransientCommandPool;
@@ -104,7 +109,9 @@ void RecordCommandBuffers()
 
 		VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
 
-		VkClearValue ClearValue = { 0.2f, 0.3f, 0.8f, 1.0f };
+		std::array<VkClearValue, 2> ClearValues = {};
+		ClearValues[0] = { 0.2f, 0.3f, 0.8f, 1.0f };
+		ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
 
 		VkRenderPassBeginInfo RenderPassBeginInfo = {};
 		RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -113,8 +120,8 @@ void RecordCommandBuffers()
 		RenderPassBeginInfo.framebuffer = pFramebuffers[i]->GetHandle();
 		RenderPassBeginInfo.renderArea.extent = pSwapchain->GetDetails().Extent;
 		RenderPassBeginInfo.renderArea.offset = { 0, 0 };
-		RenderPassBeginInfo.clearValueCount = 1;
-		RenderPassBeginInfo.pClearValues = &ClearValue;
+		RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
+		RenderPassBeginInfo.pClearValues = ClearValues.data();
 
 		vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // Only primary command buffers, so inline subpass suffices
 
@@ -157,7 +164,20 @@ void StartVulkan()
 	pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Shader.vert.spv");
 	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Shader.frag.spv");
 
+	pCommandPool = new VulkanCommandPool(*pLogicalDevice);
+	pCommandPool->CreateCommandPool();
+	pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
+	pTransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
+
 	pModel = new Model(*pLogicalDevice, *pShader);
+
+	pDepthImage = new VulkanImage(*pLogicalDevice);
+	pDepthImageView = new VulkanImageView(*pLogicalDevice);
+	VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
+	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 	pRenderPass = new VulkanRenderPass(*pLogicalDevice, *pSwapchain);
 	pRenderPass->CreateRenderPass();
@@ -167,16 +187,11 @@ void StartVulkan()
 	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 	{
 		pFramebuffers[i] = new VulkanFramebuffer(*pLogicalDevice, *pRenderPass);
-		pFramebuffers[i]->CreateFramebuffer(pSwapchain->GetImageViews()[i], pSwapchain->GetDetails().Extent);
+		pFramebuffers[i]->CreateFramebuffer({ pSwapchain->GetImageViews()[i].GetHandle(), pDepthImageView->GetHandle() }, pSwapchain->GetDetails().Extent);
 	}
 
 	pDescriptorPool = new VulkanDescriptorPool(*pLogicalDevice, *pSwapchain);
 	pDescriptorPool->CreateDescriptorPool();
-
-	pCommandPool = new VulkanCommandPool(*pLogicalDevice);
-	pCommandPool->CreateCommandPool();
-	pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
-	pTransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
 
 	pCommandBuffers.resize(pFramebuffers.size());
 	for (size_t i = 0; i < pFramebuffers.size(); ++i)
@@ -185,7 +200,6 @@ void StartVulkan()
 		pCommandBuffers[i]->CreateCommandBuffer();
 	}
 
-	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
 	pModel->Load(*pTransientCommandBuffer, "Content/monkey.obj", "Content/texture.jpg");
 	pVertexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 	pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -205,7 +219,7 @@ void StartVulkan()
 	for (auto& UniformBuffer : UniformBuffers)
 		UniBuffers.push_back(UniformBuffer->GetHandle());
 	pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
-	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers, pModel->GetTexture().GetSampler(), pModel->GetTexture().GetImageView());
+	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(MVP), UniBuffers, pModel->GetTexture().GetSampler(), pModel->GetTexture().GetImageView().GetHandle());
 
 	pSignalSemaphore = new VulkanSemaphore(*pLogicalDevice);
 	pSignalSemaphore->CreateSemaphore();
@@ -224,6 +238,8 @@ void CleanupSwapchain()
 
 	for (auto& Framebuffer : pFramebuffers)
 		Framebuffer->Destroy();
+	pDepthImageView->Destroy();
+	pDepthImage->Destroy();
 	pGraphicsPipeline->Destroy();
 	pRenderPass->Destroy();
 	pSwapchain->Destroy();
@@ -243,12 +259,18 @@ void RecreateSwapchain()
 	CleanupSwapchain();
 
 	pSwapchain->CreateSwapchain(FramebufferSize.first, FramebufferSize.second, Settings.VSync);
+	
+	VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
+	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
 	pRenderPass->CreateRenderPass();
 	pGraphicsPipeline->CreateGraphicsPipeline(pModel->GetPipelineVertexInputStateCreateInfo(), pSwapchain->GetDetails().Extent);
 
 	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 	{
-		pFramebuffers[i]->CreateFramebuffer(pSwapchain->GetImageViews()[i], pSwapchain->GetDetails().Extent);
+		pFramebuffers[i]->CreateFramebuffer({ pSwapchain->GetImageViews()[i].GetHandle(), pDepthImageView->GetHandle() }, pSwapchain->GetDetails().Extent);
 	}
 
 	for (size_t i = 0; i < pFramebuffers.size(); ++i)
@@ -271,6 +293,9 @@ void ShutdownVulkan()
 	{
 		delete CommandBuffer;
 	}
+
+	delete pDepthImageView;
+	delete pDepthImage;
 
 	delete pModel;
 

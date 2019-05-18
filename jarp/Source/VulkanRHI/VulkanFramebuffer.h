@@ -18,7 +18,7 @@ public:
 	VulkanFramebuffer(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass);
 	~VulkanFramebuffer();
 
-	void CreateFramebuffer(const VkImageView& ImageView, const VkExtent2D& Extent);
+	void CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent);
 	void Destroy();
 
 	inline const VkFramebuffer& GetHandle() const { return Framebuffer; }

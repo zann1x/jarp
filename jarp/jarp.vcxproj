@@ -178,6 +178,8 @@
     <ClCompile Include="Source\VulkanRHI\VulkanCommandBuffer.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanDevice.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanImage.cpp" />
+    <ClCompile Include="Source\VulkanRHI\VulkanImageView.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanInstance.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanQueue.cpp" />
     <ClCompile Include="Source\VulkanRHI\VulkanRenderPass.cpp" />
@@ -204,6 +206,8 @@
     <ClInclude Include="Source\VulkanRHI\VulkanDevice.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanFramebuffer.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanGraphicsPipeline.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanImage.h" />
+    <ClInclude Include="Source\VulkanRHI\VulkanImageView.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanInstance.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanQueue.h" />
     <ClInclude Include="Source\VulkanRHI\VulkanRenderPass.h" />

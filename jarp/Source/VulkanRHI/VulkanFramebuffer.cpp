@@ -13,15 +13,15 @@ VulkanFramebuffer::~VulkanFramebuffer()
 {
 }
 
-void VulkanFramebuffer::CreateFramebuffer(const VkImageView& ImageView, const VkExtent2D& Extent)
+void VulkanFramebuffer::CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent)
 {
 	VkFramebufferCreateInfo FramebufferCreateInfo = {};
 	FramebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	FramebufferCreateInfo.pNext = nullptr;
 	FramebufferCreateInfo.flags = 0;
 	FramebufferCreateInfo.renderPass = RenderPass.GetHandle();
-	FramebufferCreateInfo.attachmentCount = 1;
-	FramebufferCreateInfo.pAttachments = &ImageView;
+	FramebufferCreateInfo.attachmentCount = static_cast<uint32_t>(Attachments.size());
+	FramebufferCreateInfo.pAttachments = Attachments.data();
 	FramebufferCreateInfo.width = Extent.width;
 	FramebufferCreateInfo.height = Extent.height;
 	FramebufferCreateInfo.layers = 1;

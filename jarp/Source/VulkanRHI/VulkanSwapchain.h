@@ -5,6 +5,7 @@
 
 class CrossPlatformWindow;
 class VulkanDevice;
+class VulkanImageView;
 
 /*
 Depends on:
@@ -39,7 +40,7 @@ public:
 	inline const VkSurfaceKHR GetSurfaceHandle() const { return SurfaceKHR; }
 	inline const SSwapchainDetails GetDetails() const { return SwapchainDetails; }
 	inline const std::vector<VkImage>& GetImages() const { return SwapchainImages; }
-	inline const std::vector<VkImageView>& GetImageViews() const { return SwapchainImageViews; }
+	inline const std::vector<VulkanImageView>& GetImageViews() const { return SwapchainImageViews; }
 	inline const uint32_t GetActiveImageIndex() const { return ActiveImageIndex; }
 
 	static SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice Device, VkSurfaceKHR SurfaceKHR);
@@ -56,7 +57,7 @@ private:
 	SSwapchainSupportDetails SwapchainSupportDetails;
 	SSwapchainDetails SwapchainDetails;
 	std::vector<VkImage> SwapchainImages;
-	std::vector<VkImageView> SwapchainImageViews;
+	std::vector<VulkanImageView> SwapchainImageViews;
 
 	uint32_t ActiveImageIndex;
 };

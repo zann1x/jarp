@@ -25,6 +25,8 @@ public:
 	void PickPhysicalDevice();
 
 	uint32_t GetMemoryTypeIndex(uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const;
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& Formats, VkImageTiling ImageTiling, VkFormatFeatureFlags FormatFeatureFlags);
+	VkFormat FindDepthFormat();
 
 	void WaitUntilIdle();
 

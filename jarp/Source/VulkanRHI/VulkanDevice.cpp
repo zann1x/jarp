@@ -204,6 +204,31 @@ uint32_t VulkanDevice::GetMemoryTypeIndex(const uint32_t MemoryTypeBits, const V
 	throw std::runtime_error("Failed to find suitable memory type for buffer!");
 }
 
+VkFormat VulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& Formats, VkImageTiling ImageTiling, VkFormatFeatureFlags FormatFeatureFlags)
+{
+	for (VkFormat Format : Formats)
+	{
+		VkFormatProperties FormatProperties;
+		vkGetPhysicalDeviceFormatProperties(PhysicalDevice, Format, &FormatProperties);
+
+		if (ImageTiling == VK_IMAGE_TILING_LINEAR && (FormatProperties.linearTilingFeatures & FormatFeatureFlags) == FormatFeatureFlags)
+			return Format;
+		else if (ImageTiling == VK_IMAGE_TILING_OPTIMAL && (FormatProperties.optimalTilingFeatures & FormatFeatureFlags) == FormatFeatureFlags)
+			return Format;
+	}
+
+	throw std::runtime_error("Failed to find a supported image format");
+}
+
+VkFormat VulkanDevice::FindDepthFormat()
+{
+	return FindSupportedFormat(
+		{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+	);
+}
+
 void VulkanDevice::WaitUntilIdle()
 {
 	VK_ASSERT(vkDeviceWaitIdle(LogicalDevice));

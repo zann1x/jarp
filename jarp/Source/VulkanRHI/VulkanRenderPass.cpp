@@ -4,6 +4,8 @@
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
 
+#include <array>
+
 VulkanRenderPass::VulkanRenderPass(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
 	: Device(OutDevice), Swapchain(OutSwapchain)
 {
@@ -15,19 +17,32 @@ VulkanRenderPass::~VulkanRenderPass()
 
 void VulkanRenderPass::CreateRenderPass()
 {
-	// Create render pass
-	VkAttachmentDescription AttachmentDescription = {};
-	AttachmentDescription.flags = 0;
-	AttachmentDescription.format = Swapchain.GetDetails().SurfaceFormat.format;
-	AttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-	AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	AttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	std::array<VkAttachmentDescription, 2> AttachmentDescriptions;
+	// Color attachment
+	AttachmentDescriptions[0] = {};
+	AttachmentDescriptions[0].flags = 0;
+	AttachmentDescriptions[0].format = Swapchain.GetDetails().SurfaceFormat.format;
+	AttachmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+	AttachmentDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	AttachmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	AttachmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	AttachmentDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AttachmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	AttachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	// Depth attachment
+	AttachmentDescriptions[1] = {};
+	AttachmentDescriptions[1].flags = 0;
+	AttachmentDescriptions[1].format = Device.FindDepthFormat();
+	AttachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+	AttachmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	AttachmentDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AttachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	AttachmentDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AttachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	AttachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentReference ColorAttachment = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+	VkAttachmentReference ColorAttachmentReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+	VkAttachmentReference DepthAttachmentReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
 	VkSubpassDescription SubpassDescription = {};
 	SubpassDescription.flags = 0;
@@ -35,9 +50,9 @@ void VulkanRenderPass::CreateRenderPass()
 	SubpassDescription.inputAttachmentCount = 0;
 	SubpassDescription.pInputAttachments = nullptr;
 	SubpassDescription.colorAttachmentCount = 1;
-	SubpassDescription.pColorAttachments = &ColorAttachment;
+	SubpassDescription.pColorAttachments = &ColorAttachmentReference;
 	SubpassDescription.pResolveAttachments = nullptr;
-	SubpassDescription.pDepthStencilAttachment = nullptr;
+	SubpassDescription.pDepthStencilAttachment = &DepthAttachmentReference;
 	SubpassDescription.preserveAttachmentCount = 0;
 	SubpassDescription.pPreserveAttachments = nullptr;
 
@@ -54,8 +69,8 @@ void VulkanRenderPass::CreateRenderPass()
 	RenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	RenderPassCreateInfo.pNext = nullptr;
 	RenderPassCreateInfo.flags = 0;
-	RenderPassCreateInfo.attachmentCount = 1;
-	RenderPassCreateInfo.pAttachments = &AttachmentDescription;
+	RenderPassCreateInfo.attachmentCount = static_cast<uint32_t>(AttachmentDescriptions.size());
+	RenderPassCreateInfo.pAttachments = AttachmentDescriptions.data();
 	RenderPassCreateInfo.subpassCount = 1;
 	RenderPassCreateInfo.pSubpasses = &SubpassDescription;
 	RenderPassCreateInfo.dependencyCount = 1;

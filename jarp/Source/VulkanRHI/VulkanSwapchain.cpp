@@ -1,6 +1,7 @@
 #include "VulkanSwapchain.h"
 
 #include "VulkanDevice.h"
+#include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
 
 #include "Source/CrossPlatformWindow.h"
@@ -141,27 +142,11 @@ void VulkanSwapchain::CreateSwapchain(uint32_t Width, uint32_t Height, bool bUse
 	vkGetSwapchainImagesKHR(Device.GetInstanceHandle(), Swapchain, &SwapchainImageCount, SwapchainImages.data());
 
 	// Create image views
-	SwapchainImageViews.resize(SwapchainImages.size());
-	for (size_t i = 0; i < SwapchainImageViews.size(); ++i)
+	SwapchainImageViews.reserve(SwapchainImages.size());
+	for (size_t i = 0; i < SwapchainImages.size(); ++i)
 	{
-		VkImageViewCreateInfo ImageViewCreateInfo;
-		ImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		ImageViewCreateInfo.pNext = nullptr;
-		ImageViewCreateInfo.flags = 0;
-		ImageViewCreateInfo.image = SwapchainImages[i];
-		ImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		ImageViewCreateInfo.format = SwapchainDetails.SurfaceFormat.format;
-		ImageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		ImageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		ImageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		ImageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		ImageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		ImageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-		ImageViewCreateInfo.subresourceRange.levelCount = 1;
-		ImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-		ImageViewCreateInfo.subresourceRange.layerCount = 1;
-
-		VK_ASSERT(vkCreateImageView(Device.GetInstanceHandle(), &ImageViewCreateInfo, nullptr, &SwapchainImageViews[i]));
+		SwapchainImageViews.push_back(VulkanImageView(Device));
+		SwapchainImageViews[i].CreateImageView(SwapchainImages[i], SwapchainDetails.SurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
@@ -169,9 +154,10 @@ void VulkanSwapchain::Destroy()
 {
 	if (!SwapchainImageViews.empty())
 	{
-		for (const auto& ImageView : SwapchainImageViews)
+		for (auto& ImageView : SwapchainImageViews)
 		{
-			vkDestroyImageView(Device.GetInstanceHandle(), ImageView, nullptr);
+			ImageView.Destroy();
+			//vkDestroyImageView(Device.GetInstanceHandle(), ImageView, nullptr);
 		}
 		SwapchainImageViews.clear();
 	}
