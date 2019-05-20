@@ -3,29 +3,48 @@
 
 layout(binding = 1) uniform sampler2D TextureSampler;
 
-layout(location = 0) in vec3 v_FragColor;
-layout(location = 1) in vec2 v_FragTextureCoordinate;
-layout(location = 2) in vec3 v_FragNormal;
-layout(location = 3) in vec3 v_FragView;
-layout(location = 4) in vec3 v_FragLight;
+layout(location = 0) in vec3 passColor;
+layout(location = 1) in vec2 passTextureCoordinate;
+layout(location = 2) in vec3 passSurfaceNormal;
+layout(location = 3) in vec3 passView;
+layout(location = 4) in vec3 passLight;
 
 layout(location = 0) out vec4 OutColor;
 
+vec3 ads()
+{
+	vec3 unitNormal = normalize(passSurfaceNormal);
+	vec3 unitLight = normalize(passLight);
+	vec3 unitView = normalize(passView);
+	//vec3 Reflect = reflect(-unitLight, unitNormal);
+	vec3 HalfwayLightView = normalize(-unitLight + unitView);
+
+	float AmbientReflectivity = 0.1;
+	float Shininess = 16.0;
+	float SpecularReflectivity = 1.35;
+	vec3 LightIntensity = vec3(0.9);
+
+	vec3 Ambient = AmbientReflectivity * passColor;
+
+	float dotNormalLight = dot(unitNormal, unitLight);
+	float Brightness = max(dotNormalLight, 0.2);
+	vec3 Diffuse = Brightness * passColor;
+	
+	//float SpecularFactor = dot(Reflect, unitView);
+	float SpecularFactor = dot(HalfwayLightView, unitNormal);
+	SpecularFactor = max(SpecularFactor, 0.0);
+	float DampedFactor = pow(SpecularFactor, Shininess);
+	vec3 Specular = DampedFactor * SpecularReflectivity * passColor;
+
+	return LightIntensity * (Ambient + Diffuse + Specular);
+}
+
 void main()
 {
-	vec3 Normal = normalize(v_FragNormal);
-	vec3 Light = normalize(v_FragLight);
-	vec3 View = normalize(v_FragView);
-	vec3 Reflect = reflect(-Light, Normal);
-	float Shininess = 16.0;
+	//OutColor = vec4(ads(), 1.0) * texture(TextureSampler, passTextureCoordinate);
+	OutColor = vec4(ads(), 1.0);
 
-	vec3 Ambient = v_FragColor * 0.1;
-	vec3 Diffuse = max(dot(Normal, Light), 0.0) * v_FragColor;
-	vec3 Specular = pow(max(dot(Reflect, View), 0.0f), Shininess) * vec3(1.35);
-
-	OutColor = texture(TextureSampler, v_FragTextureCoordinate) * vec4(Ambient + Diffuse + Specular, 1.0);
-
-	//float val = dot(Normal, View);
+	//float val = dot(unitNormal, unitView);
 	//OutColor = vec4(val, val, val, 1.0);
 
 	//OutColor = vec4(Normal, 1.0);

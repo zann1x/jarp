@@ -205,8 +205,8 @@ void StartVulkan()
 		pCommandBuffers[i]->CreateCommandBuffer();
 	}
 
-	pModel->Load(*pTransientCommandBuffer, "Content/dog.obj");
-	pTexture->Load(*pTransientCommandBuffer, "Content/dog_diffuse.jpg");
+	pModel->Load(*pTransientCommandBuffer, "Content/dragon.obj");
+	pTexture->Load(*pTransientCommandBuffer, "Content/texture.jpg");
 	pVertexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 	pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	pVertexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetVertices());
@@ -354,9 +354,10 @@ void UpdateMVP(uint32_t CurrentImage)
 	auto CurrentTime = std::chrono::high_resolution_clock::now();
 	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
 
-	UBO.Model = glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1f, 0.1f)), TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	UBO.View = glm::lookAt(glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	UBO.Projection = glm::perspective(glm::radians(60.0f), pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height), 0.1f, 100.0f);
+	UBO.Model = glm::rotate(glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f)), TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	UBO.Model = glm::translate(UBO.Model, glm::vec3(1.0f, 0.0f, 0.0f));
+	UBO.View = glm::lookAt(glm::vec3(2.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	UBO.Projection = glm::perspective(glm::radians(60.0f), pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height), 0.1f, 10.0f);
 	UBO.Projection[1][1] *= -1;
 	UBO.LightPosition = glm::vec3(5.0f, 3.0f, 1.0f);
 

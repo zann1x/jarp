@@ -90,8 +90,8 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 
 			Vertex.Position = {
 				Attrib.vertices[3 * Index.vertex_index + 0],
-				Attrib.vertices[3 * Index.vertex_index + 1],
-				Attrib.vertices[3 * Index.vertex_index + 2]
+				Attrib.vertices[3 * Index.vertex_index + 2],
+				Attrib.vertices[3 * Index.vertex_index + 1]
 			};
 
 			if (!Attrib.colors.empty())
@@ -106,6 +106,7 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 			{
 				Vertex.Color = glm::vec3(1.0f, 0.0f, 0.86f);
 			}
+			Vertex.Color = glm::vec3(1.0f);
 
 			if (!Attrib.texcoords.empty())
 			{
