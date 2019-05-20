@@ -18,6 +18,7 @@ private:
 	glm::vec3 Position;
 	glm::vec3 FrontVector;
 	glm::vec3 UpVector;
+	glm::vec3 RightVector;
 
 	float Pitch;
 	float Yaw;

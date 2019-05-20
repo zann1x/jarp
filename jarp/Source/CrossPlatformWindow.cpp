@@ -4,9 +4,11 @@
 #include <iostream>
 
 std::array<bool, 65536> CrossPlatformWindow::Keys = {};
+float CrossPlatformWindow::MouseOffsetX = 0.0f;
+float CrossPlatformWindow::MouseOffsetY = 0.0f;
 
 CrossPlatformWindow::CrossPlatformWindow()
-	: Width(800), Height(600)
+	: Width(800), Height(600), MouseX(Width / 2.0f), MouseY(Width / 2.0f)
 {
 	if (!glfwInit())
 		throw std::runtime_error("Could not initialize GLFW!");
@@ -24,8 +26,16 @@ void ErrorCallback(int error, const char* description)
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	//CrossPlatformWindow* CPW = (CrossPlatformWindow*)glfwGetWindowUserPointer(window);
 	CrossPlatformWindow::Keys[key] = (action != GLFW_RELEASE);
+}
+
+void MouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	CrossPlatformWindow* CPW = (CrossPlatformWindow*)glfwGetWindowUserPointer(window);
+	CPW->MouseOffsetX = static_cast<float>(xpos) - CPW->MouseX;
+	CPW->MouseOffsetY = static_cast<float>(ypos) - CPW->MouseY;
+	CPW->MouseX = static_cast<float>(xpos);
+	CPW->MouseY = static_cast<float>(ypos);
 }
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
@@ -56,6 +66,9 @@ void CrossPlatformWindow::StartGlfwWindow()
 	glfwSetWindowUserPointer(pWindow, this);
 	glfwSetErrorCallback(ErrorCallback);
 	glfwSetKeyCallback(pWindow, KeyCallback);
+	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPos(pWindow, MouseX, MouseY);
+	glfwSetCursorPosCallback(pWindow, MouseCallback);
 	glfwSetFramebufferSizeCallback(pWindow, FramebufferSizeCallback);
 	glfwSetWindowIconifyCallback(pWindow, WindowIconifyCallback);
 }

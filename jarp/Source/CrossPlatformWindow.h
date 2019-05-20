@@ -33,17 +33,23 @@ public:
 	void PollEvents();
 
 	inline static bool IsKeyPressed(int Key) { return Keys[Key]; }
+	inline static std::pair<float, float> GetMouseOffset() { return std::make_pair(MouseOffsetX, MouseOffsetY); }
 
 private:
 	int Width;
 	int Height;
 	static std::array<bool, 65536> Keys;
+	float MouseX;
+	float MouseY;
+	static float MouseOffsetX;
+	static float MouseOffsetY;
 
 	GLFWwindow* pWindow;
 	bool bIsFramebufferResized;
 	bool bIsWindowIconified;
 
 	friend static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	friend static void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 	friend static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 	friend static void WindowIconifyCallback(GLFWwindow* window, int iconified);
 };
