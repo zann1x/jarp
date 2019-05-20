@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
 
+std::array<bool, 65536> CrossPlatformWindow::Keys = {};
+
 CrossPlatformWindow::CrossPlatformWindow()
 	: Width(800), Height(600)
 {
@@ -18,6 +20,12 @@ CrossPlatformWindow::~CrossPlatformWindow()
 void ErrorCallback(int error, const char* description)
 {
 	std::cerr << "Error " << error << ": " << description << std::endl;
+}
+
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	//CrossPlatformWindow* CPW = (CrossPlatformWindow*)glfwGetWindowUserPointer(window);
+	CrossPlatformWindow::Keys[key] = (action != GLFW_RELEASE);
 }
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
@@ -47,6 +55,7 @@ void CrossPlatformWindow::StartGlfwWindow()
 
 	glfwSetWindowUserPointer(pWindow, this);
 	glfwSetErrorCallback(ErrorCallback);
+	glfwSetKeyCallback(pWindow, KeyCallback);
 	glfwSetFramebufferSizeCallback(pWindow, FramebufferSizeCallback);
 	glfwSetWindowIconifyCallback(pWindow, WindowIconifyCallback);
 }

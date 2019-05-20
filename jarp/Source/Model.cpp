@@ -90,8 +90,8 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 
 			Vertex.Position = {
 				Attrib.vertices[3 * Index.vertex_index + 0],
-				Attrib.vertices[3 * Index.vertex_index + 2],
-				Attrib.vertices[3 * Index.vertex_index + 1]
+				Attrib.vertices[3 * Index.vertex_index + 1],
+				Attrib.vertices[3 * Index.vertex_index + 2]
 			};
 
 			if (!Attrib.colors.empty())
@@ -120,8 +120,8 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 			{
 				Vertex.Normal = {
 					Attrib.normals[3 * Index.normal_index + 0],
-					Attrib.normals[3 * Index.normal_index + 2],
-					Attrib.normals[3 * Index.normal_index + 1]
+					Attrib.normals[3 * Index.normal_index + 1],
+					Attrib.normals[3 * Index.normal_index + 2]
 				};
 			}
 

@@ -16,6 +16,7 @@
 #include <string>
 #include <fstream>
 
+#include "Camera.h"
 #include "CrossPlatformWindow.h"
 #include "VulkanRHI/VulkanBuffer.h"
 #include "VulkanRHI/VulkanCommandBuffer.h"
@@ -74,6 +75,7 @@ struct
 
 VulkanInstance* pInstance;
 CrossPlatformWindow Window;
+Camera MyCamera;
 
 VulkanDevice* pLogicalDevice;
 VulkanSwapchain* pSwapchain;
@@ -157,6 +159,7 @@ void StartVulkan()
 	pLogicalDevice->CreateLogicalDevice();
 	pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
 	pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
+	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 
 	pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
 	pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
@@ -265,6 +268,7 @@ void RecreateSwapchain()
 	CleanupSwapchain();
 
 	pSwapchain->CreateSwapchain(FramebufferSize.first, FramebufferSize.second, Settings.VSync);
+	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 	
 	VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
 	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -354,12 +358,13 @@ void UpdateMVP(uint32_t CurrentImage)
 	auto CurrentTime = std::chrono::high_resolution_clock::now();
 	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
 
-	UBO.Model = glm::rotate(glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f)), TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	UBO.Model = glm::translate(UBO.Model, glm::vec3(1.0f, 0.0f, 0.0f));
-	UBO.View = glm::lookAt(glm::vec3(2.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	UBO.Projection = glm::perspective(glm::radians(60.0f), pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height), 0.1f, 10.0f);
-	UBO.Projection[1][1] *= -1;
-	UBO.LightPosition = glm::vec3(5.0f, 3.0f, 1.0f);
+	UBO.Model = glm::mat4();
+	UBO.Model = glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f));
+	UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, 0.0f, 0.0f));
+	UBO.View = MyCamera.GetViewMatrix();
+	UBO.Projection = MyCamera.GetProjectionMatrix();
+	UBO.LightPosition = glm::vec3(10.0f, 10.0f, 10.0f);
 
 	void* RawData;
 	vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData);
@@ -393,6 +398,13 @@ void DrawFrame()
 		}
 	}
 
+	static float DeltaTime = 0.0f;
+	static float LastFrame = glfwGetTime();
+	float CurrentFrame = glfwGetTime();
+	DeltaTime = CurrentFrame - LastFrame;
+	LastFrame = CurrentFrame;
+
+	MyCamera.Move(DeltaTime);
 	UpdateMVP(pSwapchain->GetActiveImageIndex());
 
 	// Submit commands to the queue

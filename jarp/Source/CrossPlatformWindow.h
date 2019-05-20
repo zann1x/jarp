@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
+#include <array>
 #include <utility>
 
 class CrossPlatformWindow
@@ -31,14 +32,18 @@ public:
 	bool ShouldClose();
 	void PollEvents();
 
+	inline static bool IsKeyPressed(int Key) { return Keys[Key]; }
+
 private:
 	int Width;
 	int Height;
+	static std::array<bool, 65536> Keys;
 
 	GLFWwindow* pWindow;
 	bool bIsFramebufferResized;
 	bool bIsWindowIconified;
 
+	friend static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	friend static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 	friend static void WindowIconifyCallback(GLFWwindow* window, int iconified);
 };
