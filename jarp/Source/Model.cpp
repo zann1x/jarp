@@ -2,14 +2,13 @@
 
 #include "VulkanRHI/VulkanCommandBuffer.h"
 #include "VulkanRHI/VulkanDevice.h"
-#include "VulkanRHI/VulkanShader.h"
 
 #include <tiny_obj_loader.h>
 #include <unordered_map>
 #include <vector>
 
-Model::Model(VulkanDevice& Device, VulkanShader& Shader)
-	: Device(Device), Shader(Shader)
+Model::Model(VulkanDevice& Device)
+	: Device(Device)
 {
 	//Vertices = {
 	//	{ { -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } }, // 0
@@ -106,7 +105,6 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 			{
 				Vertex.Color = glm::vec3(1.0f, 0.0f, 0.86f);
 			}
-			Vertex.Color = glm::vec3(1.0f);
 
 			if (!Attrib.texcoords.empty())
 			{

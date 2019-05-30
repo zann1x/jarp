@@ -166,19 +166,11 @@ void StartVulkan()
 	pDescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	pDescriptorSetLayout->CreateDescriptorSetLayout();
 
-	pShader = new VulkanShader(*pLogicalDevice);
-	pShader->AddDescriptorSetLayout(*pDescriptorSetLayout);
-	pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Phong.vert.spv");
-	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Phong.frag.spv");
-
 	pCommandPool = new VulkanCommandPool(*pLogicalDevice);
 	pCommandPool->CreateCommandPool();
 	pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
 	pTransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
 	pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
-
-	pModel = new Model(*pLogicalDevice, *pShader);
-	pTexture = new Texture(*pLogicalDevice);
 
 	pDepthImage = new VulkanImage(*pLogicalDevice);
 	pDepthImageView = new VulkanImageView(*pLogicalDevice);
@@ -187,10 +179,18 @@ void StartVulkan()
 	pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
+	pModel = new Model(*pLogicalDevice);
+	pTexture = new Texture(*pLogicalDevice);
+
 	pRenderPass = new VulkanRenderPass(*pLogicalDevice, *pSwapchain);
 	pRenderPass->CreateRenderPass();
+	pShader = new VulkanShader(*pLogicalDevice);
+	pShader->AddDescriptorSetLayout(*pDescriptorSetLayout);
+	pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Phong.vert.spv");
+	pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Phong.frag.spv");
 	pGraphicsPipeline = new VulkanGraphicsPipeline(*pLogicalDevice, *pRenderPass, *pShader);
 	pGraphicsPipeline->CreateGraphicsPipeline(pModel->GetPipelineVertexInputStateCreateInfo(), pSwapchain->GetDetails().Extent);
+
 	pFramebuffers.resize(pSwapchain->GetImages().size());
 	for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 	{
@@ -309,12 +309,12 @@ void ShutdownVulkan()
 	delete pDepthImageView;
 	delete pDepthImage;
 
+	pShader->Destroy();
+	delete pShader;
+
 	pTexture->Destroy();
 	delete pTexture;
 	delete pModel;
-
-	pShader->Destroy();
-	delete pShader;
 
 	pSignalSemaphore->Destroy();
 	delete pSignalSemaphore;
@@ -361,7 +361,7 @@ void UpdateMVP(uint32_t CurrentImage)
 	UBO.Model = glm::mat4();
 	UBO.Model = glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f));
 	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, 0.0f, -10.0f));
-	UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	UBO.View = MyCamera.GetViewMatrix();
 	UBO.Projection = MyCamera.GetProjectionMatrix();
 	UBO.LightPosition = glm::vec3(10.0f, 10.0f, 10.0f);
@@ -399,8 +399,8 @@ void DrawFrame()
 	}
 
 	static float DeltaTime = 0.0f;
-	static float LastFrame = glfwGetTime();
-	float CurrentFrame = glfwGetTime();
+	static float LastFrame = static_cast<float>(glfwGetTime());
+	float CurrentFrame = static_cast<float>(glfwGetTime());
 	DeltaTime = CurrentFrame - LastFrame;
 	LastFrame = CurrentFrame;
 

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
+#include <utility>
 
 Camera::Camera()
 	: Position(glm::vec3(0.0f, 0.0f, -3.0f)), FrontVector(glm::vec3(0.0f, 0.0f, 1.0f)), UpVector(glm::vec3(0.0f, -1.0f, 0.0f)), RightVector(glm::vec3()),
@@ -43,8 +44,8 @@ void Camera::Move(float DeltaSeconds)
 	MouseOffset.first *= Sensitivity;
 	MouseOffset.second *= Sensitivity;
 
-	Yaw += MouseOffset.first;
-	Pitch += MouseOffset.second;
+	Yaw += static_cast<float>(MouseOffset.first);
+	Pitch += static_cast<float>(MouseOffset.second);
 	Pitch = std::clamp<float>(Pitch, -89.0f, 89.0f);
 
 	FrontVector.x = -(cos(glm::radians(Pitch)) * cos(glm::radians(Yaw)));

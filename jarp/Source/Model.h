@@ -45,7 +45,7 @@ namespace std {
 class Model
 {
 public:
-	Model(VulkanDevice& Device, VulkanShader& Shader);
+	Model(VulkanDevice& Device);
 	~Model();
 
 	inline const VkPipelineVertexInputStateCreateInfo GetPipelineVertexInputStateCreateInfo() const { return PipelineVertexInputStateCreateInfo; };
@@ -58,7 +58,6 @@ public:
 
 private:
 	VulkanDevice& Device;
-	VulkanShader& Shader;
 
 	std::vector<SVertex> Vertices;
 	std::vector<uint32_t> Indices;

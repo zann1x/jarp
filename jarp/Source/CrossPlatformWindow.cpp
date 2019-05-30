@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
 
+#define WIDTH 800
+#define HEIGHT 600
 std::array<bool, 65536> CrossPlatformWindow::Keys = {};
 float CrossPlatformWindow::MouseOffsetX = 0.0f;
 float CrossPlatformWindow::MouseOffsetY = 0.0f;
@@ -66,10 +68,11 @@ void CrossPlatformWindow::StartGlfwWindow()
 	glfwSetWindowUserPointer(pWindow, this);
 	glfwSetErrorCallback(ErrorCallback);
 	glfwSetKeyCallback(pWindow, KeyCallback);
-	glfwSetCursorPos(pWindow, MouseX, MouseY);
 	glfwSetCursorPosCallback(pWindow, MouseCallback);
 	glfwSetFramebufferSizeCallback(pWindow, FramebufferSizeCallback);
 	glfwSetWindowIconifyCallback(pWindow, WindowIconifyCallback);
+
+	glfwSetCursorPos(pWindow, WIDTH / 2, HEIGHT / 2);
 
 	if (glfwRawMouseMotionSupported())
 		glfwSetInputMode(pWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
