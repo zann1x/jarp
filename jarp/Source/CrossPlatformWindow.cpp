@@ -66,11 +66,14 @@ void CrossPlatformWindow::StartGlfwWindow()
 	glfwSetWindowUserPointer(pWindow, this);
 	glfwSetErrorCallback(ErrorCallback);
 	glfwSetKeyCallback(pWindow, KeyCallback);
-	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPos(pWindow, MouseX, MouseY);
 	glfwSetCursorPosCallback(pWindow, MouseCallback);
 	glfwSetFramebufferSizeCallback(pWindow, FramebufferSizeCallback);
 	glfwSetWindowIconifyCallback(pWindow, WindowIconifyCallback);
+
+	if (glfwRawMouseMotionSupported())
+		glfwSetInputMode(pWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void CrossPlatformWindow::ShutdownGlfw()
