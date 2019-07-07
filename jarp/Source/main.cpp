@@ -149,7 +149,7 @@ void RecordCommandBuffers()
 
 void StartVulkan()
 {
-	pInstance = new VulkanInstance();
+	pInstance = new VulkanInstance(Window);
 	pInstance->CreateInstance();
 #if defined(_DEBUG)
 	VulkanDebug::SetupDebugCallback(pInstance->GetHandle());
@@ -261,7 +261,7 @@ void RecreateSwapchain()
 	do
 	{
 		FramebufferSize = Window.GetFramebufferSize();
-		glfwWaitEvents();
+		SDL_WaitEvent(nullptr);
 	} while (FramebufferSize.first == 0 || FramebufferSize.second == 0);
 
 	pLogicalDevice->WaitUntilIdle();
@@ -399,8 +399,8 @@ void DrawFrame()
 	}
 
 	static float DeltaTime = 0.0f;
-	static float LastFrame = static_cast<float>(glfwGetTime());
-	float CurrentFrame = static_cast<float>(glfwGetTime());
+	static float LastFrame = static_cast<float>(SDL_GetTicks());
+	float CurrentFrame = static_cast<float>(SDL_GetTicks());
 	DeltaTime = CurrentFrame - LastFrame;
 	LastFrame = CurrentFrame;
 
@@ -430,20 +430,20 @@ void MainLoop()
 {
 	while (!Window.ShouldClose())
 	{
-		Window.PollEvents();
+		Window.Update();
 		DrawFrame();
 	}
 }
 
 int main()
 {
-	Window.StartGlfwWindow();
+	Window.Create();
 	StartVulkan();
 
 	MainLoop();
 
 	ShutdownVulkan();
-	Window.ShutdownGlfw();
+	Window.Shutdown();
 
 	return 0;
 }

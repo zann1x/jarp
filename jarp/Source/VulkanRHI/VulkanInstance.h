@@ -3,10 +3,12 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+class CrossPlatformWindow;
+
 class VulkanInstance
 {
 public:
-	VulkanInstance();
+	VulkanInstance(CrossPlatformWindow& Window);
 	~VulkanInstance();
 
 	void CreateInstance();

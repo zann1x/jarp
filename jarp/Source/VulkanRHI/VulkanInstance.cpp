@@ -3,13 +3,11 @@
 #include "VulkanDebug.h"
 #include "VulkanUtils.hpp"
 
-#include <GLFW/glfw3.h>
+#include "../CrossPlatformWindow.h"
 
-VulkanInstance::VulkanInstance()
+VulkanInstance::VulkanInstance(CrossPlatformWindow& Window)
 {
-	uint32_t GlfwExtensionCount;
-	const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&GlfwExtensionCount);
-	InstanceExtensions = { GlfwExtensions, GlfwExtensions + GlfwExtensionCount };
+	InstanceExtensions = Window.GetInstanceExtensions();
 #if defined(_DEBUG)
 	InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif

@@ -1,107 +1,93 @@
 #include "CrossPlatformWindow.h"
 
-#include <vulkan/vulkan.h>
 #include <iostream>
 
 #define WIDTH 800
 #define HEIGHT 600
-std::array<bool, 65536> CrossPlatformWindow::Keys = {};
-float CrossPlatformWindow::MouseOffsetX = 0.0f;
-float CrossPlatformWindow::MouseOffsetY = 0.0f;
 
 CrossPlatformWindow::CrossPlatformWindow()
-	: Width(800), Height(600), MouseX(Width / 2.0f), MouseY(Width / 2.0f)
+	: Width(800), Height(600), bShouldClose(false)
 {
-	if (!glfwInit())
-		throw std::runtime_error("Could not initialize GLFW!");
+	SDL_SetMainReady();
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	{
+		SDL_Log("Could not initialize SDL: %s", SDL_GetError());
+		throw std::runtime_error("Could not initialize SDL!");
+	}
 }
 
 CrossPlatformWindow::~CrossPlatformWindow()
 {
-	glfwTerminate();
+	SDL_Quit();
 }
 
-void ErrorCallback(int error, const char* description)
+void CrossPlatformWindow::Create()
 {
-	std::cerr << "Error " << error << ": " << description << std::endl;
+	pWindow = SDL_CreateWindow("jarp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_VULKAN);
+	pRenderer = SDL_CreateRenderer(pWindow, -1, 0);
+
+	//SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
 }
 
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void CrossPlatformWindow::Shutdown()
 {
-	CrossPlatformWindow::Keys[key] = (action != GLFW_RELEASE);
-}
-
-void MouseCallback(GLFWwindow* window, double xpos, double ypos)
-{
-	CrossPlatformWindow* CPW = (CrossPlatformWindow*)glfwGetWindowUserPointer(window);
-	CPW->MouseOffsetX = static_cast<float>(xpos) - CPW->MouseX;
-	CPW->MouseOffsetY = static_cast<float>(ypos) - CPW->MouseY;
-	CPW->MouseX = static_cast<float>(xpos);
-	CPW->MouseY = static_cast<float>(ypos);
-}
-
-void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
-{
-	CrossPlatformWindow* CPW = (CrossPlatformWindow*)glfwGetWindowUserPointer(window);
-	CPW->bIsFramebufferResized = true;
-}
-
-void WindowIconifyCallback(GLFWwindow* window, int iconified)
-{
-	CrossPlatformWindow* CPW = (CrossPlatformWindow*)glfwGetWindowUserPointer(window);
-	if (iconified)
-	{
-		CPW->bIsWindowIconified = true;
-	}
-	else
-	{
-		CPW->bIsWindowIconified = false;
-	}
-}
-
-void CrossPlatformWindow::StartGlfwWindow()
-{
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	pWindow = glfwCreateWindow(Width, Height, "jarp", nullptr, nullptr);
-
-	glfwSetWindowUserPointer(pWindow, this);
-	glfwSetErrorCallback(ErrorCallback);
-	glfwSetKeyCallback(pWindow, KeyCallback);
-	glfwSetCursorPosCallback(pWindow, MouseCallback);
-	glfwSetFramebufferSizeCallback(pWindow, FramebufferSizeCallback);
-	glfwSetWindowIconifyCallback(pWindow, WindowIconifyCallback);
-
-	glfwSetCursorPos(pWindow, WIDTH / 2, HEIGHT / 2);
-
-	if (glfwRawMouseMotionSupported())
-		glfwSetInputMode(pWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-}
-
-void CrossPlatformWindow::ShutdownGlfw()
-{
-	glfwDestroyWindow(pWindow);
+	SDL_DestroyWindow(pWindow);
+	SDL_DestroyRenderer(pRenderer);
 }
 
 VkResult CrossPlatformWindow::CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const
 {
-	return glfwCreateWindowSurface(Instance, pWindow, nullptr, SurfaceKHR);
+	if (!SDL_Vulkan_CreateSurface(pWindow, Instance, SurfaceKHR))
+		return VK_ERROR_INITIALIZATION_FAILED;
+	
+	return VK_SUCCESS;
 }
 
 std::pair<int, int> CrossPlatformWindow::GetFramebufferSize()
 {
 	int Width, Height;
-	glfwGetFramebufferSize(pWindow, &Width, &Height);
+	SDL_Vulkan_GetDrawableSize(pWindow, &Width, &Height);
 	return std::make_pair(Width, Height);
+}
+
+std::vector<const char*> CrossPlatformWindow::GetInstanceExtensions()
+{
+	unsigned int Count;
+	SDL_Vulkan_GetInstanceExtensions(pWindow, &Count, nullptr);
+
+	std::vector<const char*> Extensions = { };
+	size_t AdditionalExtensionCount = Extensions.size();
+	Extensions.resize(AdditionalExtensionCount + Count);
+	SDL_Vulkan_GetInstanceExtensions(pWindow, &Count, Extensions.data() + AdditionalExtensionCount);
+
+	return Extensions;
 }
 
 bool CrossPlatformWindow::ShouldClose()
 {
-	return glfwWindowShouldClose(pWindow);
+	return bShouldClose;
 }
 
-void CrossPlatformWindow::PollEvents()
+void CrossPlatformWindow::Update()
 {
-	glfwPollEvents();
+	SDL_Event Event;
+	SDL_PollEvent(&Event);
+	switch (Event.type)
+	{
+	case SDL_QUIT:
+		bShouldClose = true;
+		break;
+	case SDL_WINDOWEVENT_MINIMIZED:
+		bIsWindowMinimized = true;
+		break;
+	case SDL_WINDOWEVENT_RESTORED:
+		bIsWindowMinimized = false;
+		break;
+	case SDL_WINDOWEVENT_RESIZED:
+		bIsFramebufferResized = true;
+		break;
+	}
+
+	//SDL_RenderClear(pRenderer);
+	//SDL_RenderPresent(pRenderer);
 }
