@@ -21,40 +21,40 @@ Camera::~Camera()
 
 void Camera::Move(float DeltaSeconds)
 {
-	float CameraSpeed = 2.5f * DeltaSeconds;
-	if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_W))
-	{
-		Position += CameraSpeed * FrontVector;
-	}
-	if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_S))
-	{
-		Position -= CameraSpeed * FrontVector;
-	}
-	if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_A))
-	{
-		Position -= RightVector * CameraSpeed;
-	}
-	if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_D))
-	{
-		Position += RightVector * CameraSpeed;
-	}
+	//float CameraSpeed = 2.5f * DeltaSeconds;
+	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_W))
+	//{
+	//	Position += CameraSpeed * FrontVector;
+	//}
+	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_S))
+	//{
+	//	Position -= CameraSpeed * FrontVector;
+	//}
+	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_A))
+	//{
+	//	Position -= RightVector * CameraSpeed;
+	//}
+	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_D))
+	//{
+	//	Position += RightVector * CameraSpeed;
+	//}
 
-	float Sensitivity = 0.02f;
-	auto MouseOffset = CrossPlatformWindow::GetMouseOffset();
-	MouseOffset.first *= Sensitivity;
-	MouseOffset.second *= Sensitivity;
+	//float Sensitivity = 0.02f;
+	//auto MouseOffset = CrossPlatformWindow::GetMouseOffset();
+	//MouseOffset.first *= Sensitivity;
+	//MouseOffset.second *= Sensitivity;
 
-	Yaw += static_cast<float>(MouseOffset.first);
-	Pitch += static_cast<float>(MouseOffset.second);
-	Pitch = std::clamp<float>(Pitch, -89.0f, 89.0f);
+	//Yaw += static_cast<float>(MouseOffset.first);
+	//Pitch += static_cast<float>(MouseOffset.second);
+	//Pitch = std::clamp<float>(Pitch, -89.0f, 89.0f);
 
-	FrontVector.x = -(cos(glm::radians(Pitch)) * cos(glm::radians(Yaw)));
-	FrontVector.y = -sin(glm::radians(Pitch));
-	FrontVector.z = cos(glm::radians(Pitch)) * sin(glm::radians(Yaw));
-	FrontVector = glm::normalize(FrontVector);
+	//FrontVector.x = -(cos(glm::radians(Pitch)) * cos(glm::radians(Yaw)));
+	//FrontVector.y = -sin(glm::radians(Pitch));
+	//FrontVector.z = cos(glm::radians(Pitch)) * sin(glm::radians(Yaw));
+	//FrontVector = glm::normalize(FrontVector);
 
-	RightVector = glm::normalize(glm::cross(FrontVector, glm::vec3(0.0f, -1.0f, 0.0f)));
-	UpVector = glm::normalize(glm::cross(RightVector, FrontVector));
+	//RightVector = glm::normalize(glm::cross(FrontVector, glm::vec3(0.0f, -1.0f, 0.0f)));
+	//UpVector = glm::normalize(glm::cross(RightVector, FrontVector));
 }
 
 glm::mat4 Camera::GetViewMatrix()

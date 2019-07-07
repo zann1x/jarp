@@ -360,8 +360,8 @@ void UpdateMVP(uint32_t CurrentImage)
 
 	UBO.Model = glm::mat4();
 	UBO.Model = glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f));
-	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, 0.0f, -10.0f));
-	//UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, -5.0f, 0.0f));
+	UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	UBO.View = MyCamera.GetViewMatrix();
 	UBO.Projection = MyCamera.GetProjectionMatrix();
 	UBO.LightPosition = glm::vec3(10.0f, 10.0f, 10.0f);
