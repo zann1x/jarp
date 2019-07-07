@@ -26,6 +26,8 @@ void CrossPlatformWindow::Create()
 	pWindow = SDL_CreateWindow("jarp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_VULKAN);
 	pRenderer = SDL_CreateRenderer(pWindow, -1, 0);
 
+	SDL_SetWindowResizable(pWindow, SDL_TRUE);
+
 	//SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
 }
 
@@ -71,21 +73,25 @@ bool CrossPlatformWindow::ShouldClose()
 void CrossPlatformWindow::Update()
 {
 	SDL_Event Event;
-	SDL_PollEvent(&Event);
-	switch (Event.type)
+	while (SDL_PollEvent(&Event))
 	{
-	case SDL_QUIT:
-		bShouldClose = true;
-		break;
-	case SDL_WINDOWEVENT_MINIMIZED:
-		bIsWindowMinimized = true;
-		break;
-	case SDL_WINDOWEVENT_RESTORED:
-		bIsWindowMinimized = false;
-		break;
-	case SDL_WINDOWEVENT_RESIZED:
-		bIsFramebufferResized = true;
-		break;
+		switch (Event.type)
+		{
+		case SDL_QUIT:
+			bShouldClose = true;
+			break;
+		case SDL_WINDOWEVENT_MINIMIZED:
+			bIsWindowMinimized = true;
+			break;
+		case SDL_WINDOWEVENT_RESTORED:
+			bIsWindowMinimized = false;
+			break;
+		case SDL_WINDOWEVENT_RESIZED:
+			bIsFramebufferResized = true;
+			break;
+		}
+
+		InputHandler.HandleInput(Event);
 	}
 
 	//SDL_RenderClear(pRenderer);

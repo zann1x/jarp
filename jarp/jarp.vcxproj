@@ -172,7 +172,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Input\InputHandler.cpp" />
     <ClCompile Include="Source\Camera.cpp" />
+    <ClCompile Include="Source\Input\Command.cpp" />
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Texture.cpp" />
     <ClCompile Include="Source\Vendor\stbi_image.cpp" />
@@ -205,7 +207,9 @@
     <None Include="Shaders\Shader.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Input\InputHandler.h" />
     <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\Input\Command.h" />
     <ClInclude Include="Source\Model.h" />
     <ClInclude Include="Source\Texture.h" />
     <ClInclude Include="Source\Utils.hpp" />

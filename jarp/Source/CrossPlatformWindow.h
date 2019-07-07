@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "Input/InputHandler.h"
+
 class CrossPlatformWindow
 {
 public:
@@ -46,4 +48,6 @@ private:
 	bool bIsFramebufferResized;
 	bool bIsWindowMinimized;
 	bool bShouldClose;
+
+	InputHandler InputHandler;
 };
