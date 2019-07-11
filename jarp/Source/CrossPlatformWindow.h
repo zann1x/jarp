@@ -4,8 +4,8 @@
 #include <vulkan/vulkan.h>
 
 #define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_vulkan.h"
 
 #include <array>
 #include <utility>
@@ -37,7 +37,7 @@ public:
 	void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
 
 	bool ShouldClose();
-	void Update();
+	void Update(float DeltaTime);
 
 private:
 	int Width;

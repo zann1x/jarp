@@ -9,7 +9,7 @@ CrossPlatformWindow::CrossPlatformWindow()
 	: Width(800), Height(600), bShouldClose(false)
 {
 	SDL_SetMainReady();
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
 	{
 		SDL_Log("Could not initialize SDL: %s", SDL_GetError());
 		throw std::runtime_error("Could not initialize SDL!");
@@ -24,7 +24,18 @@ CrossPlatformWindow::~CrossPlatformWindow()
 void CrossPlatformWindow::Create()
 {
 	pWindow = SDL_CreateWindow("jarp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_VULKAN);
+	if (!pWindow)
+	{
+		SDL_Log("Could not create a SDL renderer: %s", SDL_GetError());
+		throw std::runtime_error("Could not create a SDL renderer!");
+	}
+
 	pRenderer = SDL_CreateRenderer(pWindow, -1, 0);
+	if (!pRenderer)
+	{
+		SDL_Log("Could not create a SDL renderer: %s", SDL_GetError());
+		throw std::runtime_error("Could not create a SDL renderer!");
+	}
 
 	SDL_SetWindowResizable(pWindow, SDL_TRUE);
 
@@ -70,7 +81,7 @@ bool CrossPlatformWindow::ShouldClose()
 	return bShouldClose;
 }
 
-void CrossPlatformWindow::Update()
+void CrossPlatformWindow::Update(float DeltaTime)
 {
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))

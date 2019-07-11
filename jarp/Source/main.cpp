@@ -358,6 +358,8 @@ void UpdateMVP(uint32_t CurrentImage)
 	auto CurrentTime = std::chrono::high_resolution_clock::now();
 	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
 
+	CONSOLE_LOG("Time passed (update mvp): " << TimePassed);
+
 	UBO.Model = glm::mat4();
 	UBO.Model = glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f));
 	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, -5.0f, 0.0f));
@@ -378,7 +380,7 @@ void UpdateMVP(uint32_t CurrentImage)
  *  - SwapchainKHR
  *  - CommandBuffer
  */
-void DrawFrame()
+void DrawFrame(float DeltaTime)
 {
 	// Don't try to draw to a minimized window
 	if (Window.IsIconified())
@@ -397,12 +399,6 @@ void DrawFrame()
 			VK_ASSERT(Result);
 		}
 	}
-
-	static float DeltaTime = 0.0f;
-	static float LastFrame = static_cast<float>(SDL_GetTicks());
-	float CurrentFrame = static_cast<float>(SDL_GetTicks());
-	DeltaTime = CurrentFrame - LastFrame;
-	LastFrame = CurrentFrame;
 
 	MyCamera.Move(DeltaTime);
 	UpdateMVP(pSwapchain->GetActiveImageIndex());
@@ -428,10 +424,19 @@ void DrawFrame()
 
 void MainLoop()
 {
+	float DeltaTime = 0.0f;
+	float LastFrame = static_cast<float>(SDL_GetTicks());
+
 	while (!Window.ShouldClose())
-	{
-		Window.Update();
-		DrawFrame();
+	{	
+		float CurrentFrame = static_cast<float>(SDL_GetTicks());
+		DeltaTime = CurrentFrame - LastFrame;
+		LastFrame = CurrentFrame;
+
+		CONSOLE_LOG("Time passed (main loop): " << DeltaTime);
+
+		Window.Update(DeltaTime);
+		DrawFrame(DeltaTime);
 	}
 }
 
