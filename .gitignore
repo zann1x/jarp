@@ -265,3 +265,6 @@ __pycache__/
 
 # Exclude own content files
 ![Cc]ontent/
+
+# SPIR-V files
+jarp/[Ss]haders/*.spv

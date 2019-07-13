@@ -59,7 +59,7 @@ void VulkanRenderPass::CreateRenderPass()
 	VkSubpassDependency SubpassDependency = {};
 	SubpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	SubpassDependency.dstSubpass = 0; // Refers to our one and only subpass
-	SubpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	SubpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Needs to be pWaitDstStageMask in the WSI semaphore
 	SubpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	SubpassDependency.srcAccessMask = 0;
 	SubpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;

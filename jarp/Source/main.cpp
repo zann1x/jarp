@@ -230,7 +230,7 @@ void StartVulkan()
 	pRenderingFinishedSemaphores.resize(MaxFramesInFlight);
 	pImageAvailableSemaphores.resize(MaxFramesInFlight);
 	pFencesInFlight.resize(MaxFramesInFlight);
-	for (int i = 0; i < MaxFramesInFlight; ++i)
+	for (uint32_t i = 0; i < MaxFramesInFlight; ++i)
 	{
 		pRenderingFinishedSemaphores[i] = new VulkanSemaphore(*pLogicalDevice);
 		pRenderingFinishedSemaphores[i]->CreateSemaphore();
@@ -324,7 +324,7 @@ void ShutdownVulkan()
 	delete pTexture;
 	delete pModel;
 
-	for (int i = 0; i < MaxFramesInFlight; ++i)
+	for (uint32_t i = 0; i < MaxFramesInFlight; ++i)
 	{
 		pFencesInFlight[i]->Destroy();
 		delete pFencesInFlight[i];
