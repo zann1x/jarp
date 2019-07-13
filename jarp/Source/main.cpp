@@ -90,7 +90,7 @@ std::vector<VulkanCommandBuffer*> pCommandBuffers;
 VulkanCommandPool* pTransientCommandPool;
 VulkanCommandBuffer* pTransientCommandBuffer;
 
-int MaxFramesInFlight;
+uint32_t MaxFramesInFlight;
 std::vector<VulkanSemaphore*> pRenderingFinishedSemaphores;
 std::vector<VulkanSemaphore*> pImageAvailableSemaphores;
 std::vector<VulkanFence*> pFencesInFlight;
@@ -115,7 +115,7 @@ void RecordCommandBuffers()
 		VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
 
 		std::array<VkClearValue, 2> ClearValues = {};
-		ClearValues[0] = { 0.2f, 0.3f, 0.8f, 1.0f };
+		ClearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
 		ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
 
 		VkRenderPassBeginInfo RenderPassBeginInfo = {};
@@ -156,7 +156,7 @@ void StartVulkan()
 	pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
 	pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
 	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
-	MaxFramesInFlight = pSwapchain->GetImageViews().size();
+	MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
 	pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
 	pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
@@ -276,7 +276,7 @@ void RecreateSwapchain()
 
 	pSwapchain->CreateSwapchain(FramebufferSize.first, FramebufferSize.second, Settings.VSync);
 	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
-	MaxFramesInFlight = pSwapchain->GetImageViews().size();
+	MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 	
 	VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
 	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);

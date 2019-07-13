@@ -15,7 +15,7 @@ Depends on:
 class VulkanFramebuffer
 {
 public:
-	VulkanFramebuffer(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass);
+	VulkanFramebuffer(VulkanDevice& Device, VulkanRenderPass& RenderPass);
 	~VulkanFramebuffer();
 
 	void CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent);

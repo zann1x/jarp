@@ -4,8 +4,8 @@
 #include "VulkanRenderPass.h"
 #include "VulkanUtils.hpp"
 
-VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass)
-	: Device(OutDevice), RenderPass(OutRenderPass)
+VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& Device, VulkanRenderPass& RenderPass)
+	: Device(Device), RenderPass(RenderPass)
 {
 }
 

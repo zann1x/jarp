@@ -19,6 +19,9 @@ void VulkanShader::CreateShaderModule(const VkShaderStageFlagBits ShaderStage, c
 {
 	auto ShaderCode = Utils::ReadFile(Filename);
 
+	if (ShaderCode.size() % 4 != 0)
+		throw std::runtime_error("SPIR-V shader code must be a multiple of 4!");
+
 	VkShaderModuleCreateInfo ShaderModuleCreateInfo = {};
 	ShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	ShaderModuleCreateInfo.pNext = nullptr;
