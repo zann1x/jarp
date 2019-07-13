@@ -9,4 +9,4 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 - stb
 - tinyobjloader
 
-![image](Screenshots/Application.png)
+![image](Screenshots/Application.PNG)
