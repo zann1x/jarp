@@ -7,7 +7,7 @@
 #include <utility>
 
 Camera::Camera()
-	: Position(glm::vec3(0.0f, 0.0f, -3.0f)), FrontVector(glm::vec3(0.0f, 0.0f, 1.0f)), UpVector(glm::vec3(0.0f, -1.0f, 0.0f)), RightVector(glm::vec3()),
+	: Position(glm::vec3(0.0f, 0.0f, -3.0f)), FrontVector(glm::vec3(0.0f, 0.0f, 1.0f)), UpVector(glm::vec3(0.0f, 1.0f, 0.0f)), RightVector(glm::vec3()),
 		Yaw(0.0f), Pitch(0.0f),
 		FieldOfView(glm::radians(60.0f)), AspectRatio(16.0f / 9.0f),
 		NearPlane(0.1f), FarPlane(100.0f)

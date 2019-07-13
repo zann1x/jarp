@@ -47,7 +47,7 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline(const VkPipelineVertexInputS
 	PipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	PipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	PipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	PipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	PipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	PipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 	PipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
 	PipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
@@ -90,9 +90,9 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline(const VkPipelineVertexInputS
 
 	VkViewport Viewport = {};
 	Viewport.x = 0.0f;
-	Viewport.y = 0.0f;
+	Viewport.y = static_cast<float>(SwapchainExtent.height);
 	Viewport.width = static_cast<float>(SwapchainExtent.width);
-	Viewport.height = static_cast<float>(SwapchainExtent.height);
+	Viewport.height = -static_cast<float>(SwapchainExtent.height);
 	Viewport.minDepth = 0.0f;
 	Viewport.maxDepth = 1.0f;
 
