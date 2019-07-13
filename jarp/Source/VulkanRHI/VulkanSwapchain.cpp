@@ -204,18 +204,3 @@ VkResult VulkanSwapchain::AcquireNextImage(const VkSemaphore WaitSemaphore)
 {
 	return vkAcquireNextImageKHR(Device.GetInstanceHandle(), Swapchain, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ActiveImageIndex);
 }
-
-VkResult VulkanSwapchain::QueuePresent(const VkQueue PresentQueue, const std::vector<VkSemaphore> WaitSemaphores)
-{
-	VkPresentInfoKHR PresentInfoKHR = {};
-	PresentInfoKHR.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	PresentInfoKHR.pNext = nullptr;
-	PresentInfoKHR.waitSemaphoreCount = WaitSemaphores.size();
-	PresentInfoKHR.pWaitSemaphores = WaitSemaphores.data();
-	PresentInfoKHR.swapchainCount = 1;
-	PresentInfoKHR.pSwapchains = &Swapchain;
-	PresentInfoKHR.pImageIndices = &ActiveImageIndex;
-	PresentInfoKHR.pResults = nullptr;
-
-	return vkQueuePresentKHR(PresentQueue, &PresentInfoKHR);
-}

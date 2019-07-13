@@ -46,7 +46,6 @@ public:
 	static SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice Device, VkSurfaceKHR SurfaceKHR);
 
 	VkResult AcquireNextImage(const VkSemaphore WaitSemaphore);
-	VkResult QueuePresent(const VkQueue PresentQueue, const std::vector<VkSemaphore> WaitSemaphores);
 
 private:
 	VkInstance Instance;
