@@ -100,50 +100,47 @@ std::vector<VulkanFence*> pFencesInFlight;
  *  - RenderPass
  *  - SwapchainKHR
  */
-void RecordCommandBuffers()
+void RecordCommandBuffer()
 {
-	for (size_t i = 0; i < pCommandBuffers.size(); ++i)
-	{
-		const VkCommandBuffer& CommandBuffer = pCommandBuffers[i]->GetHandle();
+	const VkCommandBuffer& CommandBuffer = pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle();
 
-		VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
-		CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		CommandBufferBeginInfo.pNext = nullptr;
-		CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-		CommandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
+	VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
+	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	CommandBufferBeginInfo.pNext = nullptr;
+	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	CommandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
 
-		VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
+	VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
 
-		std::array<VkClearValue, 2> ClearValues = {};
-		ClearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
-		ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
+	std::array<VkClearValue, 2> ClearValues = {};
+	ClearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
+	ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
 
-		VkRenderPassBeginInfo RenderPassBeginInfo = {};
-		RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		RenderPassBeginInfo.pNext = nullptr;
-		RenderPassBeginInfo.renderPass = pRenderPass->GetHandle();
-		RenderPassBeginInfo.framebuffer = pFramebuffers[i]->GetHandle();
-		RenderPassBeginInfo.renderArea.extent = pSwapchain->GetDetails().Extent;
-		RenderPassBeginInfo.renderArea.offset = { 0, 0 };
-		RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
-		RenderPassBeginInfo.pClearValues = ClearValues.data();
+	VkRenderPassBeginInfo RenderPassBeginInfo = {};
+	RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	RenderPassBeginInfo.pNext = nullptr;
+	RenderPassBeginInfo.renderPass = pRenderPass->GetHandle();
+	RenderPassBeginInfo.framebuffer = pFramebuffers[pSwapchain->GetActiveImageIndex()]->GetHandle();
+	RenderPassBeginInfo.renderArea.extent = pSwapchain->GetDetails().Extent;
+	RenderPassBeginInfo.renderArea.offset = { 0, 0 };
+	RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
+	RenderPassBeginInfo.pClearValues = ClearValues.data();
 
-		vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
+	vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
 
-		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
+	vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
 
-		VkBuffer VertexBuffers[] = { pVertexBuffer->GetHandle() };
-		VkDeviceSize Offsets[] = { 0 };
-		vkCmdBindVertexBuffers(CommandBuffer, 0, 1, VertexBuffers, Offsets);
-		vkCmdBindIndexBuffer(CommandBuffer, pIndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetLayoutHandle(), 0, 1, &pDescriptorSet->At(i), 0, nullptr);
+	VkBuffer VertexBuffers[] = { pVertexBuffer->GetHandle() };
+	VkDeviceSize Offsets[] = { 0 };
+	vkCmdBindVertexBuffers(CommandBuffer, 0, 1, VertexBuffers, Offsets);
+	vkCmdBindIndexBuffer(CommandBuffer, pIndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetLayoutHandle(), 0, 1, &pDescriptorSet->At(pSwapchain->GetActiveImageIndex()), 0, nullptr);
 
-		vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(pModel->GetIndices().size()), 1, 0, 0, 0);
+	vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(pModel->GetIndices().size()), 1, 0, 0, 0);
 		
-		vkCmdEndRenderPass(CommandBuffer);
+	vkCmdEndRenderPass(CommandBuffer);
 
-		VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
-	}
+	VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
 }
 
 void StartVulkan()
@@ -241,8 +238,6 @@ void StartVulkan()
 		pFencesInFlight[i] = new VulkanFence(*pLogicalDevice);
 		pFencesInFlight[i]->CreateFence();
 	}
-
-	RecordCommandBuffers();
 }
 
 void CleanupSwapchain()
@@ -297,8 +292,6 @@ void RecreateSwapchain()
 	{
 		pCommandBuffers[i]->CreateCommandBuffer();
 	}
-
-	RecordCommandBuffers();
 }
 
 void ShutdownVulkan()
@@ -410,6 +403,9 @@ void DrawFrame(uint32_t DeltaTime)
 			VK_ASSERT(Result);
 		}
 	}
+
+	vkResetCommandPool(pLogicalDevice->GetInstanceHandle(), pCommandPool->GetHandle(), 0);
+	RecordCommandBuffer();
 
 	MyCamera.Move(DeltaTime);
 	UpdateMVP(pSwapchain->GetActiveImageIndex());
