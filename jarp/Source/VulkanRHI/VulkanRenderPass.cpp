@@ -27,7 +27,7 @@ void VulkanRenderPass::CreateRenderPass()
 	AttachmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	AttachmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	AttachmentDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	AttachmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	AttachmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // The image will automatically be transitioned from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL for rendering, then out to PRESENT_SRC_KHR at the end.
 	AttachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	// Depth attachment
 	AttachmentDescriptions[1] = {};
@@ -64,6 +64,14 @@ void VulkanRenderPass::CreateRenderPass()
 	SubpassDependency.srcAccessMask = 0;
 	SubpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	SubpassDependency.dependencyFlags = 0;
+
+	/*
+	Normally, we would need an external dependency at the end as well since we are changing layout in finalLayout,
+	but since we are signalling a semaphore, we can rely on Vulkan's default behavior,
+	which injects an external dependency here with
+		dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+		dstAccessMask = 0
+	*/
 
 	VkRenderPassCreateInfo RenderPassCreateInfo = {};
 	RenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

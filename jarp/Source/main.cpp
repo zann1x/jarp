@@ -1,31 +1,32 @@
-// Define NOMINMAX to prevent the min and max function of the windows.h header to be defined
-#define NOMINMAX
-
 #include <vulkan/vulkan.h>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <set>
 #include <algorithm>
-#include <limits>
 #include <chrono>
+#include <limits>
+
+#include <set>
+#include <vector>
 
 #include <string>
 #include <fstream>
 
 #include "Camera.h"
 #include "CrossPlatformWindow.h"
+#include "Utils.hpp"
+
+#include "VulkanRHI/Model.h"
+#include "VulkanRHI/Texture.h"
 #include "VulkanRHI/VulkanBuffer.h"
 #include "VulkanRHI/VulkanCommandBuffer.h"
 #include "VulkanRHI/VulkanCommandPool.h"
-#include "VulkanRHI/VulkanDebug.h"
 #include "VulkanRHI/VulkanDescriptorPool.h"
 #include "VulkanRHI/VulkanDescriptorSet.h"
 #include "VulkanRHI/VulkanDescriptorSetLayout.h"
 #include "VulkanRHI/VulkanDevice.h"
+#include "VulkanRHI/VulkanFence.h"
 #include "VulkanRHI/VulkanFramebuffer.h"
 #include "VulkanRHI/VulkanGraphicsPipeline.h"
 #include "VulkanRHI/VulkanInstance.h"
@@ -37,10 +38,6 @@
 #include "VulkanRHI/VulkanShader.h"
 #include "VulkanRHI/VulkanSwapchain.h"
 #include "VulkanRHI/VulkanUtils.hpp"
-
-#include "Model.h"
-#include "Texture.h"
-#include "Utils.hpp"
 
 ///////////////// VULKAN APPLICATION /////////////////
 
@@ -70,7 +67,7 @@ std::vector<VulkanBuffer*> UniformBuffers;
 
 struct
 {
-	bool VSync = true;
+	bool VSync = false;
 } Settings;
 
 VulkanInstance* pInstance;
@@ -93,8 +90,10 @@ std::vector<VulkanCommandBuffer*> pCommandBuffers;
 VulkanCommandPool* pTransientCommandPool;
 VulkanCommandBuffer* pTransientCommandBuffer;
 
-VulkanSemaphore* pSignalSemaphore;
-VulkanSemaphore* pWaitSemaphore;
+int MaxFramesInFlight;
+std::vector<VulkanSemaphore*> pRenderingFinishedSemaphores;
+std::vector<VulkanSemaphore*> pImageAvailableSemaphores;
+std::vector<VulkanFence*> pFencesInFlight;
 
 /* Depends on:
  *	- CommandBuffer
@@ -129,7 +128,7 @@ void RecordCommandBuffers()
 		RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
 		RenderPassBeginInfo.pClearValues = ClearValues.data();
 
-		vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // Only primary command buffers, so inline subpass suffices
+		vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
 
 		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
 
@@ -149,17 +148,15 @@ void RecordCommandBuffers()
 
 void StartVulkan()
 {
-	pInstance = new VulkanInstance(Window);
-	pInstance->CreateInstance();
-#if defined(_DEBUG)
-	VulkanDebug::SetupDebugCallback(pInstance->GetHandle());
-#endif
+	pInstance = new VulkanInstance();
+	pInstance->CreateInstance(Window);
 
 	pLogicalDevice = new VulkanDevice(*pInstance);
 	pLogicalDevice->CreateLogicalDevice();
 	pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
 	pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
 	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
+	MaxFramesInFlight = pSwapchain->GetImageViews().size();
 
 	pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
 	pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
@@ -230,10 +227,20 @@ void StartVulkan()
 	pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
 	pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(UBO), UniBuffers, pTexture->GetSampler(), pTexture->GetImageView().GetHandle());
 
-	pSignalSemaphore = new VulkanSemaphore(*pLogicalDevice);
-	pSignalSemaphore->CreateSemaphore();
-	pWaitSemaphore = new VulkanSemaphore(*pLogicalDevice);
-	pWaitSemaphore->CreateSemaphore();
+	pRenderingFinishedSemaphores.resize(MaxFramesInFlight);
+	pImageAvailableSemaphores.resize(MaxFramesInFlight);
+	pFencesInFlight.resize(MaxFramesInFlight);
+	for (int i = 0; i < MaxFramesInFlight; ++i)
+	{
+		pRenderingFinishedSemaphores[i] = new VulkanSemaphore(*pLogicalDevice);
+		pRenderingFinishedSemaphores[i]->CreateSemaphore();
+
+		pImageAvailableSemaphores[i] = new VulkanSemaphore(*pLogicalDevice);
+		pImageAvailableSemaphores[i]->CreateSemaphore();
+
+		pFencesInFlight[i] = new VulkanFence(*pLogicalDevice);
+		pFencesInFlight[i]->CreateFence();
+	}
 
 	RecordCommandBuffers();
 }
@@ -269,6 +276,7 @@ void RecreateSwapchain()
 
 	pSwapchain->CreateSwapchain(FramebufferSize.first, FramebufferSize.second, Settings.VSync);
 	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
+	MaxFramesInFlight = pSwapchain->GetImageViews().size();
 	
 	VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
 	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -316,10 +324,15 @@ void ShutdownVulkan()
 	delete pTexture;
 	delete pModel;
 
-	pSignalSemaphore->Destroy();
-	delete pSignalSemaphore;
-	pWaitSemaphore->Destroy();
-	delete pWaitSemaphore;
+	for (int i = 0; i < MaxFramesInFlight; ++i)
+	{
+		pFencesInFlight[i]->Destroy();
+		delete pFencesInFlight[i];
+		pRenderingFinishedSemaphores[i]->Destroy();
+		delete pRenderingFinishedSemaphores[i];
+		pImageAvailableSemaphores[i]->Destroy();
+		delete pImageAvailableSemaphores[i];
+	}
 	
 	// Even though the uniform buffer depends on the number of swapchain images, it seems that it doesn't need to be recreated with the swapchain
 	for (auto& UniformBuffer : UniformBuffers)
@@ -344,9 +357,7 @@ void ShutdownVulkan()
 	delete pDescriptorSetLayout;
 	
 	delete pLogicalDevice;
-#if defined(_DEBUG)
-	VulkanDebug::DestroyDebugCallback(pInstance->GetHandle());
-#endif
+
 	pInstance->Destroy();
 	delete pInstance;
 }
@@ -357,8 +368,6 @@ void UpdateMVP(uint32_t CurrentImage)
 
 	auto CurrentTime = std::chrono::high_resolution_clock::now();
 	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
-
-	CONSOLE_LOG("Time passed (update mvp): " << TimePassed);
 
 	UBO.Model = glm::mat4();
 	UBO.Model = glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f));
@@ -380,15 +389,17 @@ void UpdateMVP(uint32_t CurrentImage)
  *  - SwapchainKHR
  *  - CommandBuffer
  */
-void DrawFrame(float DeltaTime)
+void DrawFrame(uint32_t DeltaTime)
 {
+	static size_t CurrentFrame = 0;
+
 	// Don't try to draw to a minimized window
 	if (Window.IsIconified())
 		return;
 
 	// Get the next available image to work on
 	{
-		VkResult Result = pSwapchain->AcquireNextImage(pWaitSemaphore->GetHandle());
+		VkResult Result = pSwapchain->AcquireNextImage(pImageAvailableSemaphores[CurrentFrame]->GetHandle());
 		if (Result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			RecreateSwapchain();
@@ -404,10 +415,10 @@ void DrawFrame(float DeltaTime)
 	UpdateMVP(pSwapchain->GetActiveImageIndex());
 
 	// Submit commands to the queue
-	pLogicalDevice->GetGraphicsQueue().QueueSubmit({ pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pWaitSemaphore->GetHandle() }, { pSignalSemaphore->GetHandle() });
+	pLogicalDevice->GetGraphicsQueue().QueueSubmitAndWait({ pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pImageAvailableSemaphores[CurrentFrame]->GetHandle() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }, pFencesInFlight[CurrentFrame]->GetHandle());
 
 	{
-		VkResult Result = pSwapchain->QueuePresent(pLogicalDevice->GetPresentQueue().GetHandle(), pSignalSemaphore->GetHandle());
+		VkResult Result = pLogicalDevice->GetPresentQueue().QueuePresent(pSwapchain->GetHandle(), { pSwapchain->GetActiveImageIndex() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() });
 		if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Window.IsFramebufferResized())
 		{
 			Window.SetFramebufferResized(false);
@@ -418,25 +429,38 @@ void DrawFrame(float DeltaTime)
 			VK_ASSERT(Result);
 		}
 	}
+
+	CurrentFrame = (CurrentFrame + 1) % MaxFramesInFlight;
 }
 
 ///////////////// APP /////////////////
 
 void MainLoop()
 {
-	float DeltaTime = 0.0f;
-	float LastFrame = static_cast<float>(SDL_GetTicks());
+	uint32_t FrameCount = 0;
+	Uint32 LastFrameTime = SDL_GetTicks();
+	Uint32 LastFPSTime = SDL_GetTicks();
 
 	while (!Window.ShouldClose())
-	{	
-		float CurrentFrame = static_cast<float>(SDL_GetTicks());
-		DeltaTime = CurrentFrame - LastFrame;
-		LastFrame = CurrentFrame;
+	{
+		Uint32 CurrentFPSTime = SDL_GetTicks();
+		FrameCount++;
 
-		CONSOLE_LOG("Time passed (main loop): " << DeltaTime);
+		if (CurrentFPSTime > LastFPSTime + 1000)
+		{
+			LastFPSTime = CurrentFPSTime;
+			CONSOLE_LOG(FrameCount << " fps");
+			FrameCount = 0;
+		}
+
+		Uint32 CurrentFrameTime = SDL_GetTicks();
+		Uint32 DeltaTime = CurrentFrameTime - LastFrameTime;
+
+		DrawFrame(DeltaTime);
+
+		LastFrameTime = CurrentFrameTime;
 
 		Window.Update(DeltaTime);
-		DrawFrame(DeltaTime);
 	}
 }
 

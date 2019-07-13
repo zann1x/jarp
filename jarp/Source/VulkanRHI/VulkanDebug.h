@@ -9,6 +9,4 @@ namespace VulkanDebug
 
 	void SetupDebugCallback(const VkInstance& Instance);
 	void DestroyDebugCallback(const VkInstance& Instance);
-
-	void CheckValidationLayerSupport();
 }

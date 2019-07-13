@@ -2,6 +2,7 @@
 
 #include "VulkanCommandBuffer.h"
 #include "VulkanDevice.h"
+#include "VulkanFence.h"
 #include "VulkanUtils.hpp"
 
 VulkanQueue::VulkanQueue(VulkanDevice& Device, uint32_t QueueFamilyIndex, uint32_t QueueIndex)
@@ -14,7 +15,7 @@ VulkanQueue::~VulkanQueue()
 {
 }
 
-void VulkanQueue::QueueSubmit(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores) const
+void VulkanQueue::QueueSubmitAndWait(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores, const VkFence Fence) const
 {
 	VkSubmitInfo SubmitInfo = {};
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -27,11 +28,30 @@ void VulkanQueue::QueueSubmit(const std::vector<VkCommandBuffer>& CommandBuffers
 	SubmitInfo.signalSemaphoreCount = static_cast<uint32_t>(SignalSemaphores.size());
 	SubmitInfo.pSignalSemaphores = SignalSemaphores.data();
 
-	VK_ASSERT(vkQueueSubmit(Queue, 1, &SubmitInfo, VK_NULL_HANDLE));
+	VK_ASSERT(vkQueueSubmit(Queue, 1, &SubmitInfo, Fence));
+	if (Fence != VK_NULL_HANDLE)
+	{
+		VK_ASSERT(vkWaitForFences(Device.GetInstanceHandle(), 1, &Fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
+		VK_ASSERT(vkResetFences(Device.GetInstanceHandle(), 1, &Fence));
+	}
+}
+
+VkResult VulkanQueue::QueuePresent(const VkSwapchainKHR Swapchain, std::vector<uint32_t> ActiveImageIndices, const std::vector<VkSemaphore>& WaitSemaphores) const
+{
+	VkPresentInfoKHR PresentInfoKHR = {};
+	PresentInfoKHR.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	PresentInfoKHR.pNext = nullptr;
+	PresentInfoKHR.waitSemaphoreCount = static_cast<uint32_t>(WaitSemaphores.size());
+	PresentInfoKHR.pWaitSemaphores = WaitSemaphores.data();
+	PresentInfoKHR.swapchainCount = 1; // Would be > 1 if there were multiple images being rendered simumltaneously in a multi-window setup
+	PresentInfoKHR.pSwapchains = &Swapchain;
+	PresentInfoKHR.pImageIndices = ActiveImageIndices.data();
+	PresentInfoKHR.pResults = nullptr;
+
+	return vkQueuePresentKHR(Queue, &PresentInfoKHR);
 }
 
 void VulkanQueue::WaitUntilIdle() const
 {
-	// TODO change to fences ?
 	VK_ASSERT(vkQueueWaitIdle(Queue));
 }

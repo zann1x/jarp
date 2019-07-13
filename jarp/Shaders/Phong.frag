@@ -3,9 +3,9 @@
 
 layout(binding = 1) uniform sampler2D TextureSampler;
 
-layout(location = 0) in vec3 passColor;
-layout(location = 1) in vec2 passTextureCoordinate;
-layout(location = 2) in vec3 passSurfaceNormal;
+layout(location = 0) in vec3 passSurfaceNormal;
+layout(location = 1) in vec3 passColor;
+layout(location = 2) in vec2 passTextureCoordinate;
 layout(location = 3) in vec3 passView;
 layout(location = 4) in vec3 passLight;
 

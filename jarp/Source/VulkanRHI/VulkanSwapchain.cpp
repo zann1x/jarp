@@ -9,10 +9,24 @@
 #include <algorithm>
 #include <limits>
 
-VulkanSwapchain::VulkanSwapchain(CrossPlatformWindow& OutWindow, VkInstance Instance, VulkanDevice& OutDevice)
-	: Instance(Instance), Device(OutDevice)
+VulkanSwapchain::VulkanSwapchain(CrossPlatformWindow& Window, VkInstance Instance, VulkanDevice& Device)
+	: Instance(Instance), Device(Device)
 {
-	VK_ASSERT(OutWindow.CreateSurface(Instance, &SurfaceKHR));
+	// Create surface
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+	VkWin32SurfaceCreateInfoKHR Win32SurfaceCreateInfoKHR = {};
+	Win32SurfaceCreateInfoKHR.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	Win32SurfaceCreateInfoKHR.pNext = nullptr;
+	Win32SurfaceCreateInfoKHR.flags = 0;
+	Win32SurfaceCreateInfoKHR.hinstance = Window.GetNativeInstanceHandle();
+	Win32SurfaceCreateInfoKHR.hwnd = Window.GetNativeWindowHandle();
+
+	VK_ASSERT(vkCreateWin32SurfaceKHR(Instance, &Win32SurfaceCreateInfoKHR, nullptr, &SurfaceKHR));
+#else
+#error UNSUPPORTED PLATFORM
+#endif
+
+	// Create present queue from surface
 	Device.SetupPresentQueue(SurfaceKHR);
 }
 
@@ -35,9 +49,7 @@ void VulkanSwapchain::CreateSwapchain(uint32_t Width, uint32_t Height, bool bUse
 	// If max image count is 0 then there are no limits besides memory requirements
 	uint32_t SwapchainMinImageCount = SwapchainSupportDetails.SurfaceCapabilities.minImageCount + 1;
 	if (SwapchainSupportDetails.SurfaceCapabilities.maxImageCount > 0 && SwapchainMinImageCount > SwapchainSupportDetails.SurfaceCapabilities.maxImageCount)
-	{
 		SwapchainMinImageCount = SwapchainSupportDetails.SurfaceCapabilities.maxImageCount;
-	}
 
 	// Choose surface format
 	SwapchainDetails.SurfaceFormat = SwapchainSupportDetails.SurfaceFormats[0];
@@ -193,16 +205,13 @@ VkResult VulkanSwapchain::AcquireNextImage(const VkSemaphore WaitSemaphore)
 	return vkAcquireNextImageKHR(Device.GetInstanceHandle(), Swapchain, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ActiveImageIndex);
 }
 
-VkResult VulkanSwapchain::QueuePresent(const VkQueue PresentQueue, const VkSemaphore WaitSemaphore)
+VkResult VulkanSwapchain::QueuePresent(const VkQueue PresentQueue, const std::vector<VkSemaphore> WaitSemaphores)
 {
 	VkPresentInfoKHR PresentInfoKHR = {};
 	PresentInfoKHR.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	PresentInfoKHR.pNext = nullptr;
-	if (WaitSemaphore != VK_NULL_HANDLE)
-	{
-		PresentInfoKHR.waitSemaphoreCount = 1;
-		PresentInfoKHR.pWaitSemaphores = &WaitSemaphore;
-	}
+	PresentInfoKHR.waitSemaphoreCount = WaitSemaphores.size();
+	PresentInfoKHR.pWaitSemaphores = WaitSemaphores.data();
 	PresentInfoKHR.swapchainCount = 1;
 	PresentInfoKHR.pSwapchains = &Swapchain;
 	PresentInfoKHR.pImageIndices = &ActiveImageIndex;

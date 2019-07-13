@@ -1,5 +1,7 @@
 #include "CrossPlatformWindow.h"
 
+#include "SDL2/SDL_syswm.h"
+
 #include <iostream>
 
 #define WIDTH 800
@@ -48,11 +50,27 @@ void CrossPlatformWindow::Shutdown()
 	SDL_DestroyRenderer(pRenderer);
 }
 
+HINSTANCE CrossPlatformWindow::GetNativeInstanceHandle() const
+{
+	SDL_SysWMinfo SystemInfo;
+	SDL_VERSION(&SystemInfo.version);
+	SDL_GetWindowWMInfo(pWindow, &SystemInfo);
+	return SystemInfo.info.win.hinstance;
+}
+
+HWND CrossPlatformWindow::GetNativeWindowHandle() const
+{
+	SDL_SysWMinfo SystemInfo;
+	SDL_VERSION(&SystemInfo.version);
+	SDL_GetWindowWMInfo(pWindow, &SystemInfo);
+	return SystemInfo.info.win.window;
+}
+
 VkResult CrossPlatformWindow::CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const
 {
 	if (!SDL_Vulkan_CreateSurface(pWindow, Instance, SurfaceKHR))
 		return VK_ERROR_INITIALIZATION_FAILED;
-	
+
 	return VK_SUCCESS;
 }
 
@@ -63,7 +81,7 @@ std::pair<int, int> CrossPlatformWindow::GetFramebufferSize()
 	return std::make_pair(Width, Height);
 }
 
-std::vector<const char*> CrossPlatformWindow::GetInstanceExtensions()
+std::vector<const char*> CrossPlatformWindow::GetInstanceExtensions() const
 {
 	unsigned int Count;
 	SDL_Vulkan_GetInstanceExtensions(pWindow, &Count, nullptr);
@@ -81,7 +99,7 @@ bool CrossPlatformWindow::ShouldClose()
 	return bShouldClose;
 }
 
-void CrossPlatformWindow::Update(float DeltaTime)
+void CrossPlatformWindow::Update(uint32_t DeltaTime)
 {
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))

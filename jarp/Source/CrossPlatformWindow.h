@@ -1,9 +1,7 @@
 #pragma once
 
-#define VK_USE_PLATFROM_WIN32_KHR
 #include <vulkan/vulkan.h>
 
-#define SDL_MAIN_HANDLED
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"
 
@@ -24,8 +22,11 @@ public:
 
 	inline SDL_Window* GetHandle() { return pWindow; }
 
+	HINSTANCE GetNativeInstanceHandle() const;
+	HWND GetNativeWindowHandle() const;
+
 	VkResult CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const;
-	std::vector<const char*> GetInstanceExtensions();
+	std::vector<const char*> GetInstanceExtensions() const;
 
 	// Returns the framebuffer width as the first parameter and height as the second
 	std::pair<int, int> GetFramebufferSize();
@@ -37,7 +38,7 @@ public:
 	void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
 
 	bool ShouldClose();
-	void Update(float DeltaTime);
+	void Update(uint32_t DeltaTime);
 
 private:
 	int Width;

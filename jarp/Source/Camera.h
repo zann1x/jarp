@@ -8,7 +8,7 @@ public:
 	Camera();
 	~Camera();
 
-	void Move(float DeltaSeconds);
+	void Move(uint32_t DeltaSeconds);
 	glm::mat4 GetViewMatrix();
 	glm::mat4 GetProjectionMatrix();
 

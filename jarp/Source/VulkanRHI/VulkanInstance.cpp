@@ -5,20 +5,22 @@
 
 #include "../CrossPlatformWindow.h"
 
-VulkanInstance::VulkanInstance(CrossPlatformWindow& Window)
+VulkanInstance::VulkanInstance()
 {
-	InstanceExtensions = Window.GetInstanceExtensions();
-#if defined(_DEBUG)
-	InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
 }
 
 VulkanInstance::~VulkanInstance()
 {
 }
 
-void VulkanInstance::CreateInstance()
+void VulkanInstance::CreateInstance(const CrossPlatformWindow& Window)
 {
+	// Get the required extensions from the displaying window
+	InstanceExtensions = Window.GetInstanceExtensions();
+#if defined(_DEBUG)
+	InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
 	// Check layer support
 	uint32_t LayerPropertyCount;
 	vkEnumerateInstanceLayerProperties(&LayerPropertyCount, nullptr);
@@ -48,7 +50,7 @@ void VulkanInstance::CreateInstance()
 	AppInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
 	AppInfo.pEngineName = "JARP";
 	AppInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-	AppInfo.apiVersion = VK_API_VERSION_1_1;
+	AppInfo.apiVersion = VK_API_VERSION_1_1; // TODO: check for availability of that version
 
 	VkInstanceCreateInfo InstInfo = {};
 	InstInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -65,9 +67,16 @@ void VulkanInstance::CreateInstance()
 	InstInfo.ppEnabledLayerNames = InstanceLayers.data();
 
 	VK_ASSERT(vkCreateInstance(&InstInfo, nullptr, &Instance));
+
+#if defined(_DEBUG)
+	VulkanDebug::SetupDebugCallback(Instance);
+#endif
 }
 
 void VulkanInstance::Destroy()
 {
+#if defined(_DEBUG)
+	VulkanDebug::DestroyDebugCallback(Instance);
+#endif
 	vkDestroyInstance(Instance, nullptr);
 }

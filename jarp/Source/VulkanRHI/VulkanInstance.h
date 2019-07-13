@@ -8,10 +8,10 @@ class CrossPlatformWindow;
 class VulkanInstance
 {
 public:
-	VulkanInstance(CrossPlatformWindow& Window);
+	VulkanInstance();
 	~VulkanInstance();
 
-	void CreateInstance();
+	void CreateInstance(const CrossPlatformWindow& Window);
 	void Destroy();
 
 	inline const VkInstance& GetHandle() const { return Instance; }

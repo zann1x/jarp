@@ -10,13 +10,13 @@ layout(binding = 0) uniform UniformBufferObject
 } ubo;
 
 layout(location = 0) in vec3 InPosition;
-layout(location = 1) in vec3 InColor;
-layout(location = 2) in vec2 InTextureCoordinate;
-layout(location = 3) in vec3 InNormal;
+layout(location = 1) in vec3 InNormal;
+layout(location = 2) in vec3 InColor;
+layout(location = 3) in vec2 InTextureCoordinate;
 
-layout(location = 0) out vec3 passColor;
-layout(location = 1) out vec2 passTextureCoordinate;
-layout(location = 2) out vec3 passSurfaceNormal;
+layout(location = 0) out vec3 passSurfaceNormal;
+layout(location = 1) out vec3 passColor;
+layout(location = 2) out vec2 passTextureCoordinate;
 layout(location = 3) out vec3 passView;
 layout(location = 4) out vec3 passLight;
 

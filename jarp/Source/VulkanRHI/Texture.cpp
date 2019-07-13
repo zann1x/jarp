@@ -1,11 +1,11 @@
 #include "Texture.h"
 
-#include "VulkanRHI/VulkanBuffer.h"
-#include "VulkanRHI/VulkanCommandBuffer.h"
-#include "VulkanRHI/VulkanDevice.h"
-#include "VulkanRHI/VulkanImage.h"
-#include "VulkanRHI/VulkanImageView.h"
-#include "VulkanRHI/VulkanUtils.hpp"
+#include "VulkanBuffer.h"
+#include "VulkanCommandBuffer.h"
+#include "VulkanDevice.h"
+#include "VulkanImage.h"
+#include "VulkanImageView.h"
+#include "VulkanUtils.hpp"
 
 #include <vector>
 

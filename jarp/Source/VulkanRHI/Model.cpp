@@ -1,7 +1,7 @@
 #include "Model.h"
 
-#include "VulkanRHI/VulkanCommandBuffer.h"
-#include "VulkanRHI/VulkanDevice.h"
+#include "VulkanCommandBuffer.h"
+#include "VulkanDevice.h"
 
 #include <tiny_obj_loader.h>
 #include <unordered_map>
@@ -41,17 +41,17 @@ Model::Model(VulkanDevice& Device)
 	VertexInputAttributeDescriptions[1].location = 1;
 	VertexInputAttributeDescriptions[1].binding = 0;
 	VertexInputAttributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-	VertexInputAttributeDescriptions[1].offset = offsetof(SVertex, Color);
+	VertexInputAttributeDescriptions[1].offset = offsetof(SVertex, Normal);
 	VertexInputAttributeDescriptions[2] = {};
 	VertexInputAttributeDescriptions[2].location = 2;
 	VertexInputAttributeDescriptions[2].binding = 0;
-	VertexInputAttributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-	VertexInputAttributeDescriptions[2].offset = offsetof(SVertex, TextureCoordinate);
+	VertexInputAttributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+	VertexInputAttributeDescriptions[2].offset = offsetof(SVertex, Color);
 	VertexInputAttributeDescriptions[3] = {};
 	VertexInputAttributeDescriptions[3].location = 3;
 	VertexInputAttributeDescriptions[3].binding = 0;
-	VertexInputAttributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-	VertexInputAttributeDescriptions[3].offset = offsetof(SVertex, Normal);
+	VertexInputAttributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+	VertexInputAttributeDescriptions[3].offset = offsetof(SVertex, TextureCoordinate);
 
 	PipelineVertexInputStateCreateInfo = {};
 	PipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

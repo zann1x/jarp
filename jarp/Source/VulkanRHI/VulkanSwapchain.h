@@ -30,7 +30,7 @@ public:
 	};
 
 public:
-	VulkanSwapchain(CrossPlatformWindow& OutWindow, VkInstance Instance, VulkanDevice& OutDevice);
+	VulkanSwapchain(CrossPlatformWindow& Window, VkInstance Instance, VulkanDevice& Device);
 	~VulkanSwapchain();
 
 	void CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync = true);
@@ -46,7 +46,7 @@ public:
 	static SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice Device, VkSurfaceKHR SurfaceKHR);
 
 	VkResult AcquireNextImage(const VkSemaphore WaitSemaphore);
-	VkResult QueuePresent(const VkQueue PresentQueue, const VkSemaphore WaitSemaphore = VK_NULL_HANDLE);
+	VkResult QueuePresent(const VkQueue PresentQueue, const std::vector<VkSemaphore> WaitSemaphores);
 
 private:
 	VkInstance Instance;

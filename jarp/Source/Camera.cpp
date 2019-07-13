@@ -19,7 +19,7 @@ Camera::~Camera()
 {
 }
 
-void Camera::Move(float DeltaSeconds)
+void Camera::Move(uint32_t DeltaSeconds)
 {
 	//float CameraSpeed = 2.5f * DeltaSeconds;
 	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_W))

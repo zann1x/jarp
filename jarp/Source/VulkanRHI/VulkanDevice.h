@@ -17,8 +17,8 @@ public:
 	void SetupPresentQueue(VkSurfaceKHR Surface);
 	void CreateLogicalDevice();
 
-	inline VkDevice GetInstanceHandle() { return LogicalDevice; }
-	inline VkPhysicalDevice GetPhysicalHandle() { return PhysicalDevice; }
+	inline const VkDevice GetInstanceHandle() const  { return LogicalDevice; }
+	inline const VkPhysicalDevice GetPhysicalHandle() const { return PhysicalDevice; }
 	inline const VulkanQueue& GetGraphicsQueue() const { return *GraphicsQueue; }
 	inline const VulkanQueue& GetPresentQueue() const { return *PresentQueue; }
 

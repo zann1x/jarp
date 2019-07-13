@@ -19,14 +19,16 @@ VulkanDevice::VulkanDevice(VulkanInstance& Instance)
 	EnabledPhysicalDeviceFeatures = {};
 	if (!PhysicalDeviceFeatures.samplerAnisotropy)
 		throw std::runtime_error("Not all enabled features are supported");
-	EnabledPhysicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
+	EnabledPhysicalDeviceFeatures.samplerAnisotropy = VK_TRUE; // for sampler creation
 	
+	// Get queue family properties for later use
 	uint32_t QueueFamilyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, nullptr);
 	assert(QueueFamilyCount > 0);
 	QueueFamilyProperties.resize(QueueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, QueueFamilyProperties.data());
 
+	// Check for desired device extensions
 	uint32_t PropertyCount;
 	vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &PropertyCount, nullptr);
 	if (PropertyCount > 0)
@@ -40,13 +42,9 @@ VulkanDevice::VulkanDevice(VulkanInstance& Instance)
 	}
 
 	if (std::find(SupportedExtensions.begin(), SupportedExtensions.end(), VK_KHR_SWAPCHAIN_EXTENSION_NAME) != SupportedExtensions.end())
-	{
 		EnabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-	}
 	else
-	{
 		throw std::runtime_error("Not all required extensions supported by the physical device!");
-	}
 }
 
 VulkanDevice::~VulkanDevice()
@@ -68,14 +66,11 @@ void VulkanDevice::SetupPresentQueue(VkSurfaceKHR Surface)
 {
 	VkBool32 PresentSupported;
 	vkGetPhysicalDeviceSurfaceSupportKHR(PhysicalDevice, GraphicsQueue->GetFamilyIndex(), Surface, &PresentSupported);
+
 	if (QueueFamilyProperties[GraphicsQueue->GetFamilyIndex()].queueCount > 0 && PresentSupported)
-	{
 		PresentQueue = new VulkanQueue(*this, GraphicsQueue->GetFamilyIndex());
-	}
 	else
-	{
 		std::runtime_error("Graphics queue does not support present!");
-	}
 }
 
 void VulkanDevice::CreateLogicalDevice()
@@ -86,7 +81,8 @@ void VulkanDevice::CreateLogicalDevice()
 	uint32_t GraphicsFamilyIndex = -1;
 	uint32_t ComputeFamilyIndex = -1;
 	uint32_t TransferFamilyIndex = -1;
-
+	
+	// Pick the first found queue that supports a desired queue
 	for (uint32_t i = 0; i < static_cast<uint32_t>(QueueFamilyProperties.size()); i++)
 	{
 		bool IsValidQueue = false;
