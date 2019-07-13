@@ -8,3 +8,5 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 - SDL2
 - stb
 - tinyobjloader
+
+![image](Screenshots/Application.png)
