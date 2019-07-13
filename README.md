@@ -9,4 +9,6 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 - stb
 - tinyobjloader
 
+## How it looks right now
+
 ![image](Screenshots/Application.PNG)
