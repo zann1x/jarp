@@ -93,39 +93,32 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 				Attrib.vertices[3 * Index.vertex_index + 2]
 			};
 
-			if (!Attrib.colors.empty())
-			{
-				Vertex.Color = {
-					Attrib.colors[3 * Index.vertex_index + 0],
-					Attrib.colors[3 * Index.vertex_index + 1],
-					Attrib.colors[3 * Index.vertex_index + 2]
-				};
-			}
-			else
-			{
-				Vertex.Color = glm::vec3(1.0f, 0.0f, 0.86f);
-			}
-
-			if (!Attrib.texcoords.empty())
-			{
-				Vertex.TextureCoordinate = {
-					Attrib.texcoords[2 * Index.texcoord_index + 0],
-					1.0f - Attrib.texcoords[2 * Index.texcoord_index + 1]
-				};
-			}
-
-			if (!Attrib.normals.empty())
-			{
-				Vertex.Normal = {
+			Attrib.normals.empty()
+				? Vertex.Normal = glm::vec3(0.0f, 0.0f, 1.0f)
+				: Vertex.Normal = {
 					Attrib.normals[3 * Index.normal_index + 0],
 					Attrib.normals[3 * Index.normal_index + 1],
 					Attrib.normals[3 * Index.normal_index + 2]
 				};
-			}
+
+			Attrib.colors.empty()
+				? Vertex.Color = glm::vec3(1.0f, 0.0f, 0.86f)
+				: Vertex.Color = {
+					Attrib.colors[3 * Index.vertex_index + 0],
+					Attrib.colors[3 * Index.vertex_index + 1],
+					Attrib.colors[3 * Index.vertex_index + 2]
+				};
+
+			Attrib.texcoords.empty()
+				? Vertex.TextureCoordinate = glm::vec2(0.0f, 0.0f)
+				: Vertex.TextureCoordinate = {
+					Attrib.texcoords[2 * Index.texcoord_index + 0],
+					1.0f - Attrib.texcoords[2 * Index.texcoord_index + 1]
+				};
 
 			if (UniqueVertices.count(Vertex) == 0)
 			{
-				// Save unique vertices with an index to the position they are found in the file
+				// Save unique vertices with an index to the position at which they are found in the file
 				UniqueVertices[Vertex] = static_cast<uint32_t>(Vertices.size());
 				Vertices.push_back(Vertex);
 			}
@@ -133,4 +126,6 @@ void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFi
 			Indices.push_back(UniqueVertices[Vertex]);
 		}
 	}
+
+	// TODO: optimize mesh for more efficient GPU rendering ?
 }

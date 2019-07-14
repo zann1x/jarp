@@ -267,4 +267,4 @@ __pycache__/
 ![Cc]ontent/
 
 # SPIR-V files
-jarp/[Ss]haders/*.spv
+**/*.spv

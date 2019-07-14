@@ -1,5 +1,4 @@
 #version 450
-#extension GL_ARB_separate_shader_objects : enable
 
 layout(binding = 0) uniform UniformBufferObject
 {
@@ -20,18 +19,14 @@ layout(location = 2) out vec2 passTextureCoordinate;
 layout(location = 3) out vec3 passView;
 layout(location = 4) out vec3 passLight;
 
-out gl_PerVertex {
-	vec4 gl_Position;
-};
-
 void main()
 {
 	vec4 WorldPosition = ubo.Model * vec4(InPosition, 1.0);
 	gl_Position = ubo.Projection * ubo.View * WorldPosition;
 
+	passSurfaceNormal = mat3(ubo.View) * mat3(ubo.Model) * InNormal;
 	passColor = InColor;
 	passTextureCoordinate = InTextureCoordinate;
-	passSurfaceNormal = mat3(ubo.View) * mat3(ubo.Model) * InNormal;
 	passView = -(ubo.View * WorldPosition).xyz;
 	passLight = mat3(ubo.View) * (ubo.LightPosition - WorldPosition.xyz);
 }

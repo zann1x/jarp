@@ -23,7 +23,7 @@ void VulkanBuffer::CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkB
 	BufferCreateInfo.size = Size;
 	BufferCreateInfo.usage = Usage;
 	BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	BufferCreateInfo.queueFamilyIndexCount = 0;
+	BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
 	BufferCreateInfo.pQueueFamilyIndices = nullptr;
 
 	VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
@@ -52,7 +52,7 @@ void VulkanBuffer::CreateBuffer(VkMemoryPropertyFlags MemoryProperties)
 	BufferCreateInfo.size = Size;
 	BufferCreateInfo.usage = Usage;
 	BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	BufferCreateInfo.queueFamilyIndexCount = 0;
+	BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
 	BufferCreateInfo.pQueueFamilyIndices = nullptr;
 
 	VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));

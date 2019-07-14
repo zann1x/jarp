@@ -15,7 +15,7 @@ VulkanQueue::~VulkanQueue()
 {
 }
 
-void VulkanQueue::QueueSubmitAndWait(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores, const VkFence Fence) const
+void VulkanQueue::QueueSubmitAndWait(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores, VkFence SubmitFence, const std::vector<VkFence>& WaitFences) const
 {
 	VkSubmitInfo SubmitInfo = {};
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -28,11 +28,11 @@ void VulkanQueue::QueueSubmitAndWait(const std::vector<VkCommandBuffer>& Command
 	SubmitInfo.signalSemaphoreCount = static_cast<uint32_t>(SignalSemaphores.size());
 	SubmitInfo.pSignalSemaphores = SignalSemaphores.data();
 
-	VK_ASSERT(vkQueueSubmit(Queue, 1, &SubmitInfo, Fence));
-	if (Fence != VK_NULL_HANDLE)
+	VK_ASSERT(vkQueueSubmit(Queue, 1, &SubmitInfo, SubmitFence));
+	if (!WaitFences.empty())
 	{
-		VK_ASSERT(vkWaitForFences(Device.GetInstanceHandle(), 1, &Fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
-		VK_ASSERT(vkResetFences(Device.GetInstanceHandle(), 1, &Fence));
+		VK_ASSERT(vkWaitForFences(Device.GetInstanceHandle(), static_cast<uint32_t>(WaitFences.size()), WaitFences.data(), VK_TRUE, std::numeric_limits<uint64_t>::max()));
+		VK_ASSERT(vkResetFences(Device.GetInstanceHandle(), static_cast<uint32_t>(WaitFences.size()), WaitFences.data()));
 	}
 }
 

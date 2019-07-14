@@ -192,6 +192,7 @@ uint32_t VulkanDevice::GetMemoryTypeIndex(const uint32_t MemoryTypeBits, const V
 {
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
 	{
+		// Pick the first found memory type that supports the memory type bits
 		if ((MemoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & MemoryProperties) == MemoryProperties))
 		{
 			return i;

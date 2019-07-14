@@ -59,7 +59,7 @@ void VulkanCommandBuffer::EndOneTimeSubmitCommand()
 	SubmitInfo.signalSemaphoreCount = 0;
 	SubmitInfo.pSignalSemaphores = nullptr;
 
-	Device.GetGraphicsQueue().QueueSubmitAndWait({ CommandBuffer }, 0, {}, {}, VK_NULL_HANDLE);
+	Device.GetGraphicsQueue().QueueSubmitAndWait({ CommandBuffer }, 0, {}, {}, VK_NULL_HANDLE, {});
 	Device.GetGraphicsQueue().WaitUntilIdle();
 
 	Destroy();

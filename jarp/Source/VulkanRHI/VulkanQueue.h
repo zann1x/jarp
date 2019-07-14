@@ -14,7 +14,7 @@ public:
 	inline const VkQueue& GetHandle() const { return Queue; }
 	inline uint32_t GetFamilyIndex() const { return QueueFamilyIndex; }
 
-	void QueueSubmitAndWait(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores, const VkFence Fence) const;
+	void QueueSubmitAndWait(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores, VkFence SubmitFence, const std::vector<VkFence>& Fences) const;
 	VkResult QueuePresent(const VkSwapchainKHR Swapchain, std::vector<uint32_t> ActiveImageIndices, const std::vector<VkSemaphore>& WaitSemaphores) const;
 	void WaitUntilIdle() const;
 

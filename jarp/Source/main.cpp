@@ -86,7 +86,7 @@ VulkanImage* pDepthImage;
 VulkanImageView* pDepthImageView;
 
 VulkanCommandPool* pCommandPool;
-std::vector<VulkanCommandBuffer*> pCommandBuffers;
+std::vector<VulkanCommandBuffer*> pDrawCommandBuffers;
 VulkanCommandPool* pTransientCommandPool;
 VulkanCommandBuffer* pTransientCommandBuffer;
 
@@ -102,45 +102,48 @@ std::vector<VulkanFence*> pFencesInFlight;
  */
 void RecordCommandBuffer()
 {
-	const VkCommandBuffer& CommandBuffer = pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle();
+	for (size_t i = 0; i < pDrawCommandBuffers.size(); ++i)
+	{
+		const VkCommandBuffer& CommandBuffer = pDrawCommandBuffers[i]->GetHandle();
 
-	VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
-	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	CommandBufferBeginInfo.pNext = nullptr;
-	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-	CommandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
+		VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
+		CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		CommandBufferBeginInfo.pNext = nullptr;
+		CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		CommandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
 
-	VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
+		VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
 
-	std::array<VkClearValue, 2> ClearValues = {};
-	ClearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
-	ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
+		std::array<VkClearValue, 2> ClearValues = {};
+		ClearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
+		ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
 
-	VkRenderPassBeginInfo RenderPassBeginInfo = {};
-	RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	RenderPassBeginInfo.pNext = nullptr;
-	RenderPassBeginInfo.renderPass = pRenderPass->GetHandle();
-	RenderPassBeginInfo.framebuffer = pFramebuffers[pSwapchain->GetActiveImageIndex()]->GetHandle();
-	RenderPassBeginInfo.renderArea.extent = pSwapchain->GetDetails().Extent;
-	RenderPassBeginInfo.renderArea.offset = { 0, 0 };
-	RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
-	RenderPassBeginInfo.pClearValues = ClearValues.data();
+		VkRenderPassBeginInfo RenderPassBeginInfo = {};
+		RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		RenderPassBeginInfo.pNext = nullptr;
+		RenderPassBeginInfo.renderPass = pRenderPass->GetHandle();
+		RenderPassBeginInfo.framebuffer = pFramebuffers[i]->GetHandle();
+		RenderPassBeginInfo.renderArea.extent = pSwapchain->GetDetails().Extent;
+		RenderPassBeginInfo.renderArea.offset = { 0, 0 };
+		RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
+		RenderPassBeginInfo.pClearValues = ClearValues.data();
 
-	vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
+		vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
 
-	vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
+		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
 
-	VkBuffer VertexBuffers[] = { pVertexBuffer->GetHandle() };
-	VkDeviceSize Offsets[] = { 0 };
-	vkCmdBindVertexBuffers(CommandBuffer, 0, 1, VertexBuffers, Offsets);
-	vkCmdBindIndexBuffer(CommandBuffer, pIndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-	vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetLayoutHandle(), 0, 1, &pDescriptorSet->At(pSwapchain->GetActiveImageIndex()), 0, nullptr);
+		VkBuffer VertexBuffers[] = { pVertexBuffer->GetHandle() };
+		VkDeviceSize Offsets[] = { 0 };
+		vkCmdBindVertexBuffers(CommandBuffer, 0, 1, VertexBuffers, Offsets);
+		vkCmdBindIndexBuffer(CommandBuffer, pIndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetLayoutHandle(), 0, 1, &pDescriptorSet->At(i), 0, nullptr);
 
-	vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(pModel->GetIndices().size()), 1, 0, 0, 0);
-		
-	vkCmdEndRenderPass(CommandBuffer);
+		vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(pModel->GetIndices().size()), 1, 0, 0, 0);
 
-	VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
+		vkCmdEndRenderPass(CommandBuffer);
+
+		VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
+	}
 }
 
 void StartVulkan()
@@ -155,11 +158,6 @@ void StartVulkan()
 	MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 	MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
-	pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
-	pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-	pDescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	pDescriptorSetLayout->CreateDescriptorSetLayout();
-
 	pCommandPool = new VulkanCommandPool(*pLogicalDevice);
 	pCommandPool->CreateCommandPool();
 	pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
@@ -172,6 +170,11 @@ void StartVulkan()
 	pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+	pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
+	pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	pDescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	pDescriptorSetLayout->CreateDescriptorSetLayout();
 
 	pModel = new Model(*pLogicalDevice);
 	pTexture = new Texture(*pLogicalDevice);
@@ -195,14 +198,14 @@ void StartVulkan()
 	pDescriptorPool = new VulkanDescriptorPool(*pLogicalDevice, *pSwapchain);
 	pDescriptorPool->CreateDescriptorPool();
 
-	pCommandBuffers.resize(pFramebuffers.size());
+	pDrawCommandBuffers.resize(pFramebuffers.size());
 	for (size_t i = 0; i < pFramebuffers.size(); ++i)
 	{
-		pCommandBuffers[i] = new VulkanCommandBuffer(*pLogicalDevice, *pCommandPool);
-		pCommandBuffers[i]->CreateCommandBuffer();
+		pDrawCommandBuffers[i] = new VulkanCommandBuffer(*pLogicalDevice, *pCommandPool);
+		pDrawCommandBuffers[i]->CreateCommandBuffer();
 	}
 
-	pModel->Load(*pTransientCommandBuffer, "Content/dragon.obj");
+	pModel->Load(*pTransientCommandBuffer, "Content/kitten.obj");
 	pTexture->Load(*pTransientCommandBuffer, "Content/texture.jpg");
 	pVertexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 	pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -238,13 +241,15 @@ void StartVulkan()
 		pFencesInFlight[i] = new VulkanFence(*pLogicalDevice);
 		pFencesInFlight[i]->CreateFence();
 	}
+
+	RecordCommandBuffer();
 }
 
 void CleanupSwapchain()
 {
-	for (size_t i = 0; i < pCommandBuffers.size(); ++i)
+	for (size_t i = 0; i < pDrawCommandBuffers.size(); ++i)
 	{
-		pCommandBuffers[i]->Destroy();
+		pDrawCommandBuffers[i]->Destroy();
 	}
 
 	for (auto& Framebuffer : pFramebuffers)
@@ -290,8 +295,10 @@ void RecreateSwapchain()
 
 	for (size_t i = 0; i < pFramebuffers.size(); ++i)
 	{
-		pCommandBuffers[i]->CreateCommandBuffer();
+		pDrawCommandBuffers[i]->CreateCommandBuffer();
 	}
+
+	RecordCommandBuffer();
 }
 
 void ShutdownVulkan()
@@ -302,7 +309,7 @@ void ShutdownVulkan()
 	CleanupSwapchain();
 	delete pRenderPass;
 	delete pSwapchain;
-	for (auto& CommandBuffer : pCommandBuffers)
+	for (auto& CommandBuffer : pDrawCommandBuffers)
 	{
 		delete CommandBuffer;
 	}
@@ -363,17 +370,18 @@ void UpdateMVP(uint32_t CurrentImage)
 	float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
 
 	UBO.Model = glm::mat4();
-	UBO.Model = glm::scale(glm::mat4(2.0f), glm::vec3(0.1, 0.1f, 0.1f));
-	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, -5.0f, 0.0f));
+	UBO.Model = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, 0.0f, 0.0f));
 	UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	UBO.View = MyCamera.GetViewMatrix();
 	UBO.Projection = MyCamera.GetProjectionMatrix();
-	UBO.LightPosition = glm::vec3(10.0f, 10.0f, 10.0f);
+	UBO.LightPosition = glm::vec3(10.0f, 100.0f, -100.0f);
 
-	void* RawData;
-	vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData);
-	memcpy(RawData, &UBO, sizeof(UBO));
-	vkUnmapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle());
+	// Map uniform buffer data persistently
+	static void* RawData[3];
+	if (!RawData[CurrentImage])
+		vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData[CurrentImage]);
+	memcpy(RawData[CurrentImage], &UBO, sizeof(UBO));
 }
 
 /* Depends on:
@@ -404,14 +412,11 @@ void DrawFrame(uint32_t DeltaTime)
 		}
 	}
 
-	vkResetCommandPool(pLogicalDevice->GetInstanceHandle(), pCommandPool->GetHandle(), 0);
-	RecordCommandBuffer();
-
 	MyCamera.Move(DeltaTime);
 	UpdateMVP(pSwapchain->GetActiveImageIndex());
 
 	// Submit commands to the queue
-	pLogicalDevice->GetGraphicsQueue().QueueSubmitAndWait({ pCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pImageAvailableSemaphores[CurrentFrame]->GetHandle() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }, pFencesInFlight[CurrentFrame]->GetHandle());
+	pLogicalDevice->GetGraphicsQueue().QueueSubmitAndWait({ pDrawCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pImageAvailableSemaphores[CurrentFrame]->GetHandle() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }, pFencesInFlight[CurrentFrame]->GetHandle(), { pFencesInFlight[CurrentFrame]->GetHandle() });
 
 	{
 		VkResult Result = pLogicalDevice->GetPresentQueue().QueuePresent(pSwapchain->GetHandle(), { pSwapchain->GetActiveImageIndex() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() });

@@ -1,5 +1,4 @@
 #version 450
-#extension GL_ARB_separate_shader_objects : enable
 
 layout(binding = 1) uniform sampler2D TextureSampler;
 
@@ -44,8 +43,8 @@ void main()
 	//OutColor = vec4(ads(), 1.0) * texture(TextureSampler, passTextureCoordinate);
 	OutColor = vec4(ads(), 1.0);
 
-	//float val = dot(unitNormal, unitView);
+	//float val = dot(normalize(passSurfaceNormal), normalize(passView));
 	//OutColor = vec4(val, val, val, 1.0);
 
-	//OutColor = vec4(Normal, 1.0);
+	//OutColor = vec4(normalize(passSurfaceNormal), 1.0);
 }
