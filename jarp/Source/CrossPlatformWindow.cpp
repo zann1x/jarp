@@ -1,6 +1,6 @@
 #include "CrossPlatformWindow.h"
 
-#include "SDL2/SDL_syswm.h"
+#include "SDL_syswm.h"
 
 #include <iostream>
 

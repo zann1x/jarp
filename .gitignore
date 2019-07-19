@@ -1,4 +1,12 @@
-bin/
+# Directories
 .vs/
-jarp/*.user
-jarp/Shaders/*.spv
+bin/
+bin-int/
+!Vendor/bin/
+
+# Files
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+**/*.spv

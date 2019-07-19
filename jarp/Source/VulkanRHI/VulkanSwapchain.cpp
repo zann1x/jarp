@@ -4,7 +4,7 @@
 #include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
 
-#include "Source/CrossPlatformWindow.h"
+#include "CrossPlatformWindow.h"
 
 #include <algorithm>
 #include <limits>
