@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-class CrossPlatformWindow;
+class WindowsWindow;
 class VulkanDevice;
 class VulkanImageView;
 
@@ -30,7 +30,7 @@ public:
 	};
 
 public:
-	VulkanSwapchain(CrossPlatformWindow& Window, VkInstance Instance, VulkanDevice& Device);
+	VulkanSwapchain(WindowsWindow& Window, VkInstance Instance, VulkanDevice& Device);
 	~VulkanSwapchain();
 
 	void CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync = true);

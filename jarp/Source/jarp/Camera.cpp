@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include "CrossPlatformWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
 #include "Utils.hpp"
 
 #include <algorithm>
@@ -22,25 +22,25 @@ Camera::~Camera()
 void Camera::Move(uint32_t DeltaSeconds)
 {
 	//float CameraSpeed = 2.5f * DeltaSeconds;
-	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_W))
+	//if (WindowsWindow::IsKeyPressed(GLFW_KEY_W))
 	//{
 	//	Position += CameraSpeed * FrontVector;
 	//}
-	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_S))
+	//if (WindowsWindow::IsKeyPressed(GLFW_KEY_S))
 	//{
 	//	Position -= CameraSpeed * FrontVector;
 	//}
-	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_A))
+	//if (WindowsWindow::IsKeyPressed(GLFW_KEY_A))
 	//{
 	//	Position -= RightVector * CameraSpeed;
 	//}
-	//if (CrossPlatformWindow::IsKeyPressed(GLFW_KEY_D))
+	//if (WindowsWindow::IsKeyPressed(GLFW_KEY_D))
 	//{
 	//	Position += RightVector * CameraSpeed;
 	//}
 
 	//float Sensitivity = 0.02f;
-	//auto MouseOffset = CrossPlatformWindow::GetMouseOffset();
+	//auto MouseOffset = WindowsWindow::GetMouseOffset();
 	//MouseOffset.first *= Sensitivity;
 	//MouseOffset.second *= Sensitivity;
 

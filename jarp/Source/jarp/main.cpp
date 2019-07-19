@@ -14,30 +14,31 @@
 #include <fstream>
 
 #include "Camera.h"
-#include "CrossPlatformWindow.h"
 #include "Utils.hpp"
 
-#include "VulkanRHI/Model.h"
-#include "VulkanRHI/Texture.h"
-#include "VulkanRHI/VulkanBuffer.h"
-#include "VulkanRHI/VulkanCommandBuffer.h"
-#include "VulkanRHI/VulkanCommandPool.h"
-#include "VulkanRHI/VulkanDescriptorPool.h"
-#include "VulkanRHI/VulkanDescriptorSet.h"
-#include "VulkanRHI/VulkanDescriptorSetLayout.h"
-#include "VulkanRHI/VulkanDevice.h"
-#include "VulkanRHI/VulkanFence.h"
-#include "VulkanRHI/VulkanFramebuffer.h"
-#include "VulkanRHI/VulkanGraphicsPipeline.h"
-#include "VulkanRHI/VulkanInstance.h"
-#include "VulkanRHI/VulkanImage.h"
-#include "VulkanRHI/VulkanImageView.h"
-#include "VulkanRHI/VulkanQueue.h"
-#include "VulkanRHI/VulkanRenderPass.h"
-#include "VulkanRHI/VulkanSemaphore.h"
-#include "VulkanRHI/VulkanShader.h"
-#include "VulkanRHI/VulkanSwapchain.h"
-#include "VulkanRHI/VulkanUtils.hpp"
+#include "Platform/VulkanRHI/Model.h"
+#include "Platform/VulkanRHI/Texture.h"
+#include "Platform/VulkanRHI/VulkanBuffer.h"
+#include "Platform/VulkanRHI/VulkanCommandBuffer.h"
+#include "Platform/VulkanRHI/VulkanCommandPool.h"
+#include "Platform/VulkanRHI/VulkanDescriptorPool.h"
+#include "Platform/VulkanRHI/VulkanDescriptorSet.h"
+#include "Platform/VulkanRHI/VulkanDescriptorSetLayout.h"
+#include "Platform/VulkanRHI/VulkanDevice.h"
+#include "Platform/VulkanRHI/VulkanFence.h"
+#include "Platform/VulkanRHI/VulkanFramebuffer.h"
+#include "Platform/VulkanRHI/VulkanGraphicsPipeline.h"
+#include "Platform/VulkanRHI/VulkanInstance.h"
+#include "Platform/VulkanRHI/VulkanImage.h"
+#include "Platform/VulkanRHI/VulkanImageView.h"
+#include "Platform/VulkanRHI/VulkanQueue.h"
+#include "Platform/VulkanRHI/VulkanRenderPass.h"
+#include "Platform/VulkanRHI/VulkanSemaphore.h"
+#include "Platform/VulkanRHI/VulkanShader.h"
+#include "Platform/VulkanRHI/VulkanSwapchain.h"
+#include "Platform/VulkanRHI/VulkanUtils.hpp"
+
+#include "Platform/Windows/WindowsWindow.h"
 
 ///////////////// VULKAN APPLICATION /////////////////
 
@@ -71,7 +72,7 @@ struct
 } Settings;
 
 VulkanInstance* pInstance;
-CrossPlatformWindow Window;
+WindowsWindow Window;
 Camera MyCamera;
 
 VulkanDevice* pLogicalDevice;

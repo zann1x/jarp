@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-class CrossPlatformWindow;
+class WindowsWindow;
 
 class VulkanInstance
 {
@@ -11,7 +11,7 @@ public:
 	VulkanInstance();
 	~VulkanInstance();
 
-	void CreateInstance(const CrossPlatformWindow& Window);
+	void CreateInstance(const WindowsWindow& Window);
 	void Destroy();
 
 	inline const VkInstance& GetHandle() const { return Instance; }

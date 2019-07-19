@@ -9,13 +9,13 @@
 #include <utility>
 #include <vector>
 
-#include "Input/InputHandler.h"
+#include "jarp/Input/InputHandler.h"
 
-class CrossPlatformWindow
+class WindowsWindow
 {
 public:
-	CrossPlatformWindow();
-	~CrossPlatformWindow();
+	WindowsWindow();
+	~WindowsWindow();
 
 	void Create();
 	void Shutdown();

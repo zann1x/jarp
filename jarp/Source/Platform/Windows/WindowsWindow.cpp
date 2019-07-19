@@ -1,4 +1,4 @@
-#include "CrossPlatformWindow.h"
+#include "WindowsWindow.h"
 
 #include "SDL_syswm.h"
 
@@ -7,7 +7,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 
-CrossPlatformWindow::CrossPlatformWindow()
+WindowsWindow::WindowsWindow()
 	: Width(800), Height(600), bShouldClose(false)
 {
 	SDL_SetMainReady();
@@ -18,12 +18,12 @@ CrossPlatformWindow::CrossPlatformWindow()
 	}
 }
 
-CrossPlatformWindow::~CrossPlatformWindow()
+WindowsWindow::~WindowsWindow()
 {
 	SDL_Quit();
 }
 
-void CrossPlatformWindow::Create()
+void WindowsWindow::Create()
 {
 	pWindow = SDL_CreateWindow("jarp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_VULKAN);
 	if (!pWindow)
@@ -44,13 +44,13 @@ void CrossPlatformWindow::Create()
 	//SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
 }
 
-void CrossPlatformWindow::Shutdown()
+void WindowsWindow::Shutdown()
 {
 	SDL_DestroyWindow(pWindow);
 	SDL_DestroyRenderer(pRenderer);
 }
 
-HINSTANCE CrossPlatformWindow::GetNativeInstanceHandle() const
+HINSTANCE WindowsWindow::GetNativeInstanceHandle() const
 {
 	SDL_SysWMinfo SystemInfo;
 	SDL_VERSION(&SystemInfo.version);
@@ -58,7 +58,7 @@ HINSTANCE CrossPlatformWindow::GetNativeInstanceHandle() const
 	return SystemInfo.info.win.hinstance;
 }
 
-HWND CrossPlatformWindow::GetNativeWindowHandle() const
+HWND WindowsWindow::GetNativeWindowHandle() const
 {
 	SDL_SysWMinfo SystemInfo;
 	SDL_VERSION(&SystemInfo.version);
@@ -66,7 +66,7 @@ HWND CrossPlatformWindow::GetNativeWindowHandle() const
 	return SystemInfo.info.win.window;
 }
 
-VkResult CrossPlatformWindow::CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const
+VkResult WindowsWindow::CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const
 {
 	if (!SDL_Vulkan_CreateSurface(pWindow, Instance, SurfaceKHR))
 		return VK_ERROR_INITIALIZATION_FAILED;
@@ -74,14 +74,14 @@ VkResult CrossPlatformWindow::CreateSurface(const VkInstance Instance, VkSurface
 	return VK_SUCCESS;
 }
 
-std::pair<int, int> CrossPlatformWindow::GetFramebufferSize()
+std::pair<int, int> WindowsWindow::GetFramebufferSize()
 {
 	int Width, Height;
 	SDL_Vulkan_GetDrawableSize(pWindow, &Width, &Height);
 	return std::make_pair(Width, Height);
 }
 
-std::vector<const char*> CrossPlatformWindow::GetInstanceExtensions() const
+std::vector<const char*> WindowsWindow::GetInstanceExtensions() const
 {
 	unsigned int Count;
 	SDL_Vulkan_GetInstanceExtensions(pWindow, &Count, nullptr);
@@ -94,12 +94,12 @@ std::vector<const char*> CrossPlatformWindow::GetInstanceExtensions() const
 	return Extensions;
 }
 
-bool CrossPlatformWindow::ShouldClose()
+bool WindowsWindow::ShouldClose()
 {
 	return bShouldClose;
 }
 
-void CrossPlatformWindow::Update(uint32_t DeltaTime)
+void WindowsWindow::Update(uint32_t DeltaTime)
 {
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))

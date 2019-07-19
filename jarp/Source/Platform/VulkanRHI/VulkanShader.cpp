@@ -4,7 +4,7 @@
 #include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
 
-#include "Utils.hpp"
+#include "jarp/Utils.hpp"
 
 VulkanShader::VulkanShader(VulkanDevice& OutDevice)
 	: Device(OutDevice)

@@ -3,7 +3,7 @@
 #include "VulkanDebug.h"
 #include "VulkanUtils.hpp"
 
-#include "../CrossPlatformWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 VulkanInstance::VulkanInstance()
 {
@@ -13,7 +13,7 @@ VulkanInstance::~VulkanInstance()
 {
 }
 
-void VulkanInstance::CreateInstance(const CrossPlatformWindow& Window)
+void VulkanInstance::CreateInstance(const WindowsWindow& Window)
 {
 	// Get the required extensions from the displaying window
 	InstanceExtensions = Window.GetInstanceExtensions();

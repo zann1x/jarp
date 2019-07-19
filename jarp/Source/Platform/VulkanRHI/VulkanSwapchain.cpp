@@ -4,12 +4,12 @@
 #include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
 
-#include "CrossPlatformWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 #include <algorithm>
 #include <limits>
 
-VulkanSwapchain::VulkanSwapchain(CrossPlatformWindow& Window, VkInstance Instance, VulkanDevice& Device)
+VulkanSwapchain::VulkanSwapchain(WindowsWindow& Window, VkInstance Instance, VulkanDevice& Device)
 	: Instance(Instance), Device(Device)
 {
 	// Create surface
