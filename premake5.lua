@@ -7,18 +7,15 @@ workspace "jarp"
     startproject "Sandbox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+sdllib = "%{prj.location}/ThirdParty/SDL2-2.0.9/lib/x64"
 vulkansdk = os.getenv("VULKAN_SDK")
 
 IncludeDir = {}
-IncludeDir["glm"] = "jarp/Vendor/glm"
-IncludeDir["tinyobjloader"] = "jarp/Vendor/tinyobjloader"
-IncludeDir["SDL"] = "jarp/Vendor/SDL2-2.0.9/include"
-IncludeDir["stb"] = "jarp/Vendor/stb"
+IncludeDir["glm"] = "jarp/ThirdParty/glm"
+IncludeDir["tinyobjloader"] = "jarp/ThirdParty/tinyobjloader"
+IncludeDir["SDL"] = "jarp/ThirdParty/SDL2-2.0.9/include"
+IncludeDir["stb"] = "jarp/ThirdParty/stb"
 IncludeDir["Vulkan"] = vulkansdk .. "/Include"
-
--- group "Dependencies"
---     include "jarp/Vendor/SDL2-2.0.9"
--- group ""
 
 project "jarp"
     location "jarp"
@@ -49,7 +46,7 @@ project "jarp"
     }
 
     libdirs {
-        "%{prj.location}/Vendor/SDL2-2.0.9/lib/x64",
+        sdllib,
         vulkansdk .. "/Lib"
     }
 
@@ -76,7 +73,7 @@ project "jarp"
         }
         postbuildcommands {
 			-- Copy the SDL2 dll to the bin folder
-			'{COPY} "%{prj.location}/Vendor/SDL2-2.0.9/lib/x64/SDL2.dll" "%{cfg.targetdir}"'
+			'{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
 		}
 
     filter 'files:**/Shaders/**.glsl'
