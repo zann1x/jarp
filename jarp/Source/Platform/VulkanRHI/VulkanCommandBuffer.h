@@ -2,33 +2,37 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
-class VulkanCommandPool;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-- CommandPool
-*/
-class VulkanCommandBuffer
-{
-public:
-	VulkanCommandBuffer(VulkanDevice& OutDevice, VulkanCommandPool& OutCommandPool);
-	~VulkanCommandBuffer();
+	class VulkanDevice;
+	class VulkanCommandPool;
 
-	void CreateCommandBuffer();
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	- CommandPool
+	*/
+	class VulkanCommandBuffer
+	{
+	public:
+		VulkanCommandBuffer(VulkanDevice& OutDevice, VulkanCommandPool& OutCommandPool);
+		~VulkanCommandBuffer();
 
-	inline const VkCommandBuffer& GetHandle() const { return CommandBuffer; }
+		void CreateCommandBuffer();
+		void Destroy();
 
-	void BeginOneTimeSubmitCommand();
-	void EndOneTimeSubmitCommand();
+		inline const VkCommandBuffer& GetHandle() const { return CommandBuffer; }
 
-	void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
+		void BeginOneTimeSubmitCommand();
+		void EndOneTimeSubmitCommand();
 
-private:
-	VulkanDevice& Device;
-	VulkanCommandPool& CommandPool;
+		void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
 
-	VkCommandBuffer CommandBuffer;
-};
+	private:
+		VulkanDevice& Device;
+		VulkanCommandPool& CommandPool;
+
+		VkCommandBuffer CommandBuffer;
+	};
+
+}

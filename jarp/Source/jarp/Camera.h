@@ -2,29 +2,33 @@
 
 #include "glm/glm.hpp"
 
-class Camera
-{
-public:
-	Camera();
-	~Camera();
+namespace jarp {
 
-	void Move(uint32_t DeltaSeconds);
-	glm::mat4 GetViewMatrix();
-	glm::mat4 GetProjectionMatrix();
+	class Camera
+	{
+	public:
+		Camera();
+		~Camera();
 
-	void SetAspectRatio(float AspectRatio) { this->AspectRatio = AspectRatio; }
+		void Move(uint32_t DeltaSeconds);
+		glm::mat4 GetViewMatrix();
+		glm::mat4 GetProjectionMatrix();
 
-private:
-	glm::vec3 Position;
-	glm::vec3 FrontVector;
-	glm::vec3 UpVector;
-	glm::vec3 RightVector;
+		void SetAspectRatio(float AspectRatio) { this->AspectRatio = AspectRatio; }
 
-	float Pitch;
-	float Yaw;
+	private:
+		glm::vec3 Position;
+		glm::vec3 FrontVector;
+		glm::vec3 UpVector;
+		glm::vec3 RightVector;
 
-	float FieldOfView;
-	float AspectRatio;
-	float NearPlane;
-	float FarPlane;
-};
+		float Pitch;
+		float Yaw;
+
+		float FieldOfView;
+		float AspectRatio;
+		float NearPlane;
+		float FarPlane;
+	};
+
+}

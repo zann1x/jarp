@@ -4,26 +4,30 @@
 #include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
 
-VulkanFence::VulkanFence(VulkanDevice& Device)
-	: Device(Device)
-{
-}
+namespace jarp {
 
-VulkanFence::~VulkanFence()
-{
-}
+	VulkanFence::VulkanFence(VulkanDevice& Device)
+		: Device(Device)
+	{
+	}
 
-void VulkanFence::CreateFence()
-{
-	VkFenceCreateInfo FenceCreateInfo = {};
-	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	FenceCreateInfo.pNext = nullptr;
-	FenceCreateInfo.flags = 0;
+	VulkanFence::~VulkanFence()
+	{
+	}
 
-	VK_ASSERT(vkCreateFence(Device.GetInstanceHandle(), &FenceCreateInfo, nullptr, &Fence));
-}
+	void VulkanFence::CreateFence()
+	{
+		VkFenceCreateInfo FenceCreateInfo = {};
+		FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		FenceCreateInfo.pNext = nullptr;
+		FenceCreateInfo.flags = 0;
 
-void VulkanFence::Destroy()
-{
-	vkDestroyFence(Device.GetInstanceHandle(), Fence, nullptr);
+		VK_ASSERT(vkCreateFence(Device.GetInstanceHandle(), &FenceCreateInfo, nullptr, &Fence));
+	}
+
+	void VulkanFence::Destroy()
+	{
+		vkDestroyFence(Device.GetInstanceHandle(), Fence, nullptr);
+	}
+
 }

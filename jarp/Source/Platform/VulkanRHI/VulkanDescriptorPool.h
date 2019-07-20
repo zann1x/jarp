@@ -2,28 +2,32 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
-class VulkanSwapchain;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-- SwapchainKHR
-*/
-class VulkanDescriptorPool
-{
-public:
-	VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain);
-	~VulkanDescriptorPool();
+	class VulkanDevice;
+	class VulkanSwapchain;
 
-	void CreateDescriptorPool();
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	- SwapchainKHR
+	*/
+	class VulkanDescriptorPool
+	{
+	public:
+		VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain);
+		~VulkanDescriptorPool();
 
-	inline const VkDescriptorPool& GetHandle() const { return DescriptorPool; }
+		void CreateDescriptorPool();
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VulkanSwapchain& Swapchain;
+		inline const VkDescriptorPool& GetHandle() const { return DescriptorPool; }
 
-	VkDescriptorPool DescriptorPool;
-};
+	private:
+		VulkanDevice& Device;
+		VulkanSwapchain& Swapchain;
+
+		VkDescriptorPool DescriptorPool;
+	};
+
+}

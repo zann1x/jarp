@@ -2,26 +2,30 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanCommandBuffer;
-class VulkanDevice;
+namespace jarp {
 
-class VulkanImage
-{
-public:
-	VulkanImage(VulkanDevice& Device);
-	~VulkanImage();
+	class VulkanCommandBuffer;
+	class VulkanDevice;
 
-	void CreateImage(uint32_t Width, uint32_t Height, VkFormat Format, VkImageTiling ImageTiling, VkImageUsageFlags ImageUsageFlags, VkMemoryPropertyFlags MemoryPropertyFlags);
-	void Destroy();
+	class VulkanImage
+	{
+	public:
+		VulkanImage(VulkanDevice& Device);
+		~VulkanImage();
 
-	void TransitionImageLayout(VulkanCommandBuffer& CommandBuffer, VkImageLayout OldLayout, VkImageLayout NewLayout);
+		void CreateImage(uint32_t Width, uint32_t Height, VkFormat Format, VkImageTiling ImageTiling, VkImageUsageFlags ImageUsageFlags, VkMemoryPropertyFlags MemoryPropertyFlags);
+		void Destroy();
 
-	inline const VkImage GetHandle() const { return Image; }
+		void TransitionImageLayout(VulkanCommandBuffer& CommandBuffer, VkImageLayout OldLayout, VkImageLayout NewLayout);
 
-private:
-	VulkanDevice& Device;
+		inline const VkImage GetHandle() const { return Image; }
 
-	VkImage Image;
-	VkDeviceMemory DeviceMemory;
-	VkFormat Format;
-};
+	private:
+		VulkanDevice& Device;
+
+		VkImage Image;
+		VkDeviceMemory DeviceMemory;
+		VkFormat Format;
+	};
+
+}

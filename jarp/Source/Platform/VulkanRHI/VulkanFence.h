@@ -2,21 +2,25 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
+namespace jarp {
 
-class VulkanFence
-{
-public:
-	VulkanFence(VulkanDevice& Device);
-	~VulkanFence();
+	class VulkanDevice;
 
-	void CreateFence();
-	void Destroy();
+	class VulkanFence
+	{
+	public:
+		VulkanFence(VulkanDevice& Device);
+		~VulkanFence();
 
-	inline const VkFence GetHandle() const { return Fence; }
-	inline const VkFence* GetHandlePointer() const { return &Fence; }
+		void CreateFence();
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VkFence Fence;
-};
+		inline const VkFence GetHandle() const { return Fence; }
+		inline const VkFence* GetHandlePointer() const { return &Fence; }
+
+	private:
+		VulkanDevice& Device;
+		VkFence Fence;
+	};
+
+}

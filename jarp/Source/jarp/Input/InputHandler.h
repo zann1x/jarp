@@ -1,16 +1,21 @@
 #pragma once
 
 #include "Command.h"
+#include "SDL.h"
 
-class InputHandler
-{
-public:
-	InputHandler();
-	~InputHandler();
+namespace jarp {
 
-	void HandleInput(union SDL_Event& Event);
+	class InputHandler
+	{
+	public:
+		InputHandler();
+		~InputHandler();
 
-private:
-	MoveForwardCommand MoveForward;
-	MoveRightCommand MoveRight;
-};
+		void HandleInput(SDL_Event& Event);
+
+	private:
+		MoveForwardCommand MoveForward;
+		MoveRightCommand MoveRight;
+	};
+
+}

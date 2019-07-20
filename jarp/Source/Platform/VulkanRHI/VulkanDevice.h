@@ -2,46 +2,50 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanInstance;
-class VulkanQueue;
+namespace jarp {
 
-class VulkanDevice
-{
-public:
-	VulkanDevice(VulkanInstance& Instance);
-	~VulkanDevice();
+	class VulkanInstance;
+	class VulkanQueue;
 
-	void SetupPresentQueue(VkSurfaceKHR Surface);
-	void CreateLogicalDevice();
+	class VulkanDevice
+	{
+	public:
+		VulkanDevice(VulkanInstance& Instance);
+		~VulkanDevice();
 
-	inline const VkDevice GetInstanceHandle() const  { return LogicalDevice; }
-	inline const VkPhysicalDevice GetPhysicalHandle() const { return PhysicalDevice; }
-	inline const VulkanQueue& GetGraphicsQueue() const { return *GraphicsQueue; }
-	inline const VulkanQueue& GetPresentQueue() const { return *PresentQueue; }
+		void SetupPresentQueue(VkSurfaceKHR Surface);
+		void CreateLogicalDevice();
 
-	void PickPhysicalDevice();
+		inline const VkDevice GetInstanceHandle() const { return LogicalDevice; }
+		inline const VkPhysicalDevice GetPhysicalHandle() const { return PhysicalDevice; }
+		inline const VulkanQueue& GetGraphicsQueue() const { return *GraphicsQueue; }
+		inline const VulkanQueue& GetPresentQueue() const { return *PresentQueue; }
 
-	uint32_t GetMemoryTypeIndex(uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const;
-	VkFormat FindSupportedFormat(const std::vector<VkFormat>& Formats, VkImageTiling ImageTiling, VkFormatFeatureFlags FormatFeatureFlags);
-	VkFormat FindDepthFormat();
+		void PickPhysicalDevice();
 
-	void WaitUntilIdle();
+		uint32_t GetMemoryTypeIndex(uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const;
+		VkFormat FindSupportedFormat(const std::vector<VkFormat>& Formats, VkImageTiling ImageTiling, VkFormatFeatureFlags FormatFeatureFlags);
+		VkFormat FindDepthFormat();
 
-private:
-	VkPhysicalDeviceProperties PhysicalDeviceProperties;
-	VkPhysicalDeviceFeatures PhysicalDeviceFeatures;
-	VkPhysicalDeviceFeatures EnabledPhysicalDeviceFeatures;
-	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
-	std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
-	std::vector<std::string> SupportedExtensions;
-	std::vector<const char*> EnabledExtensions;
+		void WaitUntilIdle();
 
-	VulkanInstance& Instance;
-	VkPhysicalDevice PhysicalDevice;
-	VkDevice LogicalDevice;
+	private:
+		VkPhysicalDeviceProperties PhysicalDeviceProperties;
+		VkPhysicalDeviceFeatures PhysicalDeviceFeatures;
+		VkPhysicalDeviceFeatures EnabledPhysicalDeviceFeatures;
+		VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
+		std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
+		std::vector<std::string> SupportedExtensions;
+		std::vector<const char*> EnabledExtensions;
 
-	VulkanQueue* GraphicsQueue;
-	VulkanQueue* ComputeQueue;
-	VulkanQueue* TransferQueue;
-	VulkanQueue* PresentQueue;
-};
+		VulkanInstance& Instance;
+		VkPhysicalDevice PhysicalDevice;
+		VkDevice LogicalDevice;
+
+		VulkanQueue* GraphicsQueue;
+		VulkanQueue* ComputeQueue;
+		VulkanQueue* TransferQueue;
+		VulkanQueue* PresentQueue;
+	};
+
+}

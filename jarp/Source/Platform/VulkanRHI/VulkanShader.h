@@ -4,30 +4,34 @@
 
 #include "VulkanDescriptorSetLayout.h"
 
-class VulkanDevice;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-*/
-class VulkanShader
-{
-public:
-	VulkanShader(VulkanDevice& OutDevice);
-	~VulkanShader();
+	class VulkanDevice;
 
-	void CreateShaderModule(const VkShaderStageFlagBits ShaderStage, const std::string& Filename);
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	*/
+	class VulkanShader
+	{
+	public:
+		VulkanShader(VulkanDevice& OutDevice);
+		~VulkanShader();
 
-	inline const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStageCreateInfos() const { return ShaderStageCreateInfos; }
-	inline const std::vector<VulkanDescriptorSetLayout>& GetSetLayoutHandles() const { return DescriptorSetLayouts; }
+		void CreateShaderModule(const VkShaderStageFlagBits ShaderStage, const std::string& Filename);
+		void Destroy();
 
-	void AddDescriptorSetLayout(const VulkanDescriptorSetLayout& DescriptorSetLayout);
+		inline const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStageCreateInfos() const { return ShaderStageCreateInfos; }
+		inline const std::vector<VulkanDescriptorSetLayout>& GetSetLayoutHandles() const { return DescriptorSetLayouts; }
 
-private:
-	VulkanDevice& Device;
-	std::vector<VulkanDescriptorSetLayout> DescriptorSetLayouts;
+		void AddDescriptorSetLayout(const VulkanDescriptorSetLayout& DescriptorSetLayout);
 
-	std::map< VkShaderStageFlagBits, VkShaderModule> ShaderModules;
-	std::vector<VkPipelineShaderStageCreateInfo> ShaderStageCreateInfos;
-};
+	private:
+		VulkanDevice& Device;
+		std::vector<VulkanDescriptorSetLayout> DescriptorSetLayouts;
+
+		std::map< VkShaderStageFlagBits, VkShaderModule> ShaderModules;
+		std::vector<VkPipelineShaderStageCreateInfo> ShaderStageCreateInfos;
+	};
+
+}

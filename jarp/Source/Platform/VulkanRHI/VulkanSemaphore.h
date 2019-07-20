@@ -2,25 +2,29 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-*/
-class VulkanSemaphore
-{
-public:
-	VulkanSemaphore(VulkanDevice& Device);
-	~VulkanSemaphore();
+	class VulkanDevice;
 
-	void CreateSemaphore();
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	*/
+	class VulkanSemaphore
+	{
+	public:
+		VulkanSemaphore(VulkanDevice& Device);
+		~VulkanSemaphore();
 
-	inline const VkSemaphore& GetHandle() const { return Semaphore; }
+		void CreateSemaphore();
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
+		inline const VkSemaphore& GetHandle() const { return Semaphore; }
 
-	VkSemaphore Semaphore;
-};
+	private:
+		VulkanDevice& Device;
+
+		VkSemaphore Semaphore;
+	};
+
+}

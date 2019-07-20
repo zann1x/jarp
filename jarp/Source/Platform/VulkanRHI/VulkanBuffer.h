@@ -4,46 +4,49 @@
 
 #include "VulkanCommandBuffer.h"
 
-class VulkanDevice;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-*/
-class VulkanBuffer
-{
-public:
-	VulkanBuffer(VulkanDevice& Device, VkDeviceSize Size, VkBufferUsageFlags Usage);
-	~VulkanBuffer();
+	class VulkanDevice;
 
-	void CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkBuffer& Buffer, VkMemoryPropertyFlags MemoryProperties, VkDeviceMemory& DeviceMemory);
-	void CreateBuffer(VkMemoryPropertyFlags MemoryProperties);
-	void Destroy();
-
-	inline const VkBuffer& GetHandle() const { return Buffer; }
-	inline const VkDeviceMemory& GetMemoryHandle() const { return BufferMemory; }
-
-	template <typename T>
-	void UploadBuffer(class VulkanCommandBuffer& CommandBuffer, const std::vector<T>& Data)
+	/*
+	Depends on:
+	- Device
+	*/
+	class VulkanBuffer
 	{
-		VulkanBuffer StagingBuffer(Device, Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-		StagingBuffer.CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	public:
+		VulkanBuffer(VulkanDevice& Device, VkDeviceSize Size, VkBufferUsageFlags Usage);
+		~VulkanBuffer();
 
-		void* RawData;
-		vkMapMemory(Device.GetInstanceHandle(), StagingBuffer.GetMemoryHandle(), 0, Size, 0, &RawData);
-		memcpy(RawData, Data.data(), static_cast<size_t>(Size));
-		vkUnmapMemory(Device.GetInstanceHandle(), StagingBuffer.GetMemoryHandle());
+		void CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkBuffer& Buffer, VkMemoryPropertyFlags MemoryProperties, VkDeviceMemory& DeviceMemory);
+		void CreateBuffer(VkMemoryPropertyFlags MemoryProperties);
+		void Destroy();
 
-		CommandBuffer.CopyBuffer(StagingBuffer.GetHandle(), Buffer, Size);
-	}
+		inline const VkBuffer& GetHandle() const { return Buffer; }
+		inline const VkDeviceMemory& GetMemoryHandle() const { return BufferMemory; }
 
-private:
-	VulkanDevice& Device;
+		template <typename T>
+		void UploadBuffer(class VulkanCommandBuffer& CommandBuffer, const std::vector<T>& Data)
+		{
+			VulkanBuffer StagingBuffer(Device, Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+			StagingBuffer.CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	VkBuffer Buffer;
-	VkDeviceMemory BufferMemory;
+			void* RawData;
+			vkMapMemory(Device.GetInstanceHandle(), StagingBuffer.GetMemoryHandle(), 0, Size, 0, &RawData);
+			memcpy(RawData, Data.data(), static_cast<size_t>(Size));
+			vkUnmapMemory(Device.GetInstanceHandle(), StagingBuffer.GetMemoryHandle());
 
-	VkDeviceSize Size;
-	VkBufferUsageFlags Usage;
-};
+			CommandBuffer.CopyBuffer(StagingBuffer.GetHandle(), Buffer, Size);
+		}
 
+	private:
+		VulkanDevice& Device;
+
+		VkBuffer Buffer;
+		VkDeviceMemory BufferMemory;
+
+		VkDeviceSize Size;
+		VkBufferUsageFlags Usage;
+	};
+
+}

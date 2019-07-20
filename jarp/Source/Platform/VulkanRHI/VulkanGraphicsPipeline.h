@@ -2,37 +2,41 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
-class VulkanRenderPass;
-class VulkanShader;
+namespace jarp {
 
-class Model;
+	class VulkanDevice;
+	class VulkanRenderPass;
+	class VulkanShader;
 
-/*
-Depends on:
-- Device
-- Renderpass
-- Shader
-*/
-class VulkanGraphicsPipeline
-{
-public:
-	VulkanGraphicsPipeline(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass, VulkanShader& OutShader);
-	~VulkanGraphicsPipeline();
+	class Model;
 
-	void CreateGraphicsPipeline(const VkPipelineVertexInputStateCreateInfo& PipelineVertexInputStateCreateInfo, const VkExtent2D SwapchainExtent);
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	- Renderpass
+	- Shader
+	*/
+	class VulkanGraphicsPipeline
+	{
+	public:
+		VulkanGraphicsPipeline(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass, VulkanShader& OutShader);
+		~VulkanGraphicsPipeline();
 
-	inline const VkPipeline& GetHandle() const { return Pipeline; }
-	inline const VkPipelineLayout& GetLayoutHandle() const { return PipelineLayout; }
+		void CreateGraphicsPipeline(const VkPipelineVertexInputStateCreateInfo& PipelineVertexInputStateCreateInfo, const VkExtent2D SwapchainExtent);
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VulkanRenderPass& RenderPass;
-	VulkanShader& Shader;
+		inline const VkPipeline& GetHandle() const { return Pipeline; }
+		inline const VkPipelineLayout& GetLayoutHandle() const { return PipelineLayout; }
 
-	VkPipelineLayout PipelineLayout;
-	VkPipeline Pipeline;
+	private:
+		VulkanDevice& Device;
+		VulkanRenderPass& RenderPass;
+		VulkanShader& Shader;
 
-	std::vector<VkDynamicState> DynamicStates;
-};
+		VkPipelineLayout PipelineLayout;
+		VkPipeline Pipeline;
+
+		std::vector<VkDynamicState> DynamicStates;
+	};
+
+}

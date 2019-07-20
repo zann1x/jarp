@@ -2,28 +2,32 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
-class VulkanSwapchain;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-- SwapchainKHR
-*/
-class VulkanRenderPass
-{
-public:
-	VulkanRenderPass(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain);
-	~VulkanRenderPass();
+	class VulkanDevice;
+	class VulkanSwapchain;
 
-	void CreateRenderPass();
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	- SwapchainKHR
+	*/
+	class VulkanRenderPass
+	{
+	public:
+		VulkanRenderPass(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain);
+		~VulkanRenderPass();
 
-	inline const VkRenderPass& GetHandle() const { return RenderPass; }
+		void CreateRenderPass();
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VulkanSwapchain& Swapchain;
+		inline const VkRenderPass& GetHandle() const { return RenderPass; }
 
-	VkRenderPass RenderPass;
-};
+	private:
+		VulkanDevice& Device;
+		VulkanSwapchain& Swapchain;
+
+		VkRenderPass RenderPass;
+	};
+
+}

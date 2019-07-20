@@ -2,29 +2,33 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
-class VulkanRenderPass;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-- SwapchainKHR
-- RenderPass
-*/
-class VulkanFramebuffer
-{
-public:
-	VulkanFramebuffer(VulkanDevice& Device, VulkanRenderPass& RenderPass);
-	~VulkanFramebuffer();
+	class VulkanDevice;
+	class VulkanRenderPass;
 
-	void CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent);
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	- SwapchainKHR
+	- RenderPass
+	*/
+	class VulkanFramebuffer
+	{
+	public:
+		VulkanFramebuffer(VulkanDevice& Device, VulkanRenderPass& RenderPass);
+		~VulkanFramebuffer();
 
-	inline const VkFramebuffer& GetHandle() const { return Framebuffer; }
+		void CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent);
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VulkanRenderPass& RenderPass;
+		inline const VkFramebuffer& GetHandle() const { return Framebuffer; }
 
-	VkFramebuffer Framebuffer;
-};
+	private:
+		VulkanDevice& Device;
+		VulkanRenderPass& RenderPass;
+
+		VkFramebuffer Framebuffer;
+	};
+
+}

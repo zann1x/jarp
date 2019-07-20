@@ -2,24 +2,28 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-*/
-class VulkanCommandPool
-{
-public:
-	VulkanCommandPool(VulkanDevice& OutDevice);
-	~VulkanCommandPool();
+	class VulkanDevice;
 
-	void CreateCommandPool(const VkCommandPoolCreateFlags Flags = 0);
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	*/
+	class VulkanCommandPool
+	{
+	public:
+		VulkanCommandPool(VulkanDevice& OutDevice);
+		~VulkanCommandPool();
 
-	inline VkCommandPool GetHandle() { return CommandPool; };
+		void CreateCommandPool(const VkCommandPoolCreateFlags Flags = 0);
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VkCommandPool CommandPool;
-};
+		inline VkCommandPool GetHandle() { return CommandPool; };
+
+	private:
+		VulkanDevice& Device;
+		VkCommandPool CommandPool;
+	};
+
+}

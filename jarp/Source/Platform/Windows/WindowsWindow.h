@@ -7,44 +7,48 @@
 
 #include "jarp/Input/InputHandler.h"
 
-class WindowsWindow
-{
-public:
-	WindowsWindow();
-	~WindowsWindow();
+namespace jarp {
 
-	void Create();
-	void Shutdown();
+	class WindowsWindow
+	{
+	public:
+		WindowsWindow();
+		~WindowsWindow();
 
-	inline SDL_Window* GetHandle() { return pWindow; }
+		void Create();
+		void Shutdown();
 
-	HINSTANCE GetNativeInstanceHandle() const;
-	HWND GetNativeWindowHandle() const;
+		inline SDL_Window* GetHandle() { return pWindow; }
 
-	VkResult CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const;
-	std::vector<const char*> GetInstanceExtensions() const;
+		HINSTANCE GetNativeInstanceHandle() const;
+		HWND GetNativeWindowHandle() const;
 
-	// Returns the framebuffer width as the first parameter and height as the second
-	std::pair<int, int> GetFramebufferSize();
-	inline int GetWidth() { return Width; }
-	inline int GetHeight() { return Height; }
+		VkResult CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const;
+		std::vector<const char*> GetInstanceExtensions() const;
 
-	inline bool IsIconified() { return bIsWindowMinimized; }
-	inline bool IsFramebufferResized() { return bIsFramebufferResized; }
-	void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
+		// Returns the framebuffer width as the first parameter and height as the second
+		std::pair<int, int> GetFramebufferSize();
+		inline int GetWidth() { return Width; }
+		inline int GetHeight() { return Height; }
 
-	bool ShouldClose();
-	void Update(uint32_t DeltaTime);
+		inline bool IsIconified() { return bIsWindowMinimized; }
+		inline bool IsFramebufferResized() { return bIsFramebufferResized; }
+		void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
 
-private:
-	int Width;
-	int Height;
+		bool ShouldClose();
+		void Update(uint32_t DeltaTime);
 
-	SDL_Window* pWindow;
-	SDL_Renderer* pRenderer;
-	bool bIsFramebufferResized;
-	bool bIsWindowMinimized;
-	bool bShouldClose;
+	private:
+		int Width;
+		int Height;
 
-	InputHandler InputHandler;
-};
+		SDL_Window* pWindow;
+		SDL_Renderer* pRenderer;
+		bool bIsFramebufferResized;
+		bool bIsWindowMinimized;
+		bool bShouldClose;
+
+		InputHandler InputHandler;
+	};
+
+}

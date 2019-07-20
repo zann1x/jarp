@@ -2,29 +2,32 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-*/
-class VulkanDescriptorSetLayout
-{
-public:
-	VulkanDescriptorSetLayout(VulkanDevice& OutDevice);
-	~VulkanDescriptorSetLayout();
+	class VulkanDevice;
 
-	void CreateDescriptorSetLayout();
-	void Destroy();
+	/*
+	Depends on:
+	- Device
+	*/
+	class VulkanDescriptorSetLayout
+	{
+	public:
+		VulkanDescriptorSetLayout(VulkanDevice& OutDevice);
+		~VulkanDescriptorSetLayout();
 
-	void AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags);
+		void CreateDescriptorSetLayout();
+		void Destroy();
 
-	inline const VkDescriptorSetLayout& GetHandle() const { return DescriptorSetLayout; }
+		void AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags);
 
-private:
-	VulkanDevice& Device;
+		inline const VkDescriptorSetLayout& GetHandle() const { return DescriptorSetLayout; }
 
-	std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
-	VkDescriptorSetLayout DescriptorSetLayout;
-};
+	private:
+		VulkanDevice& Device;
 
+		std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
+		VkDescriptorSetLayout DescriptorSetLayout;
+	};
+
+}

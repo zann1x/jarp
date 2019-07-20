@@ -5,38 +5,42 @@
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
 
-VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
-	: Device(OutDevice), Swapchain(OutSwapchain)
-{
-}
+namespace jarp {
 
-VulkanDescriptorPool::~VulkanDescriptorPool()
-{
-}
+	VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
+		: Device(OutDevice), Swapchain(OutSwapchain)
+	{
+	}
 
-void VulkanDescriptorPool::CreateDescriptorPool()
-{
-	std::array<VkDescriptorPoolSize, 2> DescriptorPoolSizes;
-	DescriptorPoolSizes[0] = {};
-	DescriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	DescriptorPoolSizes[0].descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
-	DescriptorPoolSizes[1] = {};
-	DescriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	DescriptorPoolSizes[1].descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
+	VulkanDescriptorPool::~VulkanDescriptorPool()
+	{
+	}
 
-	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo = {};
-	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	DescriptorPoolCreateInfo.pNext = nullptr;
-	DescriptorPoolCreateInfo.flags = 0;
-	DescriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(Swapchain.GetImages().size());
-	DescriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolSizes.size());
-	DescriptorPoolCreateInfo.pPoolSizes = DescriptorPoolSizes.data();
+	void VulkanDescriptorPool::CreateDescriptorPool()
+	{
+		std::array<VkDescriptorPoolSize, 2> DescriptorPoolSizes;
+		DescriptorPoolSizes[0] = {};
+		DescriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		DescriptorPoolSizes[0].descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
+		DescriptorPoolSizes[1] = {};
+		DescriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		DescriptorPoolSizes[1].descriptorCount = static_cast<uint32_t>(Swapchain.GetImages().size());
 
-	VK_ASSERT(vkCreateDescriptorPool(Device.GetInstanceHandle(), &DescriptorPoolCreateInfo, nullptr, &DescriptorPool));
-}
+		VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo = {};
+		DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		DescriptorPoolCreateInfo.pNext = nullptr;
+		DescriptorPoolCreateInfo.flags = 0;
+		DescriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(Swapchain.GetImages().size());
+		DescriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolSizes.size());
+		DescriptorPoolCreateInfo.pPoolSizes = DescriptorPoolSizes.data();
 
-void VulkanDescriptorPool::Destroy()
-{
-	// Implicitly destroys the descriptor sets created from it
-	vkDestroyDescriptorPool(Device.GetInstanceHandle(), DescriptorPool, nullptr);
+		VK_ASSERT(vkCreateDescriptorPool(Device.GetInstanceHandle(), &DescriptorPoolCreateInfo, nullptr, &DescriptorPool));
+	}
+
+	void VulkanDescriptorPool::Destroy()
+	{
+		// Implicitly destroys the descriptor sets created from it
+		vkDestroyDescriptorPool(Device.GetInstanceHandle(), DescriptorPool, nullptr);
+	}
+
 }

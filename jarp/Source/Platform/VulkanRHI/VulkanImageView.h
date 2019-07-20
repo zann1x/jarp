@@ -2,21 +2,25 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDevice;
+namespace jarp {
 
-class VulkanImageView
-{
-public:
-	VulkanImageView(VulkanDevice& Device);
-	~VulkanImageView();
+	class VulkanDevice;
 
-	void CreateImageView(VkImage Image, VkFormat Format, VkImageAspectFlags ImageAspectFlags);
-	void Destroy();
+	class VulkanImageView
+	{
+	public:
+		VulkanImageView(VulkanDevice& Device);
+		~VulkanImageView();
 
-	inline const VkImageView GetHandle() const { return ImageView; }
+		void CreateImageView(VkImage Image, VkFormat Format, VkImageAspectFlags ImageAspectFlags);
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
+		inline const VkImageView GetHandle() const { return ImageView; }
 
-	VkImageView ImageView;
-};
+	private:
+		VulkanDevice& Device;
+
+		VkImageView ImageView;
+	};
+
+}

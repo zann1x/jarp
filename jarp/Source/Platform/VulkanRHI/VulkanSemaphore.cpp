@@ -4,26 +4,30 @@
 #include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
 
-VulkanSemaphore::VulkanSemaphore(VulkanDevice& Device)
-	: Device(Device)
-{
-}
+namespace jarp {
 
-VulkanSemaphore::~VulkanSemaphore()
-{
-}
+	VulkanSemaphore::VulkanSemaphore(VulkanDevice& Device)
+		: Device(Device)
+	{
+	}
 
-void VulkanSemaphore::CreateSemaphore()
-{
-	VkSemaphoreCreateInfo SemaphoreCreateInfo = {};
-	SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	SemaphoreCreateInfo.flags = 0;
-	SemaphoreCreateInfo.pNext = nullptr;
+	VulkanSemaphore::~VulkanSemaphore()
+	{
+	}
 
-	VK_ASSERT(vkCreateSemaphore(Device.GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &Semaphore));
-}
+	void VulkanSemaphore::CreateSemaphore()
+	{
+		VkSemaphoreCreateInfo SemaphoreCreateInfo = {};
+		SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		SemaphoreCreateInfo.flags = 0;
+		SemaphoreCreateInfo.pNext = nullptr;
 
-void VulkanSemaphore::Destroy()
-{
-	vkDestroySemaphore(Device.GetInstanceHandle(), Semaphore, nullptr);
+		VK_ASSERT(vkCreateSemaphore(Device.GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &Semaphore));
+	}
+
+	void VulkanSemaphore::Destroy()
+	{
+		vkDestroySemaphore(Device.GetInstanceHandle(), Semaphore, nullptr);
+	}
+
 }

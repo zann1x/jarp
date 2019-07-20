@@ -2,27 +2,31 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanCommandBuffer;
-class VulkanDevice;
-class VulkanImage;
-class VulkanImageView;
+namespace jarp {
 
-class Texture
-{
-public:
-	Texture(VulkanDevice& Device);
-	~Texture();
+	class VulkanCommandBuffer;
+	class VulkanDevice;
+	class VulkanImage;
+	class VulkanImageView;
 
-	void Load(VulkanCommandBuffer& CommandBuffer, const std::string& FileName);
-	void Destroy();
+	class Texture
+	{
+	public:
+		Texture(VulkanDevice& Device);
+		~Texture();
 
-	inline const VkSampler GetSampler() const { return Sampler; }
-	inline const VulkanImageView& GetImageView() const { return *pTextureImageView; }
+		void Load(VulkanCommandBuffer& CommandBuffer, const std::string& FileName);
+		void Destroy();
 
-private:
-	VulkanDevice& Device;
-	VulkanImage* pTextureImage;
-	VulkanImageView* pTextureImageView;
+		inline const VkSampler GetSampler() const { return Sampler; }
+		inline const VulkanImageView& GetImageView() const { return *pTextureImageView; }
 
-	VkSampler Sampler;
-};
+	private:
+		VulkanDevice& Device;
+		VulkanImage* pTextureImage;
+		VulkanImageView* pTextureImageView;
+
+		VkSampler Sampler;
+	};
+
+}

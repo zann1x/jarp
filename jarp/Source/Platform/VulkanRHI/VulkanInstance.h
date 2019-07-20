@@ -2,22 +2,26 @@
 
 #include <vulkan/vulkan.h>
 
-class WindowsWindow;
+namespace jarp {
 
-class VulkanInstance
-{
-public:
-	VulkanInstance();
-	~VulkanInstance();
+	class WindowsWindow;
 
-	void CreateInstance(const WindowsWindow& Window);
-	void Destroy();
+	class VulkanInstance
+	{
+	public:
+		VulkanInstance();
+		~VulkanInstance();
 
-	inline const VkInstance& GetHandle() const { return Instance; }
+		void CreateInstance(const WindowsWindow& Window);
+		void Destroy();
 
-private:
-	VkInstance Instance;
+		inline const VkInstance& GetHandle() const { return Instance; }
 
-	std::vector<const char*> InstanceLayers;
-	std::vector<const char*> InstanceExtensions;
-};
+	private:
+		VkInstance Instance;
+
+		std::vector<const char*> InstanceLayers;
+		std::vector<const char*> InstanceExtensions;
+	};
+
+}

@@ -2,29 +2,33 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanDescriptorSetLayout;
-class VulkanDescriptorPool;
-class VulkanDevice;
+namespace jarp {
 
-/*
-Depends on:
-- Device
-- SwapchainKHR
-- DescriptorPool
-- DescriptorSetLayout
-*/
-class VulkanDescriptorSet
-{
-public:
-	VulkanDescriptorSet(VulkanDevice& OutDevice);
-	~VulkanDescriptorSet();
+	class VulkanDescriptorSetLayout;
+	class VulkanDescriptorPool;
+	class VulkanDevice;
 
-	void CreateDescriptorSets(const VulkanDescriptorSetLayout& DescriptorSetLayout, const VulkanDescriptorPool& DescriptorPool, const size_t Amount, const VkDeviceSize Size, const std::vector<VkBuffer>& Buffers, VkSampler Sampler, VkImageView ImageView);
+	/*
+	Depends on:
+	- Device
+	- SwapchainKHR
+	- DescriptorPool
+	- DescriptorSetLayout
+	*/
+	class VulkanDescriptorSet
+	{
+	public:
+		VulkanDescriptorSet(VulkanDevice& OutDevice);
+		~VulkanDescriptorSet();
 
-	inline const VkDescriptorSet& At(size_t Index) const { return DescriptorSets[Index]; }
+		void CreateDescriptorSets(const VulkanDescriptorSetLayout& DescriptorSetLayout, const VulkanDescriptorPool& DescriptorPool, const size_t Amount, const VkDeviceSize Size, const std::vector<VkBuffer>& Buffers, VkSampler Sampler, VkImageView ImageView);
 
-private:
-	VulkanDevice& Device;
+		inline const VkDescriptorSet& At(size_t Index) const { return DescriptorSets[Index]; }
 
-	std::vector<VkDescriptorSet> DescriptorSets;
-};
+	private:
+		VulkanDevice& Device;
+
+		std::vector<VkDescriptorSet> DescriptorSets;
+	};
+
+}

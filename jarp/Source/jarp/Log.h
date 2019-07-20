@@ -2,19 +2,23 @@
 
 #include "spdlog/spdlog.h"
 
-class Log
-{
-public:
-	static void Init();
+namespace jarp {
 
-	inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return CoreLogger; }
+	class Log
+	{
+	public:
+		static void Init();
 
-private:
-	static std::shared_ptr<spdlog::logger> CoreLogger;
-};
+		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return CoreLogger; }
 
-#define JARP_CORE_TRACE(...) ::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define JARP_CORE_INFO(...) ::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define JARP_CORE_WARN(...) ::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define JARP_CORE_ERROR(...) ::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define JARP_CORE_CRITICAL(...) ::Log::GetCoreLogger()->critical(__VA_ARGS__)
+	private:
+		static std::shared_ptr<spdlog::logger> CoreLogger;
+	};
+
+}
+
+#define JARP_CORE_TRACE(...)		::jarp::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define JARP_CORE_INFO(...)			::jarp::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define JARP_CORE_WARN(...)			::jarp::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define JARP_CORE_ERROR(...)		::jarp::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define JARP_CORE_CRITICAL(...)		::jarp::Log::GetCoreLogger()->critical(__VA_ARGS__)

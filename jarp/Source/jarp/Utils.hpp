@@ -2,23 +2,27 @@
 
 #include <fstream>
 
-class Utils
-{
-public:
-	static std::vector<char> ReadFile(const std::string& Filename)
+namespace jarp {
+
+	class Utils
 	{
-		std::ifstream File(Filename, std::ios::binary | std::ios::ate);
-		if (!File.is_open())
+	public:
+		static std::vector<char> ReadFile(const std::string& Filename)
 		{
-			throw std::runtime_error("Failed to open file!");
+			std::ifstream File(Filename, std::ios::binary | std::ios::ate);
+			if (!File.is_open())
+			{
+				throw std::runtime_error("Failed to open file!");
+			}
+			std::streampos Size = File.tellg();
+			std::vector<char> Buffer(Size);
+
+			File.seekg(0);
+			File.read(Buffer.data(), Size);
+			File.close();
+
+			return Buffer;
 		}
-		std::streampos Size = File.tellg();
-		std::vector<char> Buffer(Size);
+	};
 
-		File.seekg(0);
-		File.read(Buffer.data(), Size);
-		File.close();
-
-		return Buffer;
-	}
-};
+}

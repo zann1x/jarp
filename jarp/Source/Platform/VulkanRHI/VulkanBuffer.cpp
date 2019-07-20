@@ -3,80 +3,84 @@
 #include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
 
-VulkanBuffer::VulkanBuffer(VulkanDevice& Device, VkDeviceSize Size, VkBufferUsageFlags Usage)
-	: Device(Device), Size(Size), Usage(Usage)
-{
-}
+namespace jarp {
 
-VulkanBuffer::~VulkanBuffer()
-{
-	if (Buffer != VK_NULL_HANDLE)
-		Destroy();
-}
+	VulkanBuffer::VulkanBuffer(VulkanDevice& Device, VkDeviceSize Size, VkBufferUsageFlags Usage)
+		: Device(Device), Size(Size), Usage(Usage)
+	{
+	}
 
-void VulkanBuffer::CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkBuffer& Buffer, VkMemoryPropertyFlags MemoryProperties, VkDeviceMemory& DeviceMemory)
-{
-	// Create the buffer
-	VkBufferCreateInfo BufferCreateInfo = {};
-	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	BufferCreateInfo.pNext = nullptr;
-	BufferCreateInfo.flags = 0;
-	BufferCreateInfo.size = Size;
-	BufferCreateInfo.usage = Usage;
-	BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
-	BufferCreateInfo.pQueueFamilyIndices = nullptr;
+	VulkanBuffer::~VulkanBuffer()
+	{
+		if (Buffer != VK_NULL_HANDLE)
+			Destroy();
+	}
 
-	VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
+	void VulkanBuffer::CreateBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage, VkBuffer& Buffer, VkMemoryPropertyFlags MemoryProperties, VkDeviceMemory& DeviceMemory)
+	{
+		// Create the buffer
+		VkBufferCreateInfo BufferCreateInfo = {};
+		BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		BufferCreateInfo.pNext = nullptr;
+		BufferCreateInfo.flags = 0;
+		BufferCreateInfo.size = Size;
+		BufferCreateInfo.usage = Usage;
+		BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
+		BufferCreateInfo.pQueueFamilyIndices = nullptr;
 
-	// Allocate the buffer's memory
-	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements(Device.GetInstanceHandle(), Buffer, &MemoryRequirements);
-	uint32_t MemoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
+		VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
 
-	VkMemoryAllocateInfo MemoryAllocateInfo = {};
-	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	MemoryAllocateInfo.pNext = nullptr;
-	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
-	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
+		// Allocate the buffer's memory
+		VkMemoryRequirements MemoryRequirements;
+		vkGetBufferMemoryRequirements(Device.GetInstanceHandle(), Buffer, &MemoryRequirements);
+		uint32_t MemoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
 
-	VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
-}
+		VkMemoryAllocateInfo MemoryAllocateInfo = {};
+		MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		MemoryAllocateInfo.pNext = nullptr;
+		MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
+		MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
-void VulkanBuffer::CreateBuffer(VkMemoryPropertyFlags MemoryProperties)
-{
-	// Create the buffer
-	VkBufferCreateInfo BufferCreateInfo = {};
-	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	BufferCreateInfo.pNext = nullptr;
-	BufferCreateInfo.flags = 0;
-	BufferCreateInfo.size = Size;
-	BufferCreateInfo.usage = Usage;
-	BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
-	BufferCreateInfo.pQueueFamilyIndices = nullptr;
+		VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
+	}
 
-	VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
+	void VulkanBuffer::CreateBuffer(VkMemoryPropertyFlags MemoryProperties)
+	{
+		// Create the buffer
+		VkBufferCreateInfo BufferCreateInfo = {};
+		BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		BufferCreateInfo.pNext = nullptr;
+		BufferCreateInfo.flags = 0;
+		BufferCreateInfo.size = Size;
+		BufferCreateInfo.usage = Usage;
+		BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
+		BufferCreateInfo.pQueueFamilyIndices = nullptr;
 
-	// Allocate the buffer's memory
-	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements(Device.GetInstanceHandle(), Buffer, &MemoryRequirements);
-	uint32_t MemoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
+		VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
 
-	VkMemoryAllocateInfo MemoryAllocateInfo = {};
-	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	MemoryAllocateInfo.pNext = nullptr;
-	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
-	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
+		// Allocate the buffer's memory
+		VkMemoryRequirements MemoryRequirements;
+		vkGetBufferMemoryRequirements(Device.GetInstanceHandle(), Buffer, &MemoryRequirements);
+		uint32_t MemoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
 
-	VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &BufferMemory));
+		VkMemoryAllocateInfo MemoryAllocateInfo = {};
+		MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		MemoryAllocateInfo.pNext = nullptr;
+		MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
+		MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
-	VK_ASSERT(vkBindBufferMemory(Device.GetInstanceHandle(), Buffer, BufferMemory, 0));
-}
+		VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &BufferMemory));
 
-void VulkanBuffer::Destroy()
-{
-	vkFreeMemory(Device.GetInstanceHandle(), BufferMemory, nullptr);
-	vkDestroyBuffer(Device.GetInstanceHandle(), Buffer, nullptr);
-	Buffer = VK_NULL_HANDLE;
+		VK_ASSERT(vkBindBufferMemory(Device.GetInstanceHandle(), Buffer, BufferMemory, 0));
+	}
+
+	void VulkanBuffer::Destroy()
+	{
+		vkFreeMemory(Device.GetInstanceHandle(), BufferMemory, nullptr);
+		vkDestroyBuffer(Device.GetInstanceHandle(), Buffer, nullptr);
+		Buffer = VK_NULL_HANDLE;
+	}
+
 }

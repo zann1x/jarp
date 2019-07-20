@@ -3,30 +3,34 @@
 
 #include "jarp/Utils.hpp"
 
-void DoNothingCommand::Execute()
-{
-}
+namespace jarp {
 
-MoveForwardCommand::MoveForwardCommand()
-{
-}
+	void DoNothingCommand::Execute()
+	{
+	}
 
-MoveForwardCommand::~MoveForwardCommand()
-{
-}
+	MoveForwardCommand::MoveForwardCommand()
+	{
+	}
 
-void MoveForwardCommand::Execute()
-{
-}
+	MoveForwardCommand::~MoveForwardCommand()
+	{
+	}
 
-MoveRightCommand::MoveRightCommand()
-{
-}
+	void MoveForwardCommand::Execute()
+	{
+	}
 
-MoveRightCommand::~MoveRightCommand()
-{
-}
+	MoveRightCommand::MoveRightCommand()
+	{
+	}
 
-void MoveRightCommand::Execute()
-{
+	MoveRightCommand::~MoveRightCommand()
+	{
+	}
+
+	void MoveRightCommand::Execute()
+	{
+	}
+
 }
