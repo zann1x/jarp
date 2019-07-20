@@ -1,3 +1,4 @@
+#include "jarppch.h"
 #include "VulkanSwapchain.h"
 
 #include "VulkanDevice.h"
@@ -5,9 +6,6 @@
 #include "VulkanUtils.hpp"
 
 #include "Platform/Windows/WindowsWindow.h"
-
-#include <algorithm>
-#include <limits>
 
 VulkanSwapchain::VulkanSwapchain(WindowsWindow& Window, VkInstance Instance, VulkanDevice& Device)
 	: Instance(Instance), Device(Device)

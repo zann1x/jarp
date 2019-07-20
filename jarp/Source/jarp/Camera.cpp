@@ -1,10 +1,9 @@
+#include "jarppch.h"
 #include "Camera.h"
 #include "Platform/Windows/WindowsWindow.h"
 #include "Utils.hpp"
 
-#include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
-#include <utility>
 
 Camera::Camera()
 	: Position(glm::vec3(0.0f, 0.0f, -3.0f)), FrontVector(glm::vec3(0.0f, 0.0f, 1.0f)), UpVector(glm::vec3(0.0f, 1.0f, 0.0f)), RightVector(glm::vec3()),

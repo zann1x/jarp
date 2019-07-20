@@ -5,10 +5,6 @@
 #include "SDL.h"
 #include "SDL_vulkan.h"
 
-#include <array>
-#include <utility>
-#include <vector>
-
 #include "jarp/Input/InputHandler.h"
 
 class WindowsWindow

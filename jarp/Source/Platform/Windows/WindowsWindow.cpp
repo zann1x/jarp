@@ -1,8 +1,7 @@
+#include "jarppch.h"
 #include "WindowsWindow.h"
 
 #include "SDL_syswm.h"
-
-#include <iostream>
 
 #define WIDTH 800
 #define HEIGHT 600

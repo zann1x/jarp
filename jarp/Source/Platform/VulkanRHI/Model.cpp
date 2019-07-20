@@ -1,3 +1,4 @@
+#include "jarppch.h"
 #include "Model.h"
 
 #include "VulkanCommandBuffer.h"
@@ -5,7 +6,6 @@
 
 #include <tiny_obj_loader.h>
 #include <unordered_map>
-#include <vector>
 
 Model::Model(VulkanDevice& Device)
 	: Device(Device)

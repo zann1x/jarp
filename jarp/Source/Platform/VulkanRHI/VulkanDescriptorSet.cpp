@@ -1,11 +1,10 @@
+#include "jarppch.h"
 #include "VulkanDescriptorSet.h"
 
 #include "VulkanDescriptorPool.h"
 #include "VulkanDescriptorSetLayout.h"
 #include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
-
-#include <array>
 
 VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice& OutDevice)
 	: Device(OutDevice)

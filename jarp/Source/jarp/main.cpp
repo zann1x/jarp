@@ -1,17 +1,10 @@
+#include "jarppch.h"
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <algorithm>
 #include <chrono>
-#include <limits>
-
-#include <set>
-#include <vector>
-
-#include <string>
-#include <fstream>
 
 #include "Camera.h"
 #include "Utils.hpp"

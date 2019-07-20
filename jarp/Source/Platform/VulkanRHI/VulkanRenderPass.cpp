@@ -1,10 +1,9 @@
+#include "jarppch.h"
 #include "VulkanRenderPass.h"
 
 #include "VulkanDevice.h"
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
-
-#include <array>
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
 	: Device(OutDevice), Swapchain(OutSwapchain)

@@ -1,6 +1,6 @@
-#include <iostream>
+#include "jarppch.h"
+
 #include <fstream>
-#include <vector>
 
 #if defined(_DEBUG)
 #define CONSOLE_LOG(msg)\

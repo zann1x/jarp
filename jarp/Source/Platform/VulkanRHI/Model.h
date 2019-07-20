@@ -5,8 +5,6 @@
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
-#include <array>
-#include <vector>
 
 class VulkanCommandBuffer;
 class VulkanDevice;

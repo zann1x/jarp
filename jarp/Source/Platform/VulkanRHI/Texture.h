@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stb_image.h>
-#include <string>
 #include <vulkan/vulkan.h>
 
 class VulkanCommandBuffer;

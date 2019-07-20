@@ -1,3 +1,4 @@
+#include "jarppch.h"
 #include "Texture.h"
 
 #include "VulkanBuffer.h"
@@ -7,7 +8,7 @@
 #include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
 
-#include <vector>
+#include <stb_image.h>
 
 Texture::Texture(VulkanDevice& Device)
 	: Device(Device)

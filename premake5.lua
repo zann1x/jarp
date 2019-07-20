@@ -27,6 +27,9 @@ project "jarp"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "jarppch.h"
+    pchsource "jarp/Source/jarppch.cpp"
+
     files {
         "%{prj.name}/Source/**.h",
         "%{prj.name}/Source/**.hpp",

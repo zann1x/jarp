@@ -1,3 +1,4 @@
+#include "jarppch.h"
 #include "VulkanFence.h"
 
 #include "VulkanDevice.h"

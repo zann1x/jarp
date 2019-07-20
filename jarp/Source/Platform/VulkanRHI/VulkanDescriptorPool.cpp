@@ -1,10 +1,9 @@
+#include "jarppch.h"
 #include "VulkanDescriptorPool.h"
 
 #include "VulkanDevice.h"
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
-
-#include <array>
 
 VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
 	: Device(OutDevice), Swapchain(OutSwapchain)

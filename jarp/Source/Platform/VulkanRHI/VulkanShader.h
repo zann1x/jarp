@@ -1,9 +1,6 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <map>
-#include <vector>
-#include <string>
 
 #include "VulkanDescriptorSetLayout.h"
 
