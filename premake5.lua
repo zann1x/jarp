@@ -63,8 +63,7 @@ project "jarp"
 
     defines {
         "GLM_FORCE_RADIANS",
-        "GLM_FORCE_DEPTH_ZERO_TO_ONE",
-        "SDL_MAIN_HANDLED"
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
     }
 
     filter "system:windows"

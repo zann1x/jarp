@@ -1,21 +1,25 @@
 #include "jarppch.h"
 #include "WindowsWindow.h"
 
+#include "jarp/Core.h"
 #include "SDL_syswm.h"
-
-#define WIDTH 800
-#define HEIGHT 600
 
 namespace jarp {
 
-	WindowsWindow::WindowsWindow()
-		: Width(800), Height(600), bShouldClose(false)
+	static bool IsSDLInitialized = false;
+
+	WindowsWindow::WindowsWindow(const WindowProperties& Properties)
+		: bShouldClose(false)
 	{
-		SDL_SetMainReady();
-		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
+		Data.Title = Properties.Title;
+		Data.Width = Properties.Width;
+		Data.Height = Properties.Height;
+
+		if (!IsSDLInitialized)
 		{
-			SDL_Log("Could not initialize SDL: %s", SDL_GetError());
-			throw std::runtime_error("Could not initialize SDL!");
+			int SDLInitResult = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+			JARP_CORE_ASSERT(SDLInitResult == 0, "Could not initialize SDL!");
+			IsSDLInitialized = true;
 		}
 	}
 
@@ -26,29 +30,15 @@ namespace jarp {
 
 	void WindowsWindow::Create()
 	{
-		pWindow = SDL_CreateWindow("jarp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_VULKAN);
-		if (!pWindow)
-		{
-			SDL_Log("Could not create a SDL renderer: %s", SDL_GetError());
-			throw std::runtime_error("Could not create a SDL renderer!");
-		}
-
-		pRenderer = SDL_CreateRenderer(pWindow, -1, 0);
-		if (!pRenderer)
-		{
-			SDL_Log("Could not create a SDL renderer: %s", SDL_GetError());
-			throw std::runtime_error("Could not create a SDL renderer!");
-		}
+		pWindow = SDL_CreateWindow(Data.Title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Data.Width, Data.Height, SDL_WINDOW_VULKAN);
+		JARP_CORE_ASSERT(pWindow, "Could not create SDL window!");
 
 		SDL_SetWindowResizable(pWindow, SDL_TRUE);
-
-		//SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
 	}
 
 	void WindowsWindow::Shutdown()
 	{
 		SDL_DestroyWindow(pWindow);
-		SDL_DestroyRenderer(pRenderer);
 	}
 
 	HINSTANCE WindowsWindow::GetNativeInstanceHandle() const
@@ -100,7 +90,7 @@ namespace jarp {
 		return bShouldClose;
 	}
 
-	void WindowsWindow::Update(uint32_t DeltaTime)
+	void WindowsWindow::Update()
 	{
 		SDL_Event Event;
 		while (SDL_PollEvent(&Event))
@@ -123,9 +113,6 @@ namespace jarp {
 
 			InputHandler.HandleInput(Event);
 		}
-
-		//SDL_RenderClear(pRenderer);
-		//SDL_RenderPresent(pRenderer);
 	}
 
 }

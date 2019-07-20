@@ -9,10 +9,20 @@
 
 namespace jarp {
 
+	struct WindowProperties
+	{
+		std::string Title;
+		int Width;
+		int Height;
+
+		WindowProperties(const std::string& Title = "jarp", int Width = 1280, int Height = 720)
+			: Title(Title), Width(Width), Height(Height) { }
+	};
+
 	class WindowsWindow
 	{
 	public:
-		WindowsWindow();
+		WindowsWindow(const WindowProperties& Properties = WindowProperties());
 		~WindowsWindow();
 
 		void Create();
@@ -28,20 +38,17 @@ namespace jarp {
 
 		// Returns the framebuffer width as the first parameter and height as the second
 		std::pair<int, int> GetFramebufferSize();
-		inline int GetWidth() { return Width; }
-		inline int GetHeight() { return Height; }
+		inline int GetWidth() { return Data.Width; }
+		inline int GetHeight() { return Data.Height; }
 
 		inline bool IsIconified() { return bIsWindowMinimized; }
 		inline bool IsFramebufferResized() { return bIsFramebufferResized; }
 		void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
 
 		bool ShouldClose();
-		void Update(uint32_t DeltaTime);
+		void Update();
 
 	private:
-		int Width;
-		int Height;
-
 		SDL_Window* pWindow;
 		SDL_Renderer* pRenderer;
 		bool bIsFramebufferResized;
@@ -49,6 +56,13 @@ namespace jarp {
 		bool bShouldClose;
 
 		InputHandler InputHandler;
+
+		struct WindowData
+		{
+			std::string Title;
+			int Width;
+			int Height;
+		} Data;
 	};
 
 }
