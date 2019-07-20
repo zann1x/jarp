@@ -8,6 +8,7 @@
 
 #include "Camera.h"
 #include "Log.h"
+#include "Timer.h"
 #include "Utils.hpp"
 
 #include "Platform/VulkanRHI/Model.h"
@@ -69,6 +70,7 @@ namespace jarp {
 
 	VulkanInstance* pInstance;
 	WindowsWindow Window;
+	WindowsWindow* pWindow;
 	Camera MyCamera;
 
 	VulkanDevice* pLogicalDevice;
@@ -435,46 +437,31 @@ namespace jarp {
 
 	void MainLoop()
 	{
-		uint32_t FrameCount = 0;
-		Uint32 LastFrameTime = SDL_GetTicks();
-		Uint32 LastFPSTime = SDL_GetTicks();
+		Timer timer;
 
 		while (!Window.ShouldClose())
 		{
-			Uint32 CurrentFPSTime = SDL_GetTicks();
-			FrameCount++;
-
-			if (CurrentFPSTime > LastFPSTime + 1000)
-			{
-				LastFPSTime = CurrentFPSTime;
-				JARP_CORE_TRACE("{0} fps", FrameCount);
-				FrameCount = 0;
-			}
-
-			Uint32 CurrentFrameTime = SDL_GetTicks();
-			Uint32 DeltaTime = CurrentFrameTime - LastFrameTime;
-
-			DrawFrame(DeltaTime);
-
-			LastFrameTime = CurrentFrameTime;
-
-			Window.Update(DeltaTime);
+			timer.Update();
+			DrawFrame(timer.GetTimeSinceLastFrame());
+			Window.Update();
 		}
 	}
 
 }
 
-int main()
+int main(int argc, char** argv)
 {
-	jarp::Log::Init();
+	using namespace jarp;
 
-	jarp::Window.Create();
-	jarp::StartVulkan();
+	Log::Init();
 
-	jarp::MainLoop();
+	Window.Create();
 
-	jarp::ShutdownVulkan();
-	jarp::Window.Shutdown();
+	StartVulkan();
+	MainLoop();
+	ShutdownVulkan();
+
+	Window.Shutdown();
 
 	return 0;
 }
