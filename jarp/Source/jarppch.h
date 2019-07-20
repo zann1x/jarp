@@ -10,3 +10,5 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#include "jarp/Log.h"

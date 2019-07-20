@@ -14,6 +14,7 @@ IncludeDir = {}
 IncludeDir["glm"] = "jarp/ThirdParty/glm"
 IncludeDir["tinyobjloader"] = "jarp/ThirdParty/tinyobjloader"
 IncludeDir["SDL"] = "jarp/ThirdParty/SDL2-2.0.9/include"
+IncludeDir["spdlog"] = "jarp/ThirdParty/spdlog/include"
 IncludeDir["stb"] = "jarp/ThirdParty/stb"
 IncludeDir["Vulkan"] = vulkansdk .. "/Include"
 
@@ -43,6 +44,7 @@ project "jarp"
 
         "%{IncludeDir.glm}",
         "%{IncludeDir.SDL}",
+        "%{IncludeDir.spdlog}",
         "%{IncludeDir.stb}",
         "%{IncludeDir.tinyobjloader}",
         "%{IncludeDir.Vulkan}"

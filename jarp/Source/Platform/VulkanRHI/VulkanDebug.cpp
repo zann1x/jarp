@@ -13,17 +13,7 @@ namespace VulkanDebug
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
-		std::string Severity;
-		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-			Severity = "VERBOSE";
-		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-			Severity = "INFO";
-		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			Severity = "WARNING";
-		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			Severity = "ERROR";
-
-		std::string Type;
+		const char* Type;
 		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
 			Type = "GENERAL";
 		else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
@@ -31,7 +21,15 @@ namespace VulkanDebug
 		else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
 			Type = "PERFORMANCE";
 
-		CONSOLE_LOG(Severity.data() << " | " << Type.data() << " - Validation layer: " << pCallbackData->pMessage);
+		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+			JARP_CORE_TRACE("VERBOSE | {0} - Validation layer: {1}", Type, pCallbackData->pMessage);
+		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+			JARP_CORE_INFO("INFO | {0} - Validation layer: {1}", Type, pCallbackData->pMessage);
+		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			JARP_CORE_WARN("WARNING | {0} - Validation layer: {1}", Type, pCallbackData->pMessage);
+		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			JARP_CORE_ERROR("ERROR | {0} - Validation layer: {1}", Type, pCallbackData->pMessage);
+
 		return VK_FALSE;
 	}
 

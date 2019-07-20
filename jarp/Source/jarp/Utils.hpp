@@ -2,13 +2,6 @@
 
 #include <fstream>
 
-#if defined(_DEBUG)
-#define CONSOLE_LOG(msg)\
-	std::cout << msg << std::endl
-#else
-#define CONSOLE_LOG(msg)
-#endif // _DEBUG
-
 class Utils
 {
 public:

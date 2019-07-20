@@ -10,3 +10,6 @@
 [submodule "jarp/ThirdParty/GLFW"]
 	path = jarp/ThirdParty/GLFW
 	url = https://github.com/zann1x/glfw.git
+[submodule "jarp/ThirdParty/spdlog"]
+	path = jarp/ThirdParty/spdlog
+	url = https://github.com/gabime/spdlog.git

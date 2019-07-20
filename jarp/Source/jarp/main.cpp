@@ -444,7 +444,7 @@ void MainLoop()
 		if (CurrentFPSTime > LastFPSTime + 1000)
 		{
 			LastFPSTime = CurrentFPSTime;
-			CONSOLE_LOG(FrameCount << " fps");
+			JARP_CORE_TRACE("{0} fps", FrameCount);
 			FrameCount = 0;
 		}
 
@@ -459,8 +459,12 @@ void MainLoop()
 	}
 }
 
+#include "Log.h"
+
 int main()
 {
+	Log::Init();
+
 	Window.Create();
 	StartVulkan();
 

@@ -17,7 +17,6 @@ MoveForwardCommand::~MoveForwardCommand()
 
 void MoveForwardCommand::Execute()
 {
-	CONSOLE_LOG("Moving forward");
 }
 
 MoveRightCommand::MoveRightCommand()
@@ -30,5 +29,4 @@ MoveRightCommand::~MoveRightCommand()
 
 void MoveRightCommand::Execute()
 {
-	CONSOLE_LOG("Moving right");
 }
