@@ -90,7 +90,7 @@ namespace jarp {
 		return bShouldClose;
 	}
 
-	void WindowsWindow::Update()
+	void WindowsWindow::Update(uint32_t DeltaTime)
 	{
 		SDL_Event Event;
 		while (SDL_PollEvent(&Event))

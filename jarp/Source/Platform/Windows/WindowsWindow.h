@@ -46,7 +46,7 @@ namespace jarp {
 		void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
 
 		bool ShouldClose();
-		void Update();
+		void Update(uint32_t DeltaTime);
 
 	private:
 		SDL_Window* pWindow;

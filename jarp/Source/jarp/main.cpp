@@ -6,10 +6,9 @@
 
 #include <chrono>
 
-#include "Camera.h"
-#include "Log.h"
-#include "Timer.h"
-#include "Utils.hpp"
+#include "jarp/Camera.h"
+#include "jarp/Log.h"
+#include "jarp/Utils.hpp"
 
 #include "Platform/VulkanRHI/Model.h"
 #include "Platform/VulkanRHI/Texture.h"
@@ -437,13 +436,31 @@ namespace jarp {
 
 	void MainLoop()
 	{
-		Timer timer;
+		auto CurrentFrameTime = SDL_GetTicks();
+		auto LastFrameTime = CurrentFrameTime;
+		uint32_t DeltaFrameTime;
+
+		auto CurrentFPSTime = SDL_GetTicks();
+		auto LastFPSTime = CurrentFPSTime;
+		uint32_t FramePerSecondCount = 0;
 
 		while (!Window.ShouldClose())
 		{
-			timer.Update();
-			DrawFrame(timer.GetTimeSinceLastFrame());
-			Window.Update();
+			CurrentFPSTime = SDL_GetTicks();
+			++FramePerSecondCount;
+			if (CurrentFPSTime > LastFPSTime + 1000)
+			{
+				JARP_CORE_TRACE("{0} fps", FramePerSecondCount);
+				LastFPSTime = CurrentFPSTime;
+				FramePerSecondCount = 0;
+			}
+
+			CurrentFrameTime = SDL_GetTicks();
+			DeltaFrameTime = CurrentFrameTime - LastFrameTime;
+			LastFrameTime = CurrentFrameTime;
+
+			DrawFrame(DeltaFrameTime);
+			Window.Update(DeltaFrameTime);
 		}
 	}
 
