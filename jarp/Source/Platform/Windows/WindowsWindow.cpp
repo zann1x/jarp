@@ -65,11 +65,11 @@ namespace jarp {
 		return VK_SUCCESS;
 	}
 
-	std::pair<int, int> WindowsWindow::GetFramebufferSize()
+	std::pair<int, int> WindowsWindow::GetFramebufferSize() const
 	{
 		int Width, Height;
 		SDL_Vulkan_GetDrawableSize(pWindow, &Width, &Height);
-		return std::make_pair(Width, Height);
+		return { Width, Height };
 	}
 
 	std::vector<const char*> WindowsWindow::GetInstanceExtensions() const

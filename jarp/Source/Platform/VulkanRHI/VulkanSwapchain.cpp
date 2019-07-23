@@ -5,21 +5,24 @@
 #include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
 
+#include "jarp/Window.h"
 #include "Platform/Windows/WindowsWindow.h"
 
 namespace jarp {
 
-	VulkanSwapchain::VulkanSwapchain(WindowsWindow& Window, VkInstance Instance, VulkanDevice& Device)
+	VulkanSwapchain::VulkanSwapchain(Window& Window, VkInstance Instance, VulkanDevice& Device)
 		: Instance(Instance), Device(Device)
 	{
 		// Create surface
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
+		WindowsWindow& Win32 = dynamic_cast<WindowsWindow&>(Window);
+
 		VkWin32SurfaceCreateInfoKHR Win32SurfaceCreateInfoKHR = {};
 		Win32SurfaceCreateInfoKHR.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 		Win32SurfaceCreateInfoKHR.pNext = nullptr;
 		Win32SurfaceCreateInfoKHR.flags = 0;
-		Win32SurfaceCreateInfoKHR.hinstance = Window.GetNativeInstanceHandle();
-		Win32SurfaceCreateInfoKHR.hwnd = Window.GetNativeWindowHandle();
+		Win32SurfaceCreateInfoKHR.hinstance = Win32.GetNativeInstanceHandle();
+		Win32SurfaceCreateInfoKHR.hwnd = Win32.GetNativeWindowHandle();
 
 		VK_ASSERT(vkCreateWin32SurfaceKHR(Instance, &Win32SurfaceCreateInfoKHR, nullptr, &SurfaceKHR));
 #else

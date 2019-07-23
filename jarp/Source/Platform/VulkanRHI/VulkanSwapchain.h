@@ -4,7 +4,7 @@
 
 namespace jarp {
 
-	class WindowsWindow;
+	class Window;
 	class VulkanDevice;
 	class VulkanImageView;
 
@@ -31,7 +31,7 @@ namespace jarp {
 		};
 
 	public:
-		VulkanSwapchain(WindowsWindow& Window, VkInstance Instance, VulkanDevice& Device);
+		VulkanSwapchain(Window& Window, VkInstance Instance, VulkanDevice& Device);
 		~VulkanSwapchain();
 
 		void CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync = true);

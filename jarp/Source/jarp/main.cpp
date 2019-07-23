@@ -32,7 +32,9 @@
 #include "Platform/VulkanRHI/VulkanSwapchain.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 
+#if defined(JARP_PLATFORM_WINDOWS)
 #include "Platform/Windows/WindowsWindow.h"
+#endif
 
 namespace jarp {
 
@@ -67,9 +69,12 @@ namespace jarp {
 		bool VSync = false;
 	} Settings;
 
-	VulkanInstance* pInstance;
-	WindowsWindow Window;
+#if defined(JARP_PLATFORM_WINDOWS)
+	//WindowsWindow Window;
 	WindowsWindow* pWindow;
+#endif
+
+	VulkanInstance* pInstance;
 	Camera MyCamera;
 
 	VulkanDevice* pLogicalDevice;
@@ -147,12 +152,14 @@ namespace jarp {
 	void StartVulkan()
 	{
 		pInstance = new VulkanInstance();
-		pInstance->CreateInstance(Window);
+		pInstance->CreateInstance();
 
 		pLogicalDevice = new VulkanDevice(*pInstance);
 		pLogicalDevice->CreateLogicalDevice();
-		pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
-		pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
+		//pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
+		//pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
+		pSwapchain = new VulkanSwapchain(*pWindow, pInstance->GetHandle(), *pLogicalDevice);
+		pSwapchain->CreateSwapchain(pWindow->GetWidth(), pWindow->GetHeight(), Settings.VSync);
 		MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
@@ -265,7 +272,8 @@ namespace jarp {
 		std::pair<int, int> FramebufferSize;
 		do
 		{
-			FramebufferSize = Window.GetFramebufferSize();
+			//FramebufferSize = Window.GetFramebufferSize();
+			FramebufferSize = pWindow->GetFramebufferSize();
 			SDL_WaitEvent(nullptr);
 		} while (FramebufferSize.first == 0 || FramebufferSize.second == 0);
 
@@ -393,7 +401,8 @@ namespace jarp {
 		static size_t CurrentFrame = 0;
 
 		// Don't try to draw to a minimized window
-		if (Window.IsIconified())
+		//if (Window.IsIconified())
+		if (pWindow->IsIconified())
 			return;
 
 		// Get the next available image to work on
@@ -418,9 +427,11 @@ namespace jarp {
 
 		{
 			VkResult Result = pLogicalDevice->GetPresentQueue().QueuePresent(pSwapchain->GetHandle(), { pSwapchain->GetActiveImageIndex() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() });
-			if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Window.IsFramebufferResized())
+			//if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Window.IsFramebufferResized())
+			if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || pWindow->IsFramebufferResized())
 			{
-				Window.SetFramebufferResized(false);
+				//Window.SetFramebufferResized(false);
+				pWindow->SetFramebufferResized(false);
 				RecreateSwapchain();
 			}
 			else
@@ -444,7 +455,8 @@ namespace jarp {
 		auto LastFPSTime = CurrentFPSTime;
 		uint32_t FramePerSecondCount = 0;
 
-		while (!Window.ShouldClose())
+		//while (!Window.ShouldClose())
+		while (!pWindow->ShouldClose())
 		{
 			CurrentFPSTime = SDL_GetTicks();
 			++FramePerSecondCount;
@@ -460,25 +472,34 @@ namespace jarp {
 			LastFrameTime = CurrentFrameTime;
 
 			DrawFrame(DeltaFrameTime);
-			Window.Update(DeltaFrameTime);
+			//Window.Update(DeltaFrameTime);
+			pWindow->Update(DeltaFrameTime);
 		}
 	}
 
 }
 
+#if defined(JARP_PLATFORM_WINDOWS)
 int main(int argc, char** argv)
 {
 	using namespace jarp;
 
 	Log::Init();
 
-	Window.Create();
+	pWindow = new WindowsWindow();
+	pWindow->Create();
+	//Window.Create();
 
 	StartVulkan();
 	MainLoop();
 	ShutdownVulkan();
 
-	Window.Shutdown();
+	//Window.Shutdown();
+	pWindow->Shutdown();
+	delete pWindow;
 
 	return 0;
 }
+#else
+#error UNSUPPORTED PLATFORM
+#endif

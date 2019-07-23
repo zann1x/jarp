@@ -70,6 +70,7 @@ project "jarp"
         systemversion "latest"
 
         defines {
+            "JARP_PLATFORM_WINDOWS",
             "VK_USE_PLATFORM_WIN32_KHR",
             "GLFW_INCLUDE_NONE",
             "WIN32_LEAN_AND_MEAN",

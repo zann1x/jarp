@@ -4,8 +4,6 @@
 #include "VulkanDebug.h"
 #include "VulkanUtils.hpp"
 
-#include "Platform/Windows/WindowsWindow.h"
-
 namespace jarp {
 
 	VulkanInstance::VulkanInstance()
@@ -16,10 +14,14 @@ namespace jarp {
 	{
 	}
 
-	void VulkanInstance::CreateInstance(const WindowsWindow& Window)
+	void VulkanInstance::CreateInstance()
 	{
 		// Get the required extensions from the displaying window
-		InstanceExtensions = Window.GetInstanceExtensions();
+		//InstanceExtensions = Window.GetInstanceExtensions();
+#if defined(JARP_PLATFORM_WINDOWS)
+		InstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+		InstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#endif
 #if defined(_DEBUG)
 		InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif

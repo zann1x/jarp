@@ -4,15 +4,13 @@
 
 namespace jarp {
 
-	class WindowsWindow;
-
 	class VulkanInstance
 	{
 	public:
 		VulkanInstance();
 		~VulkanInstance();
 
-		void CreateInstance(const WindowsWindow& Window);
+		void CreateInstance();
 		void Destroy();
 
 		inline const VkInstance& GetHandle() const { return Instance; }
