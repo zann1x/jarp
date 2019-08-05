@@ -1,6 +1,7 @@
 #pragma once
 
 #include "jarppch.h"
+#include "jarp/Events/Event.h"
 
 namespace jarp {
 
@@ -24,6 +25,10 @@ namespace jarp {
 		virtual std::pair<int, int> GetFramebufferSize() const = 0;
 		virtual int GetWidth() const = 0;
 		virtual int GetHeight() const = 0;
+
+		virtual bool IsMinimized() const = 0;
+
+		static Window* Create(const WindowProperties& Properties = WindowProperties());
 	};
 
 }

@@ -7,3 +7,5 @@
 			__debugbreak();\
 		}\
 	}
+
+#define JARP_BIND_FUNCTION(Func) std::bind(&Func, this, std::placeholders::_1)

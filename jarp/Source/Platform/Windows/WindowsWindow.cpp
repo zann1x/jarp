@@ -2,14 +2,23 @@
 #include "WindowsWindow.h"
 
 #include "jarp/Core.h"
+#include "jarp/Events/ApplicationEvent.h"
+#include "jarp/Events/EventBus.h"
+#include "jarp/Events/KeyEvent.h"
+#include "jarp/Events/MouseEvent.h"
+
 #include "SDL_syswm.h"
 
 namespace jarp {
 
+	Window* Window::Create(const WindowProperties& Properties)
+	{
+		return new WindowsWindow(Properties);
+	}
+
 	static bool IsSDLInitialized = false;
 
 	WindowsWindow::WindowsWindow(const WindowProperties& Properties)
-		: bShouldClose(false)
 	{
 		Data.Title = Properties.Title;
 		Data.Width = Properties.Width;
@@ -21,24 +30,17 @@ namespace jarp {
 			JARP_CORE_ASSERT(SDLInitResult == 0, "Could not initialize SDL!");
 			IsSDLInitialized = true;
 		}
-	}
 
-	WindowsWindow::~WindowsWindow()
-	{
-		SDL_Quit();
-	}
-
-	void WindowsWindow::Create()
-	{
 		pWindow = SDL_CreateWindow(Data.Title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Data.Width, Data.Height, SDL_WINDOW_VULKAN);
 		JARP_CORE_ASSERT(pWindow, "Could not create SDL window!");
 
 		SDL_SetWindowResizable(pWindow, SDL_TRUE);
 	}
 
-	void WindowsWindow::Shutdown()
+	WindowsWindow::~WindowsWindow()
 	{
 		SDL_DestroyWindow(pWindow);
+		SDL_Quit();
 	}
 
 	HINSTANCE WindowsWindow::GetNativeInstanceHandle() const
@@ -85,11 +87,6 @@ namespace jarp {
 		return Extensions;
 	}
 
-	bool WindowsWindow::ShouldClose()
-	{
-		return bShouldClose;
-	}
-
 	void WindowsWindow::Update(uint32_t DeltaTime)
 	{
 		SDL_Event Event;
@@ -97,21 +94,49 @@ namespace jarp {
 		{
 			switch (Event.type)
 			{
-			case SDL_QUIT:
-				bShouldClose = true;
-				break;
-			case SDL_WINDOWEVENT_MINIMIZED:
-				bIsWindowMinimized = true;
-				break;
-			case SDL_WINDOWEVENT_RESTORED:
-				bIsWindowMinimized = false;
-				break;
-			case SDL_WINDOWEVENT_RESIZED:
-				bIsFramebufferResized = true;
-				break;
+				case SDL_QUIT:
+				{
+					WindowClosedEvent E;
+					EventBus::Get().Dispatch(E);
+					break;
+				}
+				case SDL_WINDOWEVENT_MINIMIZED:
+				{
+					bIsWindowMinimized = true;
+					WindowMinimizedEvent E;
+					EventBus::Get().Dispatch(E);
+					break;
+				}
+				case SDL_WINDOWEVENT_RESTORED:
+				{
+					bIsWindowMinimized = false;
+					break;
+				}
+				case SDL_WINDOWEVENT_RESIZED:
+				{
+					bIsFramebufferResized = true;
+					int Width, Height;
+					SDL_GetWindowSize(pWindow, &Width, &Height);
+					WindowResizedEvent E(Width, Height);
+					EventBus::Get().Dispatch(E);
+					break;
+				}
+				case SDL_MOUSEMOTION:
+				{
+					int XPos, YPos;
+					SDL_GetMouseState(&XPos, &YPos);
+					MouseMovedEvent E(XPos, YPos);
+					EventBus::Get().Dispatch(E);
+					break;
+				}
+				case SDL_KEYDOWN:
+				{
+					JARP_CORE_INFO("Key pressed: {0}", Event.key.keysym.sym);
+					KeyPressedEvent E(Event.key.keysym.sym);
+					EventBus::Get().Dispatch(E);
+					break;
+				}
 			}
-
-			InputHandler.HandleInput(Event);
 		}
 	}
 

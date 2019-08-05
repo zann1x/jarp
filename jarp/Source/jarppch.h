@@ -12,3 +12,4 @@
 #include <vector>
 
 #include "jarp/Log.h"
+#include "jarp/Events/EventBus.h"

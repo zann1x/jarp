@@ -6,7 +6,6 @@
 #include "SDL_vulkan.h"
 
 #include "jarp/Window.h"
-#include "jarp/Input/InputHandler.h"
 
 namespace jarp {
 
@@ -15,9 +14,6 @@ namespace jarp {
 	public:
 		WindowsWindow(const WindowProperties& Properties = WindowProperties());
 		virtual ~WindowsWindow() override;
-
-		void Create();
-		void Shutdown();
 
 		inline SDL_Window* GetHandle() { return pWindow; }
 
@@ -34,20 +30,16 @@ namespace jarp {
 		virtual inline int GetWidth() const override { return Data.Width; }
 		virtual inline int GetHeight() const override { return Data.Height; }
 
-		inline bool IsIconified() { return bIsWindowMinimized; }
+		virtual inline bool IsMinimized() const override { return bIsWindowMinimized; }
 		inline bool IsFramebufferResized() { return bIsFramebufferResized; }
 		void SetFramebufferResized(bool FramebufferResized) { bIsFramebufferResized = FramebufferResized; }
 
-		bool ShouldClose();
 		virtual void Update(uint32_t DeltaTime) override;
 
 	private:
 		SDL_Window* pWindow;
 		bool bIsFramebufferResized = false;
 		bool bIsWindowMinimized = false;
-		bool bShouldClose = false;
-
-		InputHandler InputHandler;
 
 		struct WindowData
 		{

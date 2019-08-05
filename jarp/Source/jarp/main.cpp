@@ -6,6 +6,9 @@
 
 #include <chrono>
 
+#include "SDL.h"
+
+#include "jarp/Application.h"
 #include "jarp/Camera.h"
 #include "jarp/Log.h"
 #include "jarp/Utils.hpp"
@@ -31,10 +34,6 @@
 #include "Platform/VulkanRHI/VulkanShader.h"
 #include "Platform/VulkanRHI/VulkanSwapchain.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
-
-#if defined(JARP_PLATFORM_WINDOWS)
-#include "Platform/Windows/WindowsWindow.h"
-#endif
 
 namespace jarp {
 
@@ -68,11 +67,6 @@ namespace jarp {
 	{
 		bool VSync = false;
 	} Settings;
-
-#if defined(JARP_PLATFORM_WINDOWS)
-	//WindowsWindow Window;
-	WindowsWindow* pWindow;
-#endif
 
 	VulkanInstance* pInstance;
 	Camera MyCamera;
@@ -158,8 +152,8 @@ namespace jarp {
 		pLogicalDevice->CreateLogicalDevice();
 		//pSwapchain = new VulkanSwapchain(Window, pInstance->GetHandle(), *pLogicalDevice);
 		//pSwapchain->CreateSwapchain(Window.GetWidth(), Window.GetHeight(), Settings.VSync);
-		pSwapchain = new VulkanSwapchain(*pWindow, pInstance->GetHandle(), *pLogicalDevice);
-		pSwapchain->CreateSwapchain(pWindow->GetWidth(), pWindow->GetHeight(), Settings.VSync);
+		pSwapchain = new VulkanSwapchain(Application::Get().GetWindow(), pInstance->GetHandle(), *pLogicalDevice);
+		pSwapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), Settings.VSync);
 		MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
@@ -273,7 +267,7 @@ namespace jarp {
 		do
 		{
 			//FramebufferSize = Window.GetFramebufferSize();
-			FramebufferSize = pWindow->GetFramebufferSize();
+			FramebufferSize = Application::Get().GetWindow().GetFramebufferSize();
 			SDL_WaitEvent(nullptr);
 		} while (FramebufferSize.first == 0 || FramebufferSize.second == 0);
 
@@ -396,86 +390,85 @@ namespace jarp {
 	 *  - SwapchainKHR
 	 *  - CommandBuffer
 	 */
-	void DrawFrame(uint32_t DeltaTime)
-	{
-		static size_t CurrentFrame = 0;
+	//void DrawFrame(uint32_t DeltaTime)
+	//{
+	//	static size_t CurrentFrame = 0;
 
-		// Don't try to draw to a minimized window
-		//if (Window.IsIconified())
-		if (pWindow->IsIconified())
-			return;
+	//	// Don't try to draw to a minimized window
+	//	if (Application::Get().GetWindow().IsMinimized())
+	//		return;
 
-		// Get the next available image to work on
-		{
-			VkResult Result = pSwapchain->AcquireNextImage(pImageAvailableSemaphores[CurrentFrame]->GetHandle());
-			if (Result == VK_ERROR_OUT_OF_DATE_KHR)
-			{
-				RecreateSwapchain();
-				return;
-			}
-			else
-			{
-				VK_ASSERT(Result);
-			}
-		}
+	//	// Get the next available image to work on
+	//	{
+	//		VkResult Result = pSwapchain->AcquireNextImage(pImageAvailableSemaphores[CurrentFrame]->GetHandle());
+	//		if (Result == VK_ERROR_OUT_OF_DATE_KHR)
+	//		{
+	//			RecreateSwapchain();
+	//			return;
+	//		}
+	//		else
+	//		{
+	//			VK_ASSERT(Result);
+	//		}
+	//	}
 
-		MyCamera.Move(DeltaTime);
-		UpdateMVP(pSwapchain->GetActiveImageIndex());
+	//	MyCamera.Move(DeltaTime);
+	//	UpdateMVP(pSwapchain->GetActiveImageIndex());
 
-		// Submit commands to the queue
-		pLogicalDevice->GetGraphicsQueue().QueueSubmitAndWait({ pDrawCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pImageAvailableSemaphores[CurrentFrame]->GetHandle() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }, pFencesInFlight[CurrentFrame]->GetHandle(), { pFencesInFlight[CurrentFrame]->GetHandle() });
+	//	// Submit commands to the queue
+	//	pLogicalDevice->GetGraphicsQueue().QueueSubmitAndWait({ pDrawCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() }, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, { pImageAvailableSemaphores[CurrentFrame]->GetHandle() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }, pFencesInFlight[CurrentFrame]->GetHandle(), { pFencesInFlight[CurrentFrame]->GetHandle() });
 
-		{
-			VkResult Result = pLogicalDevice->GetPresentQueue().QueuePresent(pSwapchain->GetHandle(), { pSwapchain->GetActiveImageIndex() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() });
-			//if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Window.IsFramebufferResized())
-			if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || pWindow->IsFramebufferResized())
-			{
-				//Window.SetFramebufferResized(false);
-				pWindow->SetFramebufferResized(false);
-				RecreateSwapchain();
-			}
-			else
-			{
-				VK_ASSERT(Result);
-			}
-		}
+	//	{
+	//		VkResult Result = pLogicalDevice->GetPresentQueue().QueuePresent(pSwapchain->GetHandle(), { pSwapchain->GetActiveImageIndex() }, { pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() });
+	//		//if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Window.IsFramebufferResized())
+	//		if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || pWindow->IsFramebufferResized())
+	//		{
+	//			//Window.SetFramebufferResized(false);
+	//			pWindow->SetFramebufferResized(false);
+	//			RecreateSwapchain();
+	//		}
+	//		else
+	//		{
+	//			VK_ASSERT(Result);
+	//		}
+	//	}
 
-		CurrentFrame = (CurrentFrame + 1) % MaxFramesInFlight;
-	}
+	//	CurrentFrame = (CurrentFrame + 1) % MaxFramesInFlight;
+	//}
 
 	///////////////// APP /////////////////
 
-	void MainLoop()
-	{
-		auto CurrentFrameTime = SDL_GetTicks();
-		auto LastFrameTime = CurrentFrameTime;
-		uint32_t DeltaFrameTime;
+	//void MainLoop()
+	//{
+	//	auto CurrentFrameTime = SDL_GetTicks();
+	//	auto LastFrameTime = CurrentFrameTime;
+	//	uint32_t DeltaFrameTime;
 
-		auto CurrentFPSTime = SDL_GetTicks();
-		auto LastFPSTime = CurrentFPSTime;
-		uint32_t FramePerSecondCount = 0;
+	//	auto CurrentFPSTime = SDL_GetTicks();
+	//	auto LastFPSTime = CurrentFPSTime;
+	//	uint32_t FramePerSecondCount = 0;
 
-		//while (!Window.ShouldClose())
-		while (!pWindow->ShouldClose())
-		{
-			CurrentFPSTime = SDL_GetTicks();
-			++FramePerSecondCount;
-			if (CurrentFPSTime > LastFPSTime + 1000)
-			{
-				JARP_CORE_TRACE("{0} fps", FramePerSecondCount);
-				LastFPSTime = CurrentFPSTime;
-				FramePerSecondCount = 0;
-			}
+	//	//while (!Window.ShouldClose())
+	//	while (!pWindow->ShouldClose())
+	//	{
+	//		CurrentFPSTime = SDL_GetTicks();
+	//		++FramePerSecondCount;
+	//		if (CurrentFPSTime > LastFPSTime + 1000)
+	//		{
+	//			JARP_CORE_TRACE("{0} fps", FramePerSecondCount);
+	//			LastFPSTime = CurrentFPSTime;
+	//			FramePerSecondCount = 0;
+	//		}
 
-			CurrentFrameTime = SDL_GetTicks();
-			DeltaFrameTime = CurrentFrameTime - LastFrameTime;
-			LastFrameTime = CurrentFrameTime;
+	//		CurrentFrameTime = SDL_GetTicks();
+	//		DeltaFrameTime = CurrentFrameTime - LastFrameTime;
+	//		LastFrameTime = CurrentFrameTime;
 
-			DrawFrame(DeltaFrameTime);
-			//Window.Update(DeltaFrameTime);
-			pWindow->Update(DeltaFrameTime);
-		}
-	}
+	//		DrawFrame(DeltaFrameTime);
+	//		//Window.Update(DeltaFrameTime);
+	//		pWindow->Update(DeltaFrameTime);
+	//	}
+	//}
 
 }
 
@@ -484,19 +477,14 @@ int main(int argc, char** argv)
 {
 	using namespace jarp;
 
-	Log::Init();
+	Application* App = new Application();
+	App->Run();
 
-	pWindow = new WindowsWindow();
-	pWindow->Create();
-	//Window.Create();
+	//StartVulkan();
+	//MainLoop();
+	//ShutdownVulkan();
 
-	StartVulkan();
-	MainLoop();
-	ShutdownVulkan();
-
-	//Window.Shutdown();
-	pWindow->Shutdown();
-	delete pWindow;
+	delete App;
 
 	return 0;
 }
