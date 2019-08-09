@@ -27,4 +27,7 @@ namespace jarp {
 		std::unique_ptr<Window> pWindow;
 	};
 
+	// To be defined in Client
+	Application* CreateApplication();
+
 }

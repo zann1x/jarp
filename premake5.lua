@@ -7,7 +7,7 @@ workspace "jarp"
     startproject "Sandbox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-sdllib = "%{prj.location}/ThirdParty/SDL2-2.0.9/lib/x64"
+sdllib = "%{wks.location}/jarp/ThirdParty/SDL2-2.0.9/lib/x64"
 vulkansdk = os.getenv("VULKAN_SDK")
 
 IncludeDir = {}
@@ -20,7 +20,7 @@ IncludeDir["Vulkan"] = vulkansdk .. "/Include"
 
 project "jarp"
     location "jarp"
-    kind "ConsoleApp"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
     staticruntime "on"
@@ -43,7 +43,6 @@ project "jarp"
         "%{prj.name}/Source",
 
         "%{IncludeDir.glm}",
-        "%{IncludeDir.SDL}",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.stb}",
         "%{IncludeDir.tinyobjloader}",
@@ -51,14 +50,11 @@ project "jarp"
     }
 
     libdirs {
-        sdllib,
         vulkansdk .. "/Lib"
     }
 
     links {
-        "SDL2",
-        "SDL2main",
-        "vulkan-1.lib"
+        "vulkan-1"
     }
 
     defines {
@@ -69,12 +65,21 @@ project "jarp"
     filter "system:windows"
         systemversion "latest"
 
+        includedirs {
+            "%{IncludeDir.SDL}",
+        }
+        libdirs {
+            sdllib
+        }
         defines {
             "JARP_PLATFORM_WINDOWS",
             "VK_USE_PLATFORM_WIN32_KHR",
-            "GLFW_INCLUDE_NONE",
             "WIN32_LEAN_AND_MEAN",
             "NOMINMAX"
+        }
+        links {
+            "SDL2",
+            "SDL2main"
         }
         postbuildcommands {
 			-- Copy the SDL2 dll to the bin folder
@@ -101,3 +106,51 @@ project "jarp"
         defines { "NDEBUG", "_CONSOLE", "_LIB" }
         runtime "Release"
         optimize "on"
+
+project "Sandbox"
+    location "Sandbox"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
+
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+    files {
+        "%{prj.name}/Source/**.h",
+        "%{prj.name}/Source/**.hpp",
+        "%{prj.name}/Source/**.cpp",
+    }
+
+    includedirs {
+        "jarp/Source",
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.spdlog}"
+    }
+
+    links {
+        "jarp"
+    }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines {
+            "JARP_PLATFORM_WINDOWS"
+        }
+        postbuildcommands {
+			-- Copy the SDL2 dll to the bin folder
+			'{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
+        }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_CONSOLE", "_LIB" }
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_CONSOLE", "_LIB" }
+        runtime "Release"
+        optimize "on"
+    

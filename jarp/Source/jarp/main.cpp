@@ -472,22 +472,21 @@ namespace jarp {
 
 }
 
-#if defined(JARP_PLATFORM_WINDOWS)
-int main(int argc, char** argv)
-{
-	using namespace jarp;
-
-	Application* App = new Application();
-	App->Run();
-
-	//StartVulkan();
-	//MainLoop();
-	//ShutdownVulkan();
-
-	delete App;
-
-	return 0;
-}
-#else
-#error UNSUPPORTED PLATFORM
-#endif
+//#if defined(JARP_PLATFORM_WINDOWS)
+//int main(int argc, char** argv)
+//{
+//	//using namespace jarp;
+//	auto App = jarp::CreateApplication();
+//	//Application* App = new Application();
+//	App->Run();
+//	delete App;
+//
+//	//StartVulkan();
+//	//MainLoop();
+//	//ShutdownVulkan();
+//
+//	return 0;
+//}
+//#else
+//#error UNSUPPORTED PLATFORM
+//#endif
