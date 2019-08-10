@@ -12,6 +12,7 @@ vulkansdk = os.getenv("VULKAN_SDK")
 
 IncludeDir = {}
 IncludeDir["glm"] = "jarp/ThirdParty/glm"
+IncludeDir["imgui"] = "jarp/ThirdParty/imgui"
 IncludeDir["tinyobjloader"] = "jarp/ThirdParty/tinyobjloader"
 IncludeDir["SDL"] = "jarp/ThirdParty/SDL2/include"
 IncludeDir["spdlog"] = "jarp/ThirdParty/spdlog/include"
@@ -43,6 +44,7 @@ project "jarp"
         "%{prj.name}/Source",
 
         "%{IncludeDir.glm}",
+        "%{IncludeDir.imgui}",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.stb}",
         "%{IncludeDir.tinyobjloader}",
