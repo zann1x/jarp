@@ -7,6 +7,9 @@ namespace jarp {
 	class WindowClosedEvent : public Event
 	{
 	public:
+		WindowClosedEvent(void* NativeEvent)
+			: Event(NativeEvent) { }
+
 		EVENT_CLASS_TYPE(EventTypeWindowClosed)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
@@ -14,6 +17,9 @@ namespace jarp {
 	class WindowMinimizedEvent : public Event
 	{
 	public:
+		WindowMinimizedEvent(void* NativeEvent)
+			: Event(NativeEvent) { }
+
 		EVENT_CLASS_TYPE(EventTypeWindowMinimized)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
@@ -21,6 +27,9 @@ namespace jarp {
 	class WindowRestoredEvent : public Event
 	{
 	public:
+		WindowRestoredEvent(void* NativeEvent)
+			: Event(NativeEvent) { }
+
 		EVENT_CLASS_TYPE(EventTypeWindowRestored)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
@@ -28,8 +37,8 @@ namespace jarp {
 	class WindowResizedEvent : public Event
 	{
 	public:
-		WindowResizedEvent(int Width, int Height)
-			: Width(Width), Height(Height) { }
+		WindowResizedEvent(void* NativeEvent, int Width, int Height)
+			: Event(NativeEvent), Width(Width), Height(Height) { }
 
 		inline int GetWidth() const { return Width; }
 		inline int GetHeight() const { return Height; }

@@ -42,14 +42,19 @@ namespace jarp {
 	class Event
 	{
 	public:
+		Event(void* NativeEvent)
+			: NativeEvent(NativeEvent) { }
+
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
 
+		inline void* GetNativeEvent() const { return NativeEvent; }
 		inline bool IsInCategory(EventCategory Category) { return Category & GetCategoryFlags(); }
 
 	public:
 		bool bIsHandled = false;
+		void* NativeEvent;
 	};
 
 }

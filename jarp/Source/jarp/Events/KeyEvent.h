@@ -12,8 +12,8 @@ namespace jarp {
 		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyboard)
 
 	protected:
-		KeyEvent(int Keycode)
-			: Keycode(Keycode) { }
+		KeyEvent(void* NativeEvent, int Keycode)
+			: Event(NativeEvent), Keycode(Keycode) { }
 
 	private:
 		int Keycode;
@@ -22,8 +22,8 @@ namespace jarp {
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int Keycode)
-			: KeyEvent(Keycode) { }
+		KeyPressedEvent(void* NativeEvent, int Keycode)
+			: KeyEvent(NativeEvent, Keycode) { }
 
 		EVENT_CLASS_TYPE(EventTypeKeyPressed)
 	};
@@ -31,8 +31,8 @@ namespace jarp {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int Keycode)
-			: KeyEvent(Keycode) { }
+		KeyReleasedEvent(void* NativeEvent, int Keycode)
+			: KeyEvent(NativeEvent, Keycode) { }
 
 		EVENT_CLASS_TYPE(EventTypeKeyReleased)
 	};

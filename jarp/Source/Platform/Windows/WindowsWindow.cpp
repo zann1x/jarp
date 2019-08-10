@@ -96,14 +96,14 @@ namespace jarp {
 			{
 				case SDL_QUIT:
 				{
-					WindowClosedEvent E;
+					WindowClosedEvent E(&Event);
 					EventBus::Get().Dispatch(E);
 					break;
 				}
 				case SDL_WINDOWEVENT_MINIMIZED:
 				{
 					bIsWindowMinimized = true;
-					WindowMinimizedEvent E;
+					WindowMinimizedEvent E(&Event);
 					EventBus::Get().Dispatch(E);
 					break;
 				}
@@ -117,7 +117,7 @@ namespace jarp {
 					bIsFramebufferResized = true;
 					int Width, Height;
 					SDL_GetWindowSize(pWindow, &Width, &Height);
-					WindowResizedEvent E(Width, Height);
+					WindowResizedEvent E(&Event, Width, Height);
 					EventBus::Get().Dispatch(E);
 					break;
 				}
@@ -125,14 +125,14 @@ namespace jarp {
 				{
 					int XPos, YPos;
 					SDL_GetMouseState(&XPos, &YPos);
-					MouseMovedEvent E(XPos, YPos);
+					MouseMovedEvent E(&Event, XPos, YPos);
 					EventBus::Get().Dispatch(E);
 					break;
 				}
 				case SDL_KEYDOWN:
 				{
 					JARP_CORE_INFO("Key pressed: {0}", Event.key.keysym.sym);
-					KeyPressedEvent E(Event.key.keysym.sym);
+					KeyPressedEvent E(&Event, Event.key.keysym.sym);
 					EventBus::Get().Dispatch(E);
 					break;
 				}
