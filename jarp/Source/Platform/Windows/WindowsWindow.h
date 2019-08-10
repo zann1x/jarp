@@ -17,10 +17,10 @@ namespace jarp {
 
 		inline SDL_Window* GetHandle() { return pWindow; }
 
-		/* Windows specific */
+		// Windows specific
 		HINSTANCE GetNativeInstanceHandle() const;
 		HWND GetNativeWindowHandle() const;
-		/* */
+		//
 
 		VkResult CreateSurface(const VkInstance Instance, VkSurfaceKHR* SurfaceKHR) const;
 		std::vector<const char*> GetInstanceExtensions() const;
@@ -29,6 +29,7 @@ namespace jarp {
 		virtual std::pair<int, int> GetFramebufferSize() const override;
 		virtual inline int GetWidth() const override { return Data.Width; }
 		virtual inline int GetHeight() const override { return Data.Height; }
+		virtual inline void* GetNativeWindow() const override { return pWindow; };
 
 		virtual inline bool IsMinimized() const override { return bIsWindowMinimized; }
 		inline bool IsFramebufferResized() { return bIsFramebufferResized; }
