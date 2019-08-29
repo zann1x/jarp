@@ -8,6 +8,7 @@ namespace jarp {
 	{
 	public:
 		ImGuiLayer();
+		~ImGuiLayer();
 
 		void Begin();
 		void Render();

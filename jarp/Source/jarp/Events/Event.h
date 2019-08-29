@@ -4,27 +4,27 @@ namespace jarp {
 
 	enum EventType
 	{
-		EventTypeNone = 0,
+		EventTypeNone					= 0,
 
 		// Application Events
-		EventTypeWindowClosed = 0x01,
-		EventTypeWindowMinimized = 0x02,
-		EventTypeWindowRestored = 0x03,
-		EventTypeWindowResized = 0x04,
+		EventTypeWindowClosed			= 0x01,
+		EventTypeWindowMinimized		= 0x02,
+		EventTypeWindowRestored			= 0x03,
+		EventTypeWindowResized			= 0x04,
 
 		// Key Events
-		EventTypeKeyPressed = 0x05,
-		EventTypeKeyReleased = 0x06,
+		EventTypeKeyPressed				= 0x05,
+		EventTypeKeyReleased			= 0x06,
 
 		// Mouse Events
-		EventTypeMouseButtonPressed = 0x07,
-		EventTypeMouseButtonReleased = 0x08,
-		EventTypeMouseMoved = 0x09,
+		EventTypeMouseButtonPressed		= 0x07,
+		EventTypeMouseButtonReleased	= 0x08,
+		EventTypeMouseMoved				= 0x09,
 	};
 
 	enum EventCategory
 	{
-		EventCategoryNone = 0,
+		EventCategoryNone			= 0,
 		EventCategoryApplication	= 1 << 0,
 		EventCategoryInput			= 1 << 1,
 		EventCategoryKeyboard		= 1 << 2,

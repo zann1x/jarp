@@ -23,6 +23,7 @@ namespace jarp {
 
 		ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window*>(Application::Get().GetWindow().GetNativeWindow()));
 
+		// TODO: Fill structure
 		ImGui_ImplVulkan_InitInfo InitInfo = {};
 		//InitInfo.Instance;
 		//InitInfo.PhysicalDevice;
@@ -39,6 +40,15 @@ namespace jarp {
 		ImGui_ImplVulkan_Init(&InitInfo, VkRenderPass());
 
 		EventBus::Get().Register(EventCategoryInput, this);
+		EventBus::Get().Register(EventCategoryApplication, this);
+	}
+
+	ImGuiLayer::~ImGuiLayer()
+	{
+		// TODO: The whole context should not be closed every time a layer is destroyed I guess
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplSDL2_Shutdown();
+		ImGui::DestroyContext();
 	}
 
 	void ImGuiLayer::Begin()
@@ -55,13 +65,31 @@ namespace jarp {
 
 	void ImGuiLayer::End()
 	{
-		// TODO
+		// TODO: Render and Present data with command buffers, queues etc.
 		ImGui::Render();
+		
+		// TODO: Record ImGui Data into a command buffer
+		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), CommandBuffer);
 	}
 
 	void ImGuiLayer::OnEvent(Event& E)
 	{
 		ImGui_ImplSDL2_ProcessEvent(static_cast<SDL_Event*>(E.GetNativeEvent()));
+
+		// TODO: Handle swapchain recreation event (i.e. window resize/restore event)
+		switch (E.GetEventType())
+		{
+			case EventTypeWindowResized:
+			{
+				//ImGui_ImplVulkan_SetMinImageCount(42);
+				break;
+			}
+			case EventTypeWindowRestored:
+			{
+				//ImGui_ImplVulkan_SetMinImageCount(42);
+				break;
+			}
+		}
 	}
 
 }
