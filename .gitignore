@@ -2,7 +2,7 @@
 .vs/
 bin/
 bin-int/
-!Vendor/bin/
+!ThirdParty/*
 
 # Files
 *.sln
