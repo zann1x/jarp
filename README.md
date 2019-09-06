@@ -9,7 +9,7 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 ## Dependencies
 ### General
 
-- glm
+- glm 0.9.9.5
 - spdlog
 - stb
 - tinyobjloader
