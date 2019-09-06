@@ -7,13 +7,13 @@ workspace "jarp"
     startproject "Sandbox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-sdllib = "%{wks.location}/jarp/ThirdParty/SDL2-2.0.9/lib/x64"
+sdllib = "%{wks.location}/jarp/ThirdParty/SDL2/lib/x64"
 vulkansdk = os.getenv("VULKAN_SDK")
 
 IncludeDir = {}
 IncludeDir["glm"] = "jarp/ThirdParty/glm"
 IncludeDir["tinyobjloader"] = "jarp/ThirdParty/tinyobjloader"
-IncludeDir["SDL"] = "jarp/ThirdParty/SDL2-2.0.9/include"
+IncludeDir["SDL"] = "jarp/ThirdParty/SDL2/include"
 IncludeDir["spdlog"] = "jarp/ThirdParty/spdlog/include"
 IncludeDir["stb"] = "jarp/ThirdParty/stb"
 IncludeDir["Vulkan"] = vulkansdk .. "/Include"
