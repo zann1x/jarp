@@ -9,15 +9,15 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 ## Dependencies
 ### General
 
-- glm 0.9.9.5
-- spdlog 1.3.1
-- stb
-- tinyobjloader
+- glm *0.9.9.5*
+- spdlog *1.3.1*
+- stb *@052dce1*
+- tinyobjloader *2.0-rc1*
 - **Vulkan SDK**
 
 ### Windows
 
-- SDL2 2.0.9
+- SDL2 *2.0.9*
 
 ## How it looks right now
 

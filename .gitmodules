@@ -1,3 +1,0 @@
-[submodule "jarp/ThirdParty/tinyobjloader"]
-	path = jarp/ThirdParty/tinyobjloader
-	url = https://github.com/syoyo/tinyobjloader.git
