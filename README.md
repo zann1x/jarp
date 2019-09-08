@@ -10,6 +10,7 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 ### General
 
 - glm *0.9.9.5*
+- ImGui *1.72b*
 - spdlog *1.3.1*
 - stb *@052dce1*
 - tinyobjloader *2.0-rc1*
