@@ -1,5 +1,5 @@
 workspace "jarp"
-    architecture "x64"
+    architecture "x86_64"
     configurations {
         "Debug",
         "Release"

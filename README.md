@@ -6,7 +6,7 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 
 ```
 > git clone https://github.com/zann1x/jarp.git
-> GenerateProjectFiles.bat
+> GenerateProjectFiles_VS201x.bat
 ```
 
 ## Supported Platforms
