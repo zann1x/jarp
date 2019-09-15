@@ -4,6 +4,7 @@
 #include "Time.h"
 
 #include "jarp/Events/ApplicationEvent.h"
+#include "Platform/VulkanRHI/TempVulkanApplication.h"
 
 namespace jarp {
 
@@ -38,6 +39,9 @@ namespace jarp {
 		auto LastFrameTime = CurrentFrameTime;
 		uint32_t DeltaFrameTime;
 
+		TempVulkanApplication Renderer;
+		Renderer.StartVulkan();
+
 		while (bIsRunning)
 		{
 			// Calculate frames per second
@@ -56,9 +60,11 @@ namespace jarp {
 			LastFrameTime = CurrentFrameTime;
 
 			// Update everything
-			//DrawFrame(DeltaFrameTime);
+			Renderer.Render(DeltaFrameTime);
 			pWindow->Update(DeltaFrameTime);
 		}
+
+		Renderer.ShutdownVulkan();
 	}
 
 	void Application::OnEvent(Event& E)

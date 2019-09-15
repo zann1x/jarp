@@ -9,7 +9,7 @@ namespace jarp {
 	public:
 		static std::vector<char> ReadFile(const std::string& Filename)
 		{
-			std::ifstream File(Filename, std::ios::binary | std::ios::ate);
+			std::ifstream File(Filename.c_str(), std::ios::binary | std::ios::ate);
 			if (!File.is_open())
 			{
 				throw std::runtime_error("Failed to open file!");

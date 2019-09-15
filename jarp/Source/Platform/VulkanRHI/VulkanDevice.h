@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "Platform/VulkanRHI/VulkanQueue.h"
+
 namespace jarp {
 
 	class VulkanInstance;

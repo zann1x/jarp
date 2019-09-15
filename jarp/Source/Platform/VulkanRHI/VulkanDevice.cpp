@@ -2,7 +2,6 @@
 #include "VulkanDevice.h"
 
 #include "VulkanInstance.h"
-#include "VulkanQueue.h"
 #include "VulkanUtils.hpp"
 
 #include <assert.h>
