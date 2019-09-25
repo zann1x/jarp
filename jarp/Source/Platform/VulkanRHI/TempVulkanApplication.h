@@ -9,13 +9,11 @@
 #include "Platform/VulkanRHI/VulkanDescriptorPool.h"
 #include "Platform/VulkanRHI/VulkanDescriptorSet.h"
 #include "Platform/VulkanRHI/VulkanDescriptorSetLayout.h"
-#include "Platform/VulkanRHI/VulkanDevice.h"
 #include "Platform/VulkanRHI/VulkanFence.h"
 #include "Platform/VulkanRHI/VulkanFramebuffer.h"
 #include "Platform/VulkanRHI/VulkanGraphicsPipeline.h"
 #include "Platform/VulkanRHI/VulkanImage.h"
 #include "Platform/VulkanRHI/VulkanImageView.h"
-#include "Platform/VulkanRHI/VulkanInstance.h"
 #include "Platform/VulkanRHI/VulkanRenderPass.h"
 #include "Platform/VulkanRHI/VulkanSemaphore.h"
 #include "Platform/VulkanRHI/VulkanShader.h"
@@ -52,8 +50,6 @@ namespace jarp {
 		};
 		SUniformBufferObject UBO;
 
-		VulkanInstance* pInstance;
-		VulkanDevice* pLogicalDevice;
 		VulkanSwapchain* pSwapchain;
 		VulkanCommandPool* pCommandPool;
 		VulkanCommandPool* pTransientCommandPool;

@@ -1,6 +1,7 @@
 #include "jarppch.h"
 #include "VulkanSwapchain.h"
 
+#include "VulkanContext.h"
 #include "VulkanDevice.h"
 #include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
@@ -10,27 +11,8 @@
 
 namespace jarp {
 
-	VulkanSwapchain::VulkanSwapchain(Window& Window, VkInstance Instance, VulkanDevice& Device)
-		: Instance(Instance), Device(Device)
+	VulkanSwapchain::VulkanSwapchain()
 	{
-		// Create surface
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-		WindowsWindow& Win32 = dynamic_cast<WindowsWindow&>(Window);
-
-		VkWin32SurfaceCreateInfoKHR Win32SurfaceCreateInfoKHR = {};
-		Win32SurfaceCreateInfoKHR.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		Win32SurfaceCreateInfoKHR.pNext = nullptr;
-		Win32SurfaceCreateInfoKHR.flags = 0;
-		Win32SurfaceCreateInfoKHR.hinstance = Win32.GetNativeInstanceHandle();
-		Win32SurfaceCreateInfoKHR.hwnd = Win32.GetNativeWindowHandle();
-
-		VK_ASSERT(vkCreateWin32SurfaceKHR(Instance, &Win32SurfaceCreateInfoKHR, nullptr, &SurfaceKHR));
-#else
-#error UNSUPPORTED PLATFORM
-#endif
-
-	// Create present queue from surface
-		Device.SetupPresentQueue(SurfaceKHR);
 	}
 
 	VulkanSwapchain::~VulkanSwapchain()
@@ -39,7 +21,7 @@ namespace jarp {
 
 		if (SurfaceKHR != VK_NULL_HANDLE)
 		{
-			vkDestroySurfaceKHR(Instance, SurfaceKHR, nullptr);
+			vkDestroySurfaceKHR(VulkanRendererAPI::pInstance->GetHandle(), SurfaceKHR, nullptr);
 			SurfaceKHR = VK_NULL_HANDLE;
 		}
 	}
@@ -172,14 +154,13 @@ namespace jarp {
 			for (auto& ImageView : SwapchainImageViews)
 			{
 				ImageView.Destroy();
-				//vkDestroyImageView(Device.GetInstanceHandle(), ImageView, nullptr);
 			}
 			SwapchainImageViews.clear();
 		}
 
 		if (Swapchain != VK_NULL_HANDLE)
 		{
-			vkDestroySwapchainKHR(Device.GetInstanceHandle(), Swapchain, nullptr);
+			vkDestroySwapchainKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, nullptr);
 			Swapchain = VK_NULL_HANDLE;
 		}
 	}
@@ -205,7 +186,7 @@ namespace jarp {
 
 	VkResult VulkanSwapchain::AcquireNextImage(const VkSemaphore WaitSemaphore)
 	{
-		return vkAcquireNextImageKHR(Device.GetInstanceHandle(), Swapchain, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ActiveImageIndex);
+		return vkAcquireNextImageKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ActiveImageIndex);
 	}
 
 }

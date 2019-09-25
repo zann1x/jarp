@@ -31,7 +31,7 @@ namespace jarp {
 		};
 
 	public:
-		VulkanSwapchain(Window& Window, VkInstance Instance, VulkanDevice& Device);
+		VulkanSwapchain();
 		~VulkanSwapchain();
 
 		void CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync = true);
@@ -49,8 +49,6 @@ namespace jarp {
 		VkResult AcquireNextImage(const VkSemaphore WaitSemaphore);
 
 	private:
-		VkInstance Instance;
-		VulkanDevice& Device;
 		VkSurfaceKHR SurfaceKHR;
 		VkSwapchainKHR Swapchain;
 

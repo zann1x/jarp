@@ -1,16 +1,19 @@
 #include "jarppch.h"
 #include "VulkanDevice.h"
 
-#include "VulkanInstance.h"
-#include "VulkanUtils.hpp"
+#include "Platform/VulkanRHI/VulkanRendererAPI.h"
+#include "Platform/VulkanRHI/VulkanUtils.hpp"
 
 #include <assert.h>
 
 namespace jarp {
 
-	VulkanDevice::VulkanDevice(VulkanInstance& Instance)
-		: Instance(Instance), PhysicalDevice(VK_NULL_HANDLE)
+	VulkanDevice::VulkanDevice()
+		: PhysicalDevice(VK_NULL_HANDLE)
 	{
+		pSurface = new VulkanSurface();
+		pSurface->CreateSurface();
+
 		PickPhysicalDevice();
 
 		vkGetPhysicalDeviceProperties(PhysicalDevice, &PhysicalDeviceProperties);
@@ -18,7 +21,7 @@ namespace jarp {
 
 		// Check for desired features
 		vkGetPhysicalDeviceFeatures(PhysicalDevice, &PhysicalDeviceFeatures);
-		EnabledPhysicalDeviceFeatures = {};
+		EnabledPhysicalDeviceFeatures = { };
 		if (!PhysicalDeviceFeatures.samplerAnisotropy)
 			throw std::runtime_error("Not all enabled features are supported");
 		EnabledPhysicalDeviceFeatures.samplerAnisotropy = VK_TRUE; // for sampler creation
@@ -47,9 +50,15 @@ namespace jarp {
 			EnabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 		else
 			throw std::runtime_error("Not all required extensions supported by the physical device!");
+
+		SetupPresentQueue(pSurface->GetHandle());
 	}
 
 	VulkanDevice::~VulkanDevice()
+	{
+	}
+
+	void VulkanDevice::Destroy()
 	{
 		delete PresentQueue;
 		delete TransferQueue;
@@ -164,10 +173,11 @@ namespace jarp {
 
 	void VulkanDevice::PickPhysicalDevice()
 	{
+		// TODO: properly check queue families, device extensions, device features and swapchain support here
 		uint32_t PhysicalDeviceCount;
-		VK_ASSERT(vkEnumeratePhysicalDevices(Instance.GetHandle(), &PhysicalDeviceCount, nullptr));
+		VK_ASSERT(vkEnumeratePhysicalDevices(VulkanRendererAPI::pInstance->GetHandle(), &PhysicalDeviceCount, nullptr));
 		std::vector<VkPhysicalDevice> PhysicalDevices(PhysicalDeviceCount);
-		VK_ASSERT(vkEnumeratePhysicalDevices(Instance.GetHandle(), &PhysicalDeviceCount, PhysicalDevices.data()));
+		VK_ASSERT(vkEnumeratePhysicalDevices(VulkanRendererAPI::pInstance->GetHandle(), &PhysicalDeviceCount, PhysicalDevices.data()));
 
 		// Get info about the available physical devices and pick one for use
 		for (size_t i = 0; i < PhysicalDevices.size(); ++i)

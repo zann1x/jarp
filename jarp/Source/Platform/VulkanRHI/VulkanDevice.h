@@ -3,20 +3,21 @@
 #include <vulkan/vulkan.h>
 
 #include "Platform/VulkanRHI/VulkanQueue.h"
+#include "Platform/VulkanRHI/VulkanSurface.h"
 
 namespace jarp {
 
-	class VulkanInstance;
 	class VulkanQueue;
 
 	class VulkanDevice
 	{
 	public:
-		VulkanDevice(VulkanInstance& Instance);
+		VulkanDevice();
 		~VulkanDevice();
 
 		void SetupPresentQueue(VkSurfaceKHR Surface);
 		void CreateLogicalDevice();
+		void Destroy();
 
 		inline const VkDevice GetInstanceHandle() const { return LogicalDevice; }
 		inline const VkPhysicalDevice GetPhysicalHandle() const { return PhysicalDevice; }
@@ -40,7 +41,7 @@ namespace jarp {
 		std::vector<std::string> SupportedExtensions;
 		std::vector<const char*> EnabledExtensions;
 
-		VulkanInstance& Instance;
+		VulkanSurface* pSurface;
 		VkPhysicalDevice PhysicalDevice;
 		VkDevice LogicalDevice;
 

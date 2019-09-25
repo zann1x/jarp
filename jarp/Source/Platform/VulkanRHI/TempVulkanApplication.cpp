@@ -6,21 +6,24 @@
 #include "jarp/Application.h"
 #include "jarp/Time.h"
 #include "Platform/Windows/WindowsWindow.h"
+#include "Platform/VulkanRHI/VulkanContext.h"
 
 namespace jarp {
 
 	void TempVulkanApplication::StartVulkan()
 	{
-		pInstance = new VulkanInstance();
-		pInstance->CreateInstance();
+		VulkanRendererAPI::pInstance = std::make_unique<VulkanInstance>();
+		VulkanRendererAPI::pInstance->CreateInstance();
 
-		pLogicalDevice = new VulkanDevice(*pInstance);
-		pLogicalDevice->CreateLogicalDevice();
-		pSwapchain = new VulkanSwapchain(Application::Get().GetWindow(), pInstance->GetHandle(), *pLogicalDevice);
+		VulkanRendererAPI::pDevice = std::make_unique<VulkanDevice>();
+		VulkanRendererAPI::pDevice->CreateLogicalDevice();
+
+		pSwapchain = new VulkanSwapchain();
 		pSwapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), Settings.VSync);
 		MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
+		// TODO: replace all occurrences of plain device ptr with Renderer API object
 		pCommandPool = new VulkanCommandPool(*pLogicalDevice);
 		pCommandPool->CreateCommandPool();
 		pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
@@ -220,10 +223,8 @@ namespace jarp {
 		pDescriptorSetLayout->Destroy();
 		delete pDescriptorSetLayout;
 
-		delete pLogicalDevice;
-
-		pInstance->Destroy();
-		delete pInstance;
+		VulkanRendererAPI::pDevice->Destroy();
+		VulkanRendererAPI::pInstance->Destroy();
 	}
 
 	void TempVulkanApplication::RecordCommandBuffer()
