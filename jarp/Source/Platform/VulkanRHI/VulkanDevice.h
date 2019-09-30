@@ -21,6 +21,7 @@ namespace jarp {
 
 		inline const VkDevice GetInstanceHandle() const { return LogicalDevice; }
 		inline const VkPhysicalDevice GetPhysicalHandle() const { return PhysicalDevice; }
+		inline const VulkanSurface& GetSurface() const { return *pSurface; }
 		inline const VulkanQueue& GetGraphicsQueue() const { return *GraphicsQueue; }
 		inline const VulkanQueue& GetPresentQueue() const { return *PresentQueue; }
 

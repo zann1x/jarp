@@ -1,8 +1,7 @@
 #include "jarppch.h"
 #include "VulkanSwapchain.h"
 
-#include "VulkanContext.h"
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanImageView.h"
 #include "VulkanUtils.hpp"
 
@@ -12,6 +11,7 @@
 namespace jarp {
 
 	VulkanSwapchain::VulkanSwapchain()
+		: SurfaceKHR(VK_NULL_HANDLE), Swapchain(VK_NULL_HANDLE)
 	{
 	}
 
@@ -28,7 +28,7 @@ namespace jarp {
 
 	void VulkanSwapchain::CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync)
 	{
-		SwapchainSupportDetails = QuerySwapchainSupport(Device.GetPhysicalHandle(), SurfaceKHR);
+		SwapchainSupportDetails = QuerySwapchainSupport(VulkanRendererAPI::pDevice->GetPhysicalHandle(), VulkanRendererAPI::pDevice->GetSurface().GetHandle());
 
 		// Check image count of swapchain
 		// If max image count is 0 then there are no limits besides memory requirements
@@ -91,7 +91,7 @@ namespace jarp {
 		SwapchainCreateInfoKHR.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		SwapchainCreateInfoKHR.pNext = nullptr;
 		SwapchainCreateInfoKHR.flags = 0;
-		SwapchainCreateInfoKHR.surface = SurfaceKHR;
+		SwapchainCreateInfoKHR.surface = VulkanRendererAPI::pDevice->GetSurface().GetHandle();
 		SwapchainCreateInfoKHR.minImageCount = SwapchainMinImageCount;
 		SwapchainCreateInfoKHR.imageFormat = SwapchainDetails.SurfaceFormat.format;
 		SwapchainCreateInfoKHR.imageColorSpace = SwapchainDetails.SurfaceFormat.colorSpace;
@@ -118,7 +118,7 @@ namespace jarp {
 		};
 		for (auto& CompositeAlpha : CompositeAlphaFlags)
 		{
-			// Select the first one that is supoorted
+			// Select the first one that is supported
 			if (SwapchainSupportDetails.SurfaceCapabilities.supportedCompositeAlpha & CompositeAlpha)
 			{
 				SwapchainCreateInfoKHR.compositeAlpha = CompositeAlpha;
@@ -130,19 +130,20 @@ namespace jarp {
 		SwapchainCreateInfoKHR.clipped = VK_TRUE;
 		SwapchainCreateInfoKHR.oldSwapchain = VK_NULL_HANDLE;
 
-		VK_ASSERT(vkCreateSwapchainKHR(Device.GetInstanceHandle(), &SwapchainCreateInfoKHR, nullptr, &Swapchain));
+		VkDevice device = VulkanRendererAPI::pDevice->GetInstanceHandle();
+		VK_ASSERT(vkCreateSwapchainKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), &SwapchainCreateInfoKHR, nullptr, &Swapchain));
 
 		// Get images from the created swapchain
 		uint32_t SwapchainImageCount;
-		vkGetSwapchainImagesKHR(Device.GetInstanceHandle(), Swapchain, &SwapchainImageCount, nullptr);
+		vkGetSwapchainImagesKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, &SwapchainImageCount, nullptr);
 		SwapchainImages.resize(SwapchainImageCount);
-		vkGetSwapchainImagesKHR(Device.GetInstanceHandle(), Swapchain, &SwapchainImageCount, SwapchainImages.data());
+		vkGetSwapchainImagesKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, &SwapchainImageCount, SwapchainImages.data());
 
 		// Create image views
 		SwapchainImageViews.reserve(SwapchainImages.size());
 		for (size_t i = 0; i < SwapchainImages.size(); ++i)
 		{
-			SwapchainImageViews.push_back(VulkanImageView(Device));
+			SwapchainImageViews.push_back(VulkanImageView());
 			SwapchainImageViews[i].CreateImageView(SwapchainImages[i], SwapchainDetails.SurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 	}

@@ -6,16 +6,10 @@
 
 namespace jarp {
 
-	class VulkanDevice;
-
-	/*
-	Depends on:
-	- Device
-	*/
 	class VulkanShader
 	{
 	public:
-		VulkanShader(VulkanDevice& OutDevice);
+		VulkanShader();
 		~VulkanShader();
 
 		void CreateShaderModule(const VkShaderStageFlagBits ShaderStage, const std::string& Filename);
@@ -27,7 +21,6 @@ namespace jarp {
 		void AddDescriptorSetLayout(const VulkanDescriptorSetLayout& DescriptorSetLayout);
 
 	private:
-		VulkanDevice& Device;
 		std::vector<VulkanDescriptorSetLayout> DescriptorSetLayouts;
 
 		std::map< VkShaderStageFlagBits, VkShaderModule> ShaderModules;

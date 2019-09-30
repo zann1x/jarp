@@ -50,8 +50,6 @@ namespace jarp {
 			EnabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 		else
 			throw std::runtime_error("Not all required extensions supported by the physical device!");
-
-		SetupPresentQueue(pSurface->GetHandle());
 	}
 
 	VulkanDevice::~VulkanDevice()
@@ -169,6 +167,8 @@ namespace jarp {
 		GraphicsQueue = new VulkanQueue(*this, GraphicsFamilyIndex);
 		ComputeQueue = new VulkanQueue(*this, ComputeFamilyIndex);
 		TransferQueue = new VulkanQueue(*this, TransferFamilyIndex);
+
+		SetupPresentQueue(pSurface->GetHandle());
 	}
 
 	void VulkanDevice::PickPhysicalDevice()

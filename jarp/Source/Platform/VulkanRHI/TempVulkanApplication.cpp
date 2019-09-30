@@ -6,7 +6,7 @@
 #include "jarp/Application.h"
 #include "jarp/Time.h"
 #include "Platform/Windows/WindowsWindow.h"
-#include "Platform/VulkanRHI/VulkanContext.h"
+#include "Platform/VulkanRHI/VulkanRendererAPI.h"
 
 namespace jarp {
 
@@ -24,59 +24,59 @@ namespace jarp {
 		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
 		// TODO: replace all occurrences of plain device ptr with Renderer API object
-		pCommandPool = new VulkanCommandPool(*pLogicalDevice);
+		pCommandPool = new VulkanCommandPool();
 		pCommandPool->CreateCommandPool();
-		pTransientCommandPool = new VulkanCommandPool(*pLogicalDevice);
+		pTransientCommandPool = new VulkanCommandPool();
 		pTransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
-		pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
+		pTransientCommandBuffer = new VulkanCommandBuffer(*pTransientCommandPool);
 
-		pDepthImage = new VulkanImage(*pLogicalDevice);
-		pDepthImageView = new VulkanImageView(*pLogicalDevice);
-		VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
+		pDepthImage = new VulkanImage();
+		pDepthImageView = new VulkanImageView();
+		VkFormat DepthFormat = VulkanRendererAPI::pDevice->FindDepthFormat();
 		pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-		pDescriptorSetLayout = new VulkanDescriptorSetLayout(*pLogicalDevice);
+		pDescriptorSetLayout = new VulkanDescriptorSetLayout();
 		pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 		pDescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 		pDescriptorSetLayout->CreateDescriptorSetLayout();
 
-		pModel = new Model(*pLogicalDevice);
-		pTexture = new Texture(*pLogicalDevice);
+		pModel = new Model();
+		pTexture = new Texture();
 
-		pRenderPass = new VulkanRenderPass(*pLogicalDevice, *pSwapchain);
+		pRenderPass = new VulkanRenderPass(*pSwapchain);
 		pRenderPass->CreateRenderPass();
-		pShader = new VulkanShader(*pLogicalDevice);
+		pShader = new VulkanShader();
 		pShader->AddDescriptorSetLayout(*pDescriptorSetLayout);
 		pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "E:/VisualStudioProjects/jarp-master/jarp/Shaders/Phong.vert.spv");
 		pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "E:/VisualStudioProjects/jarp-master/jarp/Shaders/Phong.frag.spv");
-		pGraphicsPipeline = new VulkanGraphicsPipeline(*pLogicalDevice, *pRenderPass, *pShader);
+		pGraphicsPipeline = new VulkanGraphicsPipeline(*pRenderPass, *pShader);
 		pGraphicsPipeline->CreateGraphicsPipeline(pModel->GetPipelineVertexInputStateCreateInfo(), pSwapchain->GetDetails().Extent);
 
 		pFramebuffers.resize(pSwapchain->GetImages().size());
 		for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 		{
-			pFramebuffers[i] = new VulkanFramebuffer(*pLogicalDevice, *pRenderPass);
+			pFramebuffers[i] = new VulkanFramebuffer(*pRenderPass);
 			pFramebuffers[i]->CreateFramebuffer({ pSwapchain->GetImageViews()[i].GetHandle(), pDepthImageView->GetHandle() }, pSwapchain->GetDetails().Extent);
 		}
 
-		pDescriptorPool = new VulkanDescriptorPool(*pLogicalDevice, *pSwapchain);
+		pDescriptorPool = new VulkanDescriptorPool(*pSwapchain);
 		pDescriptorPool->CreateDescriptorPool();
 
 		pDrawCommandBuffers.resize(pFramebuffers.size());
 		for (size_t i = 0; i < pFramebuffers.size(); ++i)
 		{
-			pDrawCommandBuffers[i] = new VulkanCommandBuffer(*pLogicalDevice, *pCommandPool);
+			pDrawCommandBuffers[i] = new VulkanCommandBuffer(*pCommandPool);
 			pDrawCommandBuffers[i]->CreateCommandBuffer();
 		}
 
-		pModel->Load(*pTransientCommandBuffer, "E:/VisualStudioProjects/jarp-master/jarp/Content/kitten.obj");
+		pModel->Load("E:/VisualStudioProjects/jarp-master/jarp/Content/kitten.obj");
 		pTexture->Load(*pTransientCommandBuffer, "E:/VisualStudioProjects/jarp-master/jarp/Content/texture.jpg");
-		pVertexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+		pVertexBuffer = new VulkanBuffer(pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 		pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		pVertexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetVertices());
-		pIndexBuffer = new VulkanBuffer(*pLogicalDevice, pModel->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+		pIndexBuffer = new VulkanBuffer(pModel->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 		pIndexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		pIndexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetIndices());
 		delete pTransientCommandBuffer;
@@ -84,13 +84,13 @@ namespace jarp {
 		UniformBuffers.resize(pSwapchain->GetImages().size());
 		for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
 		{
-			UniformBuffers[i] = new VulkanBuffer(*pLogicalDevice, sizeof(UBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+			UniformBuffers[i] = new VulkanBuffer(sizeof(UBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 			UniformBuffers[i]->CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		}
 		std::vector<VkBuffer> UniBuffers;
 		for (auto& UniformBuffer : UniformBuffers)
 			UniBuffers.push_back(UniformBuffer->GetHandle());
-		pDescriptorSet = new VulkanDescriptorSet(*pLogicalDevice);
+		pDescriptorSet = new VulkanDescriptorSet();
 		pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(UBO), UniBuffers, pTexture->GetSampler(), pTexture->GetImageView().GetHandle());
 
 		pRenderingFinishedSemaphores.resize(MaxFramesInFlight);
@@ -98,13 +98,13 @@ namespace jarp {
 		pFencesInFlight.resize(MaxFramesInFlight);
 		for (uint32_t i = 0; i < MaxFramesInFlight; ++i)
 		{
-			pRenderingFinishedSemaphores[i] = new VulkanSemaphore(*pLogicalDevice);
+			pRenderingFinishedSemaphores[i] = new VulkanSemaphore();
 			pRenderingFinishedSemaphores[i]->CreateSemaphore();
 
-			pImageAvailableSemaphores[i] = new VulkanSemaphore(*pLogicalDevice);
+			pImageAvailableSemaphores[i] = new VulkanSemaphore();
 			pImageAvailableSemaphores[i]->CreateSemaphore();
 
-			pFencesInFlight[i] = new VulkanFence(*pLogicalDevice);
+			pFencesInFlight[i] = new VulkanFence();
 			pFencesInFlight[i]->CreateFence();
 		}
 
@@ -137,7 +137,7 @@ namespace jarp {
 		UpdateMVP(pSwapchain->GetActiveImageIndex());
 
 		// Submit commands to the queue
-		pLogicalDevice->GetGraphicsQueue().QueueSubmitAndWait(
+		VulkanRendererAPI::pDevice->GetGraphicsQueue().QueueSubmitAndWait(
 			{ pDrawCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() },
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 			{ pImageAvailableSemaphores[CurrentFrame]->GetHandle() },
@@ -147,7 +147,7 @@ namespace jarp {
 		);
 
 		{
-			VkResult Result = pLogicalDevice->GetPresentQueue().QueuePresent(
+			VkResult Result = VulkanRendererAPI::pDevice->GetPresentQueue().QueuePresent(
 				pSwapchain->GetHandle(),
 				{ pSwapchain->GetActiveImageIndex() },
 				{ pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }
@@ -171,7 +171,7 @@ namespace jarp {
 	void TempVulkanApplication::ShutdownVulkan()
 	{
 		// Free all resources
-		pLogicalDevice->WaitUntilIdle();
+		VulkanRendererAPI::pDevice->WaitUntilIdle();
 
 		CleanupSwapchain();
 		delete pRenderPass;
@@ -283,17 +283,17 @@ namespace jarp {
 			SDL_WaitEvent(nullptr);
 		}
 
-		pLogicalDevice->WaitUntilIdle();
+		VulkanRendererAPI::pDevice->WaitUntilIdle();
 		CleanupSwapchain();
 
 		pSwapchain->CreateSwapchain(FramebufferWidth, FramebufferHeight, Settings.VSync);
 		MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
 		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
 
-		VkFormat DepthFormat = pLogicalDevice->FindDepthFormat();
+		VkFormat DepthFormat = VulkanRendererAPI::pDevice->FindDepthFormat();
 		pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-		pTransientCommandBuffer = new VulkanCommandBuffer(*pLogicalDevice, *pTransientCommandPool);
+		pTransientCommandBuffer = new VulkanCommandBuffer(*pTransientCommandPool);
 		pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		delete pTransientCommandBuffer;
 
@@ -344,7 +344,7 @@ namespace jarp {
 		// Map uniform buffer data persistently
 		static void* RawData[3];
 		if (!RawData[CurrentImage])
-			vkMapMemory(pLogicalDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData[CurrentImage]);
+			vkMapMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData[CurrentImage]);
 		memcpy(RawData[CurrentImage], &UBO, sizeof(UBO));
 	}
 

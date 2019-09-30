@@ -4,18 +4,12 @@
 
 namespace jarp {
 
-	class VulkanDevice;
 	class VulkanSwapchain;
 
-	/*
-	Depends on:
-	- Device
-	- SwapchainKHR
-	*/
 	class VulkanRenderPass
 	{
 	public:
-		VulkanRenderPass(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain);
+		VulkanRenderPass(VulkanSwapchain& OutSwapchain);
 		~VulkanRenderPass();
 
 		void CreateRenderPass();
@@ -24,7 +18,6 @@ namespace jarp {
 		inline const VkRenderPass& GetHandle() const { return RenderPass; }
 
 	private:
-		VulkanDevice& Device;
 		VulkanSwapchain& Swapchain;
 
 		VkRenderPass RenderPass;

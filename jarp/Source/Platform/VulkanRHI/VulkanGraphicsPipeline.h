@@ -4,22 +4,13 @@
 
 namespace jarp {
 
-	class VulkanDevice;
 	class VulkanRenderPass;
 	class VulkanShader;
 
-	class Model;
-
-	/*
-	Depends on:
-	- Device
-	- Renderpass
-	- Shader
-	*/
 	class VulkanGraphicsPipeline
 	{
 	public:
-		VulkanGraphicsPipeline(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass, VulkanShader& OutShader);
+		VulkanGraphicsPipeline(VulkanRenderPass& OutRenderPass, VulkanShader& OutShader);
 		~VulkanGraphicsPipeline();
 
 		void CreateGraphicsPipeline(const VkPipelineVertexInputStateCreateInfo& PipelineVertexInputStateCreateInfo, const VkExtent2D SwapchainExtent);
@@ -29,7 +20,6 @@ namespace jarp {
 		inline const VkPipelineLayout& GetLayoutHandle() const { return PipelineLayout; }
 
 	private:
-		VulkanDevice& Device;
 		VulkanRenderPass& RenderPass;
 		VulkanShader& Shader;
 

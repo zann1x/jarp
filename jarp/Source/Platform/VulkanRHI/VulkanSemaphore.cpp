@@ -1,13 +1,13 @@
 #include "jarppch.h"
 #include "VulkanSemaphore.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanSemaphore::VulkanSemaphore(VulkanDevice& Device)
-		: Device(Device)
+	VulkanSemaphore::VulkanSemaphore()
+		: Semaphore(VK_NULL_HANDLE)
 	{
 	}
 
@@ -22,12 +22,12 @@ namespace jarp {
 		SemaphoreCreateInfo.flags = 0;
 		SemaphoreCreateInfo.pNext = nullptr;
 
-		VK_ASSERT(vkCreateSemaphore(Device.GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &Semaphore));
+		VK_ASSERT(vkCreateSemaphore(VulkanRendererAPI::pDevice->GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &Semaphore));
 	}
 
 	void VulkanSemaphore::Destroy()
 	{
-		vkDestroySemaphore(Device.GetInstanceHandle(), Semaphore, nullptr);
+		vkDestroySemaphore(VulkanRendererAPI::pDevice->GetInstanceHandle(), Semaphore, nullptr);
 	}
 
 }

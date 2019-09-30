@@ -1,7 +1,7 @@
 #include "jarppch.h"
 #include "VulkanGraphicsPipeline.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanRenderPass.h"
 #include "VulkanShader.h"
 #include "VulkanSwapchain.h"
@@ -9,8 +9,8 @@
 
 namespace jarp {
 
-	VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice& OutDevice, VulkanRenderPass& OutRenderPass, VulkanShader& OutShader)
-		: Device(OutDevice), RenderPass(OutRenderPass), Shader(OutShader)
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanRenderPass& OutRenderPass, VulkanShader& OutShader)
+		: RenderPass(OutRenderPass), Shader(OutShader)
 	{
 		DynamicStates = { };
 	}
@@ -130,7 +130,7 @@ namespace jarp {
 		PipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 		PipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
-		VK_ASSERT(vkCreatePipelineLayout(Device.GetInstanceHandle(), &PipelineLayoutCreateInfo, nullptr, &PipelineLayout));
+		VK_ASSERT(vkCreatePipelineLayout(VulkanRendererAPI::pDevice->GetInstanceHandle(), &PipelineLayoutCreateInfo, nullptr, &PipelineLayout));
 
 		VkGraphicsPipelineCreateInfo GraphicsPipelineCreateInfo = {};
 		GraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -153,13 +153,13 @@ namespace jarp {
 		GraphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 		GraphicsPipelineCreateInfo.basePipelineIndex = -1;
 
-		VK_ASSERT(vkCreateGraphicsPipelines(Device.GetInstanceHandle(), VK_NULL_HANDLE, 1, &GraphicsPipelineCreateInfo, nullptr, &Pipeline));
+		VK_ASSERT(vkCreateGraphicsPipelines(VulkanRendererAPI::pDevice->GetInstanceHandle(), VK_NULL_HANDLE, 1, &GraphicsPipelineCreateInfo, nullptr, &Pipeline));
 	}
 
 	void VulkanGraphicsPipeline::Destroy()
 	{
-		vkDestroyPipeline(Device.GetInstanceHandle(), Pipeline, nullptr);
-		vkDestroyPipelineLayout(Device.GetInstanceHandle(), PipelineLayout, nullptr);
+		vkDestroyPipeline(VulkanRendererAPI::pDevice->GetInstanceHandle(), Pipeline, nullptr);
+		vkDestroyPipelineLayout(VulkanRendererAPI::pDevice->GetInstanceHandle(), PipelineLayout, nullptr);
 	}
 
 }

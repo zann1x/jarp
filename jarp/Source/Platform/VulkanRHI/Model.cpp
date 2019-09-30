@@ -1,16 +1,12 @@
 #include "jarppch.h"
 #include "Model.h"
 
-#include "VulkanCommandBuffer.h"
-#include "VulkanDevice.h"
-
 #include <tiny_obj_loader.h>
 #include <unordered_map>
 
 namespace jarp {
 
-	Model::Model(VulkanDevice& Device)
-		: Device(Device)
+	Model::Model()
 	{
 		//Vertices = {
 		//	{ { -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } }, // 0
@@ -69,7 +65,7 @@ namespace jarp {
 	{
 	}
 
-	void Model::Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFile)
+	void Model::Load(const std::string& ObjectFile)
 	{
 		tinyobj::attrib_t Attrib;
 		std::vector<tinyobj::shape_t> Shapes;

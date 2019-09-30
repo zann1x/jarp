@@ -2,14 +2,14 @@
 #include "VulkanCommandBuffer.h"
 
 #include "VulkanCommandPool.h"
-#include "VulkanDevice.h"
 #include "VulkanQueue.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice& OutDevice, VulkanCommandPool& OutCommandPool)
-		: Device(OutDevice), CommandPool(OutCommandPool)
+	VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandPool& OutCommandPool)
+		: CommandPool(OutCommandPool), CommandBuffer(VK_NULL_HANDLE)
 	{
 	}
 
@@ -26,12 +26,12 @@ namespace jarp {
 		CommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		CommandBufferAllocateInfo.commandBufferCount = 1;
 
-		VK_ASSERT(vkAllocateCommandBuffers(Device.GetInstanceHandle(), &CommandBufferAllocateInfo, &CommandBuffer));
+		VK_ASSERT(vkAllocateCommandBuffers(VulkanRendererAPI::pDevice->GetInstanceHandle(), &CommandBufferAllocateInfo, &CommandBuffer));
 	}
 
 	void VulkanCommandBuffer::Destroy()
 	{
-		vkFreeCommandBuffers(Device.GetInstanceHandle(), CommandPool.GetHandle(), 1, &CommandBuffer);
+		vkFreeCommandBuffers(VulkanRendererAPI::pDevice->GetInstanceHandle(), CommandPool.GetHandle(), 1, &CommandBuffer);
 	}
 
 	void VulkanCommandBuffer::BeginOneTimeSubmitCommand()
@@ -62,8 +62,8 @@ namespace jarp {
 		SubmitInfo.signalSemaphoreCount = 0;
 		SubmitInfo.pSignalSemaphores = nullptr;
 
-		Device.GetGraphicsQueue().QueueSubmitAndWait({ CommandBuffer }, 0, {}, {}, VK_NULL_HANDLE, {});
-		Device.GetGraphicsQueue().WaitUntilIdle();
+		VulkanRendererAPI::pDevice->GetGraphicsQueue().QueueSubmitAndWait({ CommandBuffer }, 0, {}, {}, VK_NULL_HANDLE, {});
+		VulkanRendererAPI::pDevice->GetGraphicsQueue().WaitUntilIdle();
 
 		Destroy();
 	}

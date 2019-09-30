@@ -1,13 +1,13 @@
 #include "jarppch.h"
 #include "VulkanFence.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanFence::VulkanFence(VulkanDevice& Device)
-		: Device(Device)
+	VulkanFence::VulkanFence()
+		: Fence(VK_NULL_HANDLE)
 	{
 	}
 
@@ -22,12 +22,12 @@ namespace jarp {
 		FenceCreateInfo.pNext = nullptr;
 		FenceCreateInfo.flags = 0;
 
-		VK_ASSERT(vkCreateFence(Device.GetInstanceHandle(), &FenceCreateInfo, nullptr, &Fence));
+		VK_ASSERT(vkCreateFence(VulkanRendererAPI::pDevice->GetInstanceHandle(), &FenceCreateInfo, nullptr, &Fence));
 	}
 
 	void VulkanFence::Destroy()
 	{
-		vkDestroyFence(Device.GetInstanceHandle(), Fence, nullptr);
+		vkDestroyFence(VulkanRendererAPI::pDevice->GetInstanceHandle(), Fence, nullptr);
 	}
 
 }

@@ -4,12 +4,10 @@
 
 namespace jarp {
 
-	class VulkanDevice;
-
 	class VulkanImageView
 	{
 	public:
-		VulkanImageView(VulkanDevice& Device);
+		VulkanImageView();
 		~VulkanImageView();
 
 		void CreateImageView(VkImage Image, VkFormat Format, VkImageAspectFlags ImageAspectFlags);
@@ -18,8 +16,6 @@ namespace jarp {
 		inline const VkImageView GetHandle() const { return ImageView; }
 
 	private:
-		VulkanDevice& Device;
-
 		VkImageView ImageView;
 	};
 

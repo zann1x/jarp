@@ -4,16 +4,10 @@
 
 namespace jarp {
 
-	class VulkanDevice;
-
-	/*
-	Depends on:
-	- Device
-	*/
 	class VulkanDescriptorSetLayout
 	{
 	public:
-		VulkanDescriptorSetLayout(VulkanDevice& OutDevice);
+		VulkanDescriptorSetLayout();
 		~VulkanDescriptorSetLayout();
 
 		void CreateDescriptorSetLayout();
@@ -24,8 +18,6 @@ namespace jarp {
 		inline const VkDescriptorSetLayout& GetHandle() const { return DescriptorSetLayout; }
 
 	private:
-		VulkanDevice& Device;
-
 		std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
 		VkDescriptorSetLayout DescriptorSetLayout;
 	};

@@ -2,12 +2,13 @@
 #include "VulkanImageView.h"
 
 #include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanImageView::VulkanImageView(VulkanDevice& Device)
-		: Device(Device)
+	VulkanImageView::VulkanImageView()
+		: ImageView(VK_NULL_HANDLE)
 	{
 	}
 
@@ -31,12 +32,12 @@ namespace jarp {
 		ImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 		ImageViewCreateInfo.subresourceRange.layerCount = 1;
 
-		VK_ASSERT(vkCreateImageView(Device.GetInstanceHandle(), &ImageViewCreateInfo, nullptr, &ImageView));
+		VK_ASSERT(vkCreateImageView(VulkanRendererAPI::pDevice->GetInstanceHandle(), &ImageViewCreateInfo, nullptr, &ImageView));
 	}
 
 	void VulkanImageView::Destroy()
 	{
-		vkDestroyImageView(Device.GetInstanceHandle(), ImageView, nullptr);
+		vkDestroyImageView(VulkanRendererAPI::pDevice->GetInstanceHandle(), ImageView, nullptr);
 	}
 
 }

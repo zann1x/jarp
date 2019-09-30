@@ -1,13 +1,13 @@
 #include "jarppch.h"
 #include "VulkanDescriptorSetLayout.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanDescriptorSetLayout::VulkanDescriptorSetLayout(VulkanDevice& OutDevice)
-		: Device(OutDevice)
+	VulkanDescriptorSetLayout::VulkanDescriptorSetLayout()
+		: DescriptorSetLayout(VK_NULL_HANDLE)
 	{
 	}
 
@@ -24,7 +24,7 @@ namespace jarp {
 		DescriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(DescriptorSetLayoutBindings.size());
 		DescriptorSetLayoutCreateInfo.pBindings = DescriptorSetLayoutBindings.data();
 
-		VK_ASSERT(vkCreateDescriptorSetLayout(Device.GetInstanceHandle(), &DescriptorSetLayoutCreateInfo, nullptr, &DescriptorSetLayout));
+		VK_ASSERT(vkCreateDescriptorSetLayout(VulkanRendererAPI::pDevice->GetInstanceHandle(), &DescriptorSetLayoutCreateInfo, nullptr, &DescriptorSetLayout));
 	}
 
 	void VulkanDescriptorSetLayout::AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags)
@@ -41,7 +41,7 @@ namespace jarp {
 
 	void VulkanDescriptorSetLayout::Destroy()
 	{
-		vkDestroyDescriptorSetLayout(Device.GetInstanceHandle(), DescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(VulkanRendererAPI::pDevice->GetInstanceHandle(), DescriptorSetLayout, nullptr);
 	}
 
 }

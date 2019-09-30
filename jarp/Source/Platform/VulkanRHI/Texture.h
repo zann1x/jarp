@@ -5,14 +5,13 @@
 namespace jarp {
 
 	class VulkanCommandBuffer;
-	class VulkanDevice;
 	class VulkanImage;
 	class VulkanImageView;
 
 	class Texture
 	{
 	public:
-		Texture(VulkanDevice& Device);
+		Texture();
 		~Texture();
 
 		void Load(VulkanCommandBuffer& CommandBuffer, const std::string& FileName);
@@ -22,7 +21,6 @@ namespace jarp {
 		inline const VulkanImageView& GetImageView() const { return *pTextureImageView; }
 
 	private:
-		VulkanDevice& Device;
 		VulkanImage* pTextureImage;
 		VulkanImageView* pTextureImageView;
 

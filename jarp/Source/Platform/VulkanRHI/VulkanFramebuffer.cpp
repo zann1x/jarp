@@ -1,14 +1,14 @@
 #include "jarppch.h"
 #include "VulkanFramebuffer.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanRenderPass.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& Device, VulkanRenderPass& RenderPass)
-		: Device(Device), RenderPass(RenderPass)
+	VulkanFramebuffer::VulkanFramebuffer(VulkanRenderPass& RenderPass)
+		: RenderPass(RenderPass), Framebuffer(VK_NULL_HANDLE)
 	{
 	}
 
@@ -29,12 +29,12 @@ namespace jarp {
 		FramebufferCreateInfo.height = Extent.height;
 		FramebufferCreateInfo.layers = 1;
 
-		VK_ASSERT(vkCreateFramebuffer(Device.GetInstanceHandle(), &FramebufferCreateInfo, nullptr, &Framebuffer));
+		VK_ASSERT(vkCreateFramebuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), &FramebufferCreateInfo, nullptr, &Framebuffer));
 	}
 
 	void VulkanFramebuffer::Destroy()
 	{
-		vkDestroyFramebuffer(Device.GetInstanceHandle(), Framebuffer, nullptr);
+		vkDestroyFramebuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), Framebuffer, nullptr);
 	}
 
 }

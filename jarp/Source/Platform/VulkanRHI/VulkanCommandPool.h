@@ -4,16 +4,10 @@
 
 namespace jarp {
 
-	class VulkanDevice;
-
-	/*
-	Depends on:
-	- Device
-	*/
 	class VulkanCommandPool
 	{
 	public:
-		VulkanCommandPool(VulkanDevice& OutDevice);
+		VulkanCommandPool();
 		~VulkanCommandPool();
 
 		void CreateCommandPool(const VkCommandPoolCreateFlags Flags = 0);
@@ -22,7 +16,6 @@ namespace jarp {
 		inline VkCommandPool GetHandle() { return CommandPool; };
 
 	private:
-		VulkanDevice& Device;
 		VkCommandPool CommandPool;
 	};
 

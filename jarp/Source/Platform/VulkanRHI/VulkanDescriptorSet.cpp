@@ -3,13 +3,12 @@
 
 #include "VulkanDescriptorPool.h"
 #include "VulkanDescriptorSetLayout.h"
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice& OutDevice)
-		: Device(OutDevice)
+	VulkanDescriptorSet::VulkanDescriptorSet()
 	{
 	}
 
@@ -29,7 +28,7 @@ namespace jarp {
 		DescriptorSetAllocateInfo.pSetLayouts = DescriptorSetLayouts.data();
 
 		DescriptorSets.resize(Amount);
-		VK_ASSERT(vkAllocateDescriptorSets(Device.GetInstanceHandle(), &DescriptorSetAllocateInfo, DescriptorSets.data()));
+		VK_ASSERT(vkAllocateDescriptorSets(VulkanRendererAPI::pDevice->GetInstanceHandle(), &DescriptorSetAllocateInfo, DescriptorSets.data()));
 
 		for (size_t i = 0; i < Amount; ++i)
 		{
@@ -67,7 +66,7 @@ namespace jarp {
 			WriteDescriptorSets[1].pBufferInfo = nullptr;
 			WriteDescriptorSets[1].pTexelBufferView = nullptr;
 
-			vkUpdateDescriptorSets(Device.GetInstanceHandle(), static_cast<uint32_t>(WriteDescriptorSets.size()), WriteDescriptorSets.data(), 0, nullptr);
+			vkUpdateDescriptorSets(VulkanRendererAPI::pDevice->GetInstanceHandle(), static_cast<uint32_t>(WriteDescriptorSets.size()), WriteDescriptorSets.data(), 0, nullptr);
 		}
 	}
 

@@ -1,14 +1,14 @@
 #include "jarppch.h"
 #include "VulkanRenderPass.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanRenderPass::VulkanRenderPass(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
-		: Device(OutDevice), Swapchain(OutSwapchain)
+	VulkanRenderPass::VulkanRenderPass(VulkanSwapchain& OutSwapchain)
+		: Swapchain(OutSwapchain)
 	{
 	}
 
@@ -33,7 +33,7 @@ namespace jarp {
 		// Depth attachment
 		AttachmentDescriptions[1] = {};
 		AttachmentDescriptions[1].flags = 0;
-		AttachmentDescriptions[1].format = Device.FindDepthFormat();
+		AttachmentDescriptions[1].format = VulkanRendererAPI::pDevice->FindDepthFormat();
 		AttachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
 		AttachmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		AttachmentDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -68,7 +68,7 @@ namespace jarp {
 
 		/*
 		Normally, we would need an external dependency at the end as well since we are changing layout in finalLayout,
-		but since we are signalling a semaphore, we can rely on Vulkan's default behavior,
+		but since we are signaling a semaphore, we can rely on Vulkan's default behavior,
 		which injects an external dependency here with
 			dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 			dstAccessMask = 0
@@ -85,12 +85,12 @@ namespace jarp {
 		RenderPassCreateInfo.dependencyCount = 1;
 		RenderPassCreateInfo.pDependencies = &SubpassDependency;
 
-		VK_ASSERT(vkCreateRenderPass(Device.GetInstanceHandle(), &RenderPassCreateInfo, nullptr, &RenderPass));
+		VK_ASSERT(vkCreateRenderPass(VulkanRendererAPI::pDevice->GetInstanceHandle(), &RenderPassCreateInfo, nullptr, &RenderPass));
 	}
 
 	void VulkanRenderPass::Destroy()
 	{
-		vkDestroyRenderPass(Device.GetInstanceHandle(), RenderPass, nullptr);
+		vkDestroyRenderPass(VulkanRendererAPI::pDevice->GetInstanceHandle(), RenderPass, nullptr);
 	}
 
 }

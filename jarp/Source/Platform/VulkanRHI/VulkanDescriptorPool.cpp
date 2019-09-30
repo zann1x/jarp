@@ -1,14 +1,14 @@
 #include "jarppch.h"
 #include "VulkanDescriptorPool.h"
 
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& OutDevice, VulkanSwapchain& OutSwapchain)
-		: Device(OutDevice), Swapchain(OutSwapchain)
+	VulkanDescriptorPool::VulkanDescriptorPool(VulkanSwapchain& OutSwapchain)
+		: Swapchain(OutSwapchain), DescriptorPool(VK_NULL_HANDLE)
 	{
 	}
 
@@ -34,13 +34,13 @@ namespace jarp {
 		DescriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolSizes.size());
 		DescriptorPoolCreateInfo.pPoolSizes = DescriptorPoolSizes.data();
 
-		VK_ASSERT(vkCreateDescriptorPool(Device.GetInstanceHandle(), &DescriptorPoolCreateInfo, nullptr, &DescriptorPool));
+		VK_ASSERT(vkCreateDescriptorPool(VulkanRendererAPI::pDevice->GetInstanceHandle(), &DescriptorPoolCreateInfo, nullptr, &DescriptorPool));
 	}
 
 	void VulkanDescriptorPool::Destroy()
 	{
 		// Implicitly destroys the descriptor sets created from it
-		vkDestroyDescriptorPool(Device.GetInstanceHandle(), DescriptorPool, nullptr);
+		vkDestroyDescriptorPool(VulkanRendererAPI::pDevice->GetInstanceHandle(), DescriptorPool, nullptr);
 	}
 
 }

@@ -2,15 +2,14 @@
 #include "VulkanShader.h"
 
 #include "VulkanDescriptorSetLayout.h"
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 #include "jarp/Utils.hpp"
 
 namespace jarp {
 
-	VulkanShader::VulkanShader(VulkanDevice& OutDevice)
-		: Device(OutDevice)
+	VulkanShader::VulkanShader()
 	{
 	}
 
@@ -33,7 +32,7 @@ namespace jarp {
 		ShaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(ShaderCode.data());
 
 		VkShaderModule ShaderModule;
-		VK_ASSERT(vkCreateShaderModule(Device.GetInstanceHandle(), &ShaderModuleCreateInfo, nullptr, &ShaderModule));
+		VK_ASSERT(vkCreateShaderModule(VulkanRendererAPI::pDevice->GetInstanceHandle(), &ShaderModuleCreateInfo, nullptr, &ShaderModule));
 		ShaderModules.insert({ ShaderStage, ShaderModule });
 
 		VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo = {};
@@ -52,7 +51,7 @@ namespace jarp {
 	{
 		ShaderStageCreateInfos.clear();
 		for (auto ShaderModule : ShaderModules)
-			vkDestroyShaderModule(Device.GetInstanceHandle(), ShaderModule.second, nullptr);
+			vkDestroyShaderModule(VulkanRendererAPI::pDevice->GetInstanceHandle(), ShaderModule.second, nullptr);
 	}
 
 	void VulkanShader::AddDescriptorSetLayout(const VulkanDescriptorSetLayout& DescriptorSetLayout)

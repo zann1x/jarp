@@ -1,12 +1,11 @@
 #include "jarppch.h"
 #include "VulkanBuffer.h"
-#include "VulkanDevice.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanBuffer::VulkanBuffer(VulkanDevice& Device, VkDeviceSize Size, VkBufferUsageFlags Usage)
-		: Device(Device), Size(Size), Usage(Usage)
+	VulkanBuffer::VulkanBuffer(VkDeviceSize Size, VkBufferUsageFlags Usage)
+		: Size(Size), Usage(Usage)
 	{
 	}
 
@@ -29,12 +28,12 @@ namespace jarp {
 		BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
 		BufferCreateInfo.pQueueFamilyIndices = nullptr;
 
-		VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
+		VK_ASSERT(vkCreateBuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
 
 		// Allocate the buffer's memory
 		VkMemoryRequirements MemoryRequirements;
-		vkGetBufferMemoryRequirements(Device.GetInstanceHandle(), Buffer, &MemoryRequirements);
-		uint32_t MemoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
+		vkGetBufferMemoryRequirements(VulkanRendererAPI::pDevice->GetInstanceHandle(), Buffer, &MemoryRequirements);
+		uint32_t MemoryTypeIndex = VulkanRendererAPI::pDevice->GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
 
 		VkMemoryAllocateInfo MemoryAllocateInfo = {};
 		MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -42,7 +41,7 @@ namespace jarp {
 		MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
 		MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
-		VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
+		VK_ASSERT(vkAllocateMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
 	}
 
 	void VulkanBuffer::CreateBuffer(VkMemoryPropertyFlags MemoryProperties)
@@ -58,12 +57,12 @@ namespace jarp {
 		BufferCreateInfo.queueFamilyIndexCount = 0; // needed if the buffer is shared between multiple queues
 		BufferCreateInfo.pQueueFamilyIndices = nullptr;
 
-		VK_ASSERT(vkCreateBuffer(Device.GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
+		VK_ASSERT(vkCreateBuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), &BufferCreateInfo, nullptr, &Buffer));
 
 		// Allocate the buffer's memory
 		VkMemoryRequirements MemoryRequirements;
-		vkGetBufferMemoryRequirements(Device.GetInstanceHandle(), Buffer, &MemoryRequirements);
-		uint32_t MemoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
+		vkGetBufferMemoryRequirements(VulkanRendererAPI::pDevice->GetInstanceHandle(), Buffer, &MemoryRequirements);
+		uint32_t MemoryTypeIndex = VulkanRendererAPI::pDevice->GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryProperties);
 
 		VkMemoryAllocateInfo MemoryAllocateInfo = {};
 		MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -71,15 +70,15 @@ namespace jarp {
 		MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
 		MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
-		VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &BufferMemory));
+		VK_ASSERT(vkAllocateMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &BufferMemory));
 
-		VK_ASSERT(vkBindBufferMemory(Device.GetInstanceHandle(), Buffer, BufferMemory, 0));
+		VK_ASSERT(vkBindBufferMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), Buffer, BufferMemory, 0));
 	}
 
 	void VulkanBuffer::Destroy()
 	{
-		vkFreeMemory(Device.GetInstanceHandle(), BufferMemory, nullptr);
-		vkDestroyBuffer(Device.GetInstanceHandle(), Buffer, nullptr);
+		vkFreeMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), BufferMemory, nullptr);
+		vkDestroyBuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), Buffer, nullptr);
 		Buffer = VK_NULL_HANDLE;
 	}
 

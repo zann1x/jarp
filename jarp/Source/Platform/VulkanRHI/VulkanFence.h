@@ -4,12 +4,10 @@
 
 namespace jarp {
 
-	class VulkanDevice;
-
 	class VulkanFence
 	{
 	public:
-		VulkanFence(VulkanDevice& Device);
+		VulkanFence();
 		~VulkanFence();
 
 		void CreateFence();
@@ -19,7 +17,6 @@ namespace jarp {
 		inline const VkFence* GetHandlePointer() const { return &Fence; }
 
 	private:
-		VulkanDevice& Device;
 		VkFence Fence;
 	};
 

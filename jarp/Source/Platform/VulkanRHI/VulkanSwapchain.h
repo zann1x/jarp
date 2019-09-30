@@ -5,15 +5,8 @@
 namespace jarp {
 
 	class Window;
-	class VulkanDevice;
 	class VulkanImageView;
 
-	/*
-	Depends on:
-	- PhysicalDevice
-	- Device
-	- SurfaceKHR
-	*/
 	class VulkanSwapchain
 	{
 	public:

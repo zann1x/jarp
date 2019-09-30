@@ -8,10 +8,6 @@
 
 namespace jarp {
 
-	class VulkanCommandBuffer;
-	class VulkanDevice;
-	class VulkanShader;
-
 	enum class Component
 	{
 		VERTEX_COMPONENT_POSITION = 0x0,
@@ -36,7 +32,7 @@ namespace jarp {
 	class Model
 	{
 	public:
-		Model(VulkanDevice& Device);
+		Model();
 		~Model();
 
 		inline const VkPipelineVertexInputStateCreateInfo GetPipelineVertexInputStateCreateInfo() const { return PipelineVertexInputStateCreateInfo; };
@@ -45,11 +41,9 @@ namespace jarp {
 		inline const VkDeviceSize GetVerticesDeviceSize() const { return sizeof(Vertices[0]) * Vertices.size(); }
 		inline const VkDeviceSize GetIndicesDeviceSize() const { return sizeof(Indices[0]) * Indices.size(); }
 
-		void Load(VulkanCommandBuffer& CommandBuffer, const std::string& ObjectFile);
+		void Load(const std::string& ObjectFile);
 
 	private:
-		VulkanDevice& Device;
-
 		std::vector<SVertex> Vertices;
 		std::vector<uint32_t> Indices;
 		std::array<VkVertexInputAttributeDescription, 4> VertexInputAttributeDescriptions;

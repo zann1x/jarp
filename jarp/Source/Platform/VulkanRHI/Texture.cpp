@@ -3,20 +3,19 @@
 
 #include "VulkanBuffer.h"
 #include "VulkanCommandBuffer.h"
-#include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include "VulkanImageView.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 #include <stb_image.h>
 
 namespace jarp {
 
-	Texture::Texture(VulkanDevice& Device)
-		: Device(Device)
+	Texture::Texture()
 	{
-		pTextureImage = new VulkanImage(Device);
-		pTextureImageView = new VulkanImageView(Device);
+		pTextureImage = new VulkanImage();
+		pTextureImageView = new VulkanImageView();
 	}
 
 	Texture::~Texture()
@@ -34,17 +33,17 @@ namespace jarp {
 		if (!Pixels)
 			throw std::runtime_error("Failed to load texture image");
 
-		VulkanBuffer StagingBuffer(Device, ImageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+		VulkanBuffer StagingBuffer(ImageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 		StagingBuffer.CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		void* RawData;
-		vkMapMemory(Device.GetInstanceHandle(), StagingBuffer.GetMemoryHandle(), 0, ImageSize, 0, &RawData);
+		vkMapMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), StagingBuffer.GetMemoryHandle(), 0, ImageSize, 0, &RawData);
 		memcpy(RawData, Pixels, static_cast<size_t>(ImageSize));
-		vkUnmapMemory(Device.GetInstanceHandle(), StagingBuffer.GetMemoryHandle());
+		vkUnmapMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), StagingBuffer.GetMemoryHandle());
 
 		stbi_image_free(Pixels);
 
-		// Create vulkan image for loaded texture
+		// Create Vulkan image for loaded texture
 		pTextureImage->CreateImage(Width, Height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 		// Initial transfer
@@ -95,12 +94,12 @@ namespace jarp {
 		SamplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		SamplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 
-		VK_ASSERT(vkCreateSampler(Device.GetInstanceHandle(), &SamplerCreateInfo, nullptr, &Sampler));
+		VK_ASSERT(vkCreateSampler(VulkanRendererAPI::pDevice->GetInstanceHandle(), &SamplerCreateInfo, nullptr, &Sampler));
 	}
 
 	void Texture::Destroy()
 	{
-		vkDestroySampler(Device.GetInstanceHandle(), Sampler, nullptr);
+		vkDestroySampler(VulkanRendererAPI::pDevice->GetInstanceHandle(), Sampler, nullptr);
 		pTextureImageView->Destroy();
 		pTextureImage->Destroy();
 	}

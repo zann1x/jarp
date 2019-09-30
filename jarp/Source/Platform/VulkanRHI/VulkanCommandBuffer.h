@@ -4,18 +4,12 @@
 
 namespace jarp {
 
-	class VulkanDevice;
 	class VulkanCommandPool;
 
-	/*
-	Depends on:
-	- Device
-	- CommandPool
-	*/
 	class VulkanCommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(VulkanDevice& OutDevice, VulkanCommandPool& OutCommandPool);
+		VulkanCommandBuffer(VulkanCommandPool& OutCommandPool);
 		~VulkanCommandBuffer();
 
 		void CreateCommandBuffer();
@@ -29,7 +23,6 @@ namespace jarp {
 		void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
 
 	private:
-		VulkanDevice& Device;
 		VulkanCommandPool& CommandPool;
 
 		VkCommandBuffer CommandBuffer;

@@ -2,13 +2,13 @@
 #include "VulkanImage.h"
 
 #include "VulkanCommandBuffer.h"
-#include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.hpp"
 
 namespace jarp {
 
-	VulkanImage::VulkanImage(VulkanDevice& Device)
-		: Device(Device)
+	VulkanImage::VulkanImage()
+		: Image(VK_NULL_HANDLE), DeviceMemory(VK_NULL_HANDLE), Format(VK_FORMAT_UNDEFINED)
 	{
 	}
 
@@ -39,26 +39,26 @@ namespace jarp {
 		ImageCreateInfo.pQueueFamilyIndices = nullptr;
 		ImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		VK_ASSERT(vkCreateImage(Device.GetInstanceHandle(), &ImageCreateInfo, nullptr, &Image));
+		VK_ASSERT(vkCreateImage(VulkanRendererAPI::pDevice->GetInstanceHandle(), &ImageCreateInfo, nullptr, &Image));
 
 		VkMemoryRequirements MemoryRequirements;
-		vkGetImageMemoryRequirements(Device.GetInstanceHandle(), Image, &MemoryRequirements);
+		vkGetImageMemoryRequirements(VulkanRendererAPI::pDevice->GetInstanceHandle(), Image, &MemoryRequirements);
 
 		VkMemoryAllocateInfo MemoryAllocateInfo = {};
 		MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		MemoryAllocateInfo.pNext = nullptr;
 		MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
-		MemoryAllocateInfo.memoryTypeIndex = Device.GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryPropertyFlags);
+		MemoryAllocateInfo.memoryTypeIndex = VulkanRendererAPI::pDevice->GetMemoryTypeIndex(MemoryRequirements.memoryTypeBits, MemoryPropertyFlags);
 
-		VK_ASSERT(vkAllocateMemory(Device.GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
+		VK_ASSERT(vkAllocateMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), &MemoryAllocateInfo, nullptr, &DeviceMemory));
 
-		VK_ASSERT(vkBindImageMemory(Device.GetInstanceHandle(), Image, DeviceMemory, 0));
+		VK_ASSERT(vkBindImageMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), Image, DeviceMemory, 0));
 	}
 
 	void VulkanImage::Destroy()
 	{
-		vkFreeMemory(Device.GetInstanceHandle(), DeviceMemory, nullptr);
-		vkDestroyImage(Device.GetInstanceHandle(), Image, nullptr);
+		vkFreeMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), DeviceMemory, nullptr);
+		vkDestroyImage(VulkanRendererAPI::pDevice->GetInstanceHandle(), Image, nullptr);
 	}
 
 	void VulkanImage::TransitionImageLayout(VulkanCommandBuffer& CommandBuffer, VkImageLayout OldLayout, VkImageLayout NewLayout)

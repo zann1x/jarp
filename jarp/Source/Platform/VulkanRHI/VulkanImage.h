@@ -5,12 +5,11 @@
 namespace jarp {
 
 	class VulkanCommandBuffer;
-	class VulkanDevice;
 
 	class VulkanImage
 	{
 	public:
-		VulkanImage(VulkanDevice& Device);
+		VulkanImage();
 		~VulkanImage();
 
 		void CreateImage(uint32_t Width, uint32_t Height, VkFormat Format, VkImageTiling ImageTiling, VkImageUsageFlags ImageUsageFlags, VkMemoryPropertyFlags MemoryPropertyFlags);
@@ -21,8 +20,6 @@ namespace jarp {
 		inline const VkImage GetHandle() const { return Image; }
 
 	private:
-		VulkanDevice& Device;
-
 		VkImage Image;
 		VkDeviceMemory DeviceMemory;
 		VkFormat Format;
