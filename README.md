@@ -20,7 +20,8 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 - spdlog *1.3.1*
 - stb *@052dce1*
 - tinyobjloader *2.0-rc1*
-- **Vulkan SDK** *1.1.101.0*
+- volk *@453c4de*
+- **Vulkan SDK** *1.1.101.0* (needs to be installed on your system)
 
 ### Windows
 

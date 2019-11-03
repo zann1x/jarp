@@ -8,15 +8,15 @@ workspace "jarp"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 sdllib = "%{wks.location}/jarp/ThirdParty/SDL2/lib/x64"
-vulkansdk = os.getenv("VULKAN_SDK")
 
 IncludeDir = {}
 IncludeDir["glm"] = "jarp/ThirdParty/glm"
-IncludeDir["tinyobjloader"] = "jarp/ThirdParty/tinyobjloader"
 IncludeDir["SDL"] = "jarp/ThirdParty/SDL2/include"
 IncludeDir["spdlog"] = "jarp/ThirdParty/spdlog/include"
 IncludeDir["stb"] = "jarp/ThirdParty/stb"
-IncludeDir["Vulkan"] = vulkansdk .. "/Include"
+IncludeDir["tinyobjloader"] = "jarp/ThirdParty/tinyobjloader"
+IncludeDir["volk"] = "jarp/ThirdParty/volk"
+IncludeDir["Vulkan"] = os.getenv("VULKAN_SDK") .. "/Include"
 
 project "jarp"
     location "jarp"
@@ -46,15 +46,8 @@ project "jarp"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.stb}",
         "%{IncludeDir.tinyobjloader}",
+        "%{IncludeDir.volk}",
         "%{IncludeDir.Vulkan}"
-    }
-
-    libdirs {
-        vulkansdk .. "/Lib"
-    }
-
-    links {
-        "vulkan-1"
     }
 
     defines {

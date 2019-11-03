@@ -46,24 +46,12 @@ namespace jarp {
 			DebugUtilsMessengerCreateInfoEXT.pfnUserCallback = DebugCallback;
 			DebugUtilsMessengerCreateInfoEXT.pUserData = nullptr;
 
-			auto Func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkCreateDebugUtilsMessengerEXT");
-			if (Func != nullptr)
-			{
-				VK_ASSERT(Func(Instance, &DebugUtilsMessengerCreateInfoEXT, nullptr, &DebugUtilsMessengerEXT));
-			}
-			else
-			{
-				throw std::runtime_error("Debug extension not present!");
-			}
+			vkCreateDebugUtilsMessengerEXT(Instance, &DebugUtilsMessengerCreateInfoEXT, nullptr, &DebugUtilsMessengerEXT);
 		}
 
 		void DestroyDebugCallback(const VkInstance& Instance)
 		{
-			auto Func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkDestroyDebugUtilsMessengerEXT");
-			if (Func != nullptr)
-			{
-				Func(Instance, DebugUtilsMessengerEXT, nullptr);
-			}
+			vkDestroyDebugUtilsMessengerEXT(Instance, DebugUtilsMessengerEXT, nullptr);
 		}
 
 	}

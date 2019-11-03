@@ -7,7 +7,9 @@
 namespace jarp {
 
 	VulkanInstance::VulkanInstance()
+		: Instance{ VK_NULL_HANDLE }
 	{
+		VK_ASSERT(volkInitialize());
 	}
 
 	VulkanInstance::~VulkanInstance()
@@ -72,6 +74,8 @@ namespace jarp {
 		InstInfo.ppEnabledLayerNames = InstanceLayers.data();
 
 		VK_ASSERT(vkCreateInstance(&InstInfo, nullptr, &Instance));
+
+		volkLoadInstance(Instance);
 
 #if defined(_DEBUG)
 		VulkanDebug::SetupDebugCallback(Instance);

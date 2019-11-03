@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <volk.h>
 
 #include "Platform/VulkanRHI/VulkanQueue.h"
 #include "Platform/VulkanRHI/VulkanSurface.h"
