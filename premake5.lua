@@ -32,11 +32,14 @@ project "jarp"
     pchsource "jarp/Source/jarppch.cpp"
 
     files {
+        "%{prj.name}/Source/**.cpp",
         "%{prj.name}/Source/**.h",
         "%{prj.name}/Source/**.hpp",
-        "%{prj.name}/Source/**.cpp",
+        "%{prj.name}/Shaders/**.glsl",
 
-        "%{prj.name}/Shaders/**.glsl"
+        "%{IncludeDir.stb}/stb_image.cpp",
+        "%{IncludeDir.tinyobjloader}/tiny_obj_loader.cpp",
+        "%{IncludeDir.volk}/volk.cpp"
     }
 
     includedirs {
