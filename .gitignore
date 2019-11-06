@@ -1,7 +1,7 @@
 # Directories
 .vs/
-bin/
-bin-int/
+**/Binaries/
+**/Intermediate/
 !ThirdParty/*
 
 # Files

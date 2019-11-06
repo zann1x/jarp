@@ -25,8 +25,8 @@ project "jarp"
     cppdialect "C++17"
     staticruntime "on"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("jarp/Binaries/" .. outputdir .. "/%{prj.name}")
+    objdir ("jarp/Intermediate/" .. outputdir .. "/%{prj.name}")
 
     pchheader "jarppch.h"
     pchsource "jarp/Source/jarppch.cpp"
@@ -110,8 +110,8 @@ project "Sandbox"
     cppdialect "C++17"
     staticruntime "on"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("Sandbox/Binaries/" .. outputdir .. "/%{prj.name}")
+    objdir ("Sandbox/Intermediate/" .. outputdir .. "/%{prj.name}")
 
     files {
         "%{prj.name}/Source/**.h",
