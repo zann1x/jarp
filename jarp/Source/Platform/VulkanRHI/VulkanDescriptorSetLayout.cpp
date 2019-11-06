@@ -7,7 +7,7 @@
 namespace jarp {
 
 	VulkanDescriptorSetLayout::VulkanDescriptorSetLayout()
-		: DescriptorSetLayout(VK_NULL_HANDLE)
+		: m_DescriptorSetLayout(VK_NULL_HANDLE)
 	{
 	}
 
@@ -17,31 +17,31 @@ namespace jarp {
 
 	void VulkanDescriptorSetLayout::CreateDescriptorSetLayout()
 	{
-		VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo = {};
-		DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		DescriptorSetLayoutCreateInfo.pNext = nullptr;
-		DescriptorSetLayoutCreateInfo.flags = 0;
-		DescriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(DescriptorSetLayoutBindings.size());
-		DescriptorSetLayoutCreateInfo.pBindings = DescriptorSetLayoutBindings.data();
+		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+		descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorSetLayoutCreateInfo.pNext = nullptr;
+		descriptorSetLayoutCreateInfo.flags = 0;
+		descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(m_DescriptorSetLayoutBindings.size());
+		descriptorSetLayoutCreateInfo.pBindings = m_DescriptorSetLayoutBindings.data();
 
-		VK_ASSERT(vkCreateDescriptorSetLayout(VulkanRendererAPI::pDevice->GetInstanceHandle(), &DescriptorSetLayoutCreateInfo, nullptr, &DescriptorSetLayout));
+		VK_ASSERT(vkCreateDescriptorSetLayout(VulkanRendererAPI::s_Device->GetInstanceHandle(), &descriptorSetLayoutCreateInfo, nullptr, &m_DescriptorSetLayout));
 	}
 
-	void VulkanDescriptorSetLayout::AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags)
+	void VulkanDescriptorSetLayout::AddLayout(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags)
 	{
-		VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding = {};
-		DescriptorSetLayoutBinding.binding = Binding;
-		DescriptorSetLayoutBinding.descriptorType = DescriptorType;
-		DescriptorSetLayoutBinding.descriptorCount = 1;
-		DescriptorSetLayoutBinding.stageFlags = StageFlags;
-		DescriptorSetLayoutBinding.pImmutableSamplers = nullptr;
+		VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
+		descriptorSetLayoutBinding.binding = binding;
+		descriptorSetLayoutBinding.descriptorType = descriptorType;
+		descriptorSetLayoutBinding.descriptorCount = 1;
+		descriptorSetLayoutBinding.stageFlags = stageFlags;
+		descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
 
-		DescriptorSetLayoutBindings.push_back(DescriptorSetLayoutBinding);
+		m_DescriptorSetLayoutBindings.push_back(descriptorSetLayoutBinding);
 	}
 
 	void VulkanDescriptorSetLayout::Destroy()
 	{
-		vkDestroyDescriptorSetLayout(VulkanRendererAPI::pDevice->GetInstanceHandle(), DescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_DescriptorSetLayout, nullptr);
 	}
 
 }

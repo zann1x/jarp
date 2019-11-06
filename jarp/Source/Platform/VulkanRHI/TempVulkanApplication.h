@@ -26,20 +26,20 @@ namespace jarp {
 	{
 	public:
 		void StartVulkan();
-		void Render(uint32_t DeltaTime);
+		void Render(uint32_t deltaTime);
 		void ShutdownVulkan();
 	private:
 		void RecordCommandBuffer();
 		void RecreateSwapchain();
 		void CleanupSwapchain();
-		void UpdateMVP(uint32_t CurrentImage);
+		void UpdateMVP(uint32_t durrentImage);
 
 	private:
 		struct SSettings
 		{
 			bool VSync = false;
 		};
-		SSettings Settings;
+		SSettings m_settings;
 
 		struct SUniformBufferObject
 		{
@@ -48,33 +48,33 @@ namespace jarp {
 			alignas(16) glm::mat4 Projection;
 			alignas(16) glm::vec3 LightPosition;
 		};
-		SUniformBufferObject UBO;
+		SUniformBufferObject m_UBO;
 
-		VulkanSwapchain* pSwapchain;
-		VulkanCommandPool* pCommandPool;
-		VulkanCommandPool* pTransientCommandPool;
-		VulkanCommandBuffer* pTransientCommandBuffer;
-		VulkanImage* pDepthImage;
-		VulkanImageView* pDepthImageView;
-		VulkanDescriptorSetLayout* pDescriptorSetLayout;
-		Model* pModel;
-		Texture* pTexture;
-		VulkanRenderPass* pRenderPass;
-		VulkanShader* pShader;
-		VulkanGraphicsPipeline* pGraphicsPipeline;
-		std::vector<VulkanFramebuffer*> pFramebuffers;
-		VulkanDescriptorPool* pDescriptorPool;
-		std::vector<VulkanCommandBuffer*> pDrawCommandBuffers;
-		VulkanBuffer* pVertexBuffer;
-		VulkanBuffer* pIndexBuffer;
-		std::vector<VulkanBuffer*> UniformBuffers;
-		VulkanDescriptorSet* pDescriptorSet;
-		std::vector<VulkanSemaphore*> pRenderingFinishedSemaphores;
-		std::vector<VulkanSemaphore*> pImageAvailableSemaphores;
-		std::vector<VulkanFence*> pFencesInFlight;
+		VulkanSwapchain* m_Swapchain;
+		VulkanCommandPool* m_CommandPool;
+		VulkanCommandPool* m_TransientCommandPool;
+		VulkanCommandBuffer* m_TransientCommandBuffer;
+		VulkanImage* m_DepthImage;
+		VulkanImageView* m_DepthImageView;
+		VulkanDescriptorSetLayout* m_DescriptorSetLayout;
+		Model* m_Model;
+		Texture* m_Texture;
+		VulkanRenderPass* m_RenderPass;
+		VulkanShader* m_Shader;
+		VulkanGraphicsPipeline* m_GraphicsPipeline;
+		std::vector<VulkanFramebuffer*> m_Framebuffers;
+		VulkanDescriptorPool* m_DescriptorPool;
+		std::vector<VulkanCommandBuffer*> m_DrawCommandBuffers;
+		VulkanBuffer* m_VertexBuffer;
+		VulkanBuffer* m_IndexBuffer;
+		std::vector<VulkanBuffer*> m_UniformBuffers;
+		VulkanDescriptorSet* m_DescriptorSet;
+		std::vector<VulkanSemaphore*> m_RenderingFinishedSemaphores;
+		std::vector<VulkanSemaphore*> m_ImageAvailableSemaphores;
+		std::vector<VulkanFence*> m_FencesInFlight;
 
-		uint32_t MaxFramesInFlight;
-		Camera MyCamera;
+		uint32_t m_MaxFramesInFlight;
+		Camera m_Camera;
 	};
 
 }

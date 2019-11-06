@@ -17,46 +17,46 @@ namespace jarp {
 	{
 	}
 
-	void VulkanShader::CreateShaderModule(const VkShaderStageFlagBits ShaderStage, const std::string& Filename)
+	void VulkanShader::CreateShaderModule(const VkShaderStageFlagBits shaderStage, const std::string& filename)
 	{
-		auto ShaderCode = Utils::ReadFile(Filename);
+		auto shaderCode = Utils::ReadFile(filename);
 
-		if (ShaderCode.size() % 4 != 0)
+		if (shaderCode.size() % 4 != 0)
 			throw std::runtime_error("SPIR-V shader code must be a multiple of 4!");
 
-		VkShaderModuleCreateInfo ShaderModuleCreateInfo = {};
-		ShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		ShaderModuleCreateInfo.pNext = nullptr;
-		ShaderModuleCreateInfo.flags = 0;
-		ShaderModuleCreateInfo.codeSize = ShaderCode.size();
-		ShaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(ShaderCode.data());
+		VkShaderModuleCreateInfo shaderModuleCreateInfo = {};
+		shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		shaderModuleCreateInfo.pNext = nullptr;
+		shaderModuleCreateInfo.flags = 0;
+		shaderModuleCreateInfo.codeSize = shaderCode.size();
+		shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
-		VkShaderModule ShaderModule;
-		VK_ASSERT(vkCreateShaderModule(VulkanRendererAPI::pDevice->GetInstanceHandle(), &ShaderModuleCreateInfo, nullptr, &ShaderModule));
-		ShaderModules.insert({ ShaderStage, ShaderModule });
+		VkShaderModule shaderModule;
+		VK_ASSERT(vkCreateShaderModule(VulkanRendererAPI::s_Device->GetInstanceHandle(), &shaderModuleCreateInfo, nullptr, &shaderModule));
+		m_ShaderModules.insert({ shaderStage, shaderModule });
 
-		VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo = {};
-		PipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		PipelineShaderStageCreateInfo.pNext = nullptr;
-		PipelineShaderStageCreateInfo.flags = 0;
-		PipelineShaderStageCreateInfo.stage = ShaderStage;
-		PipelineShaderStageCreateInfo.module = ShaderModule;
-		PipelineShaderStageCreateInfo.pName = "main";
-		PipelineShaderStageCreateInfo.pSpecializationInfo = nullptr;
+		VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo = {};
+		pipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pipelineShaderStageCreateInfo.pNext = nullptr;
+		pipelineShaderStageCreateInfo.flags = 0;
+		pipelineShaderStageCreateInfo.stage = shaderStage;
+		pipelineShaderStageCreateInfo.module = shaderModule;
+		pipelineShaderStageCreateInfo.pName = "main";
+		pipelineShaderStageCreateInfo.pSpecializationInfo = nullptr;
 
-		ShaderStageCreateInfos.push_back(PipelineShaderStageCreateInfo);
+		m_ShaderStageCreateInfos.push_back(pipelineShaderStageCreateInfo);
 	}
 
 	void VulkanShader::Destroy()
 	{
-		ShaderStageCreateInfos.clear();
-		for (auto ShaderModule : ShaderModules)
-			vkDestroyShaderModule(VulkanRendererAPI::pDevice->GetInstanceHandle(), ShaderModule.second, nullptr);
+		m_ShaderStageCreateInfos.clear();
+		for (auto shaderModule : m_ShaderModules)
+			vkDestroyShaderModule(VulkanRendererAPI::s_Device->GetInstanceHandle(), shaderModule.second, nullptr);
 	}
 
 	void VulkanShader::AddDescriptorSetLayout(const VulkanDescriptorSetLayout& DescriptorSetLayout)
 	{
-		DescriptorSetLayouts.push_back(DescriptorSetLayout);
+		m_DescriptorSetLayouts.push_back(DescriptorSetLayout);
 	}
 
 }

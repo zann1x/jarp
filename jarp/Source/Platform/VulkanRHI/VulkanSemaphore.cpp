@@ -7,7 +7,7 @@
 namespace jarp {
 
 	VulkanSemaphore::VulkanSemaphore()
-		: Semaphore(VK_NULL_HANDLE)
+		: m_Semaphore(VK_NULL_HANDLE)
 	{
 	}
 
@@ -17,17 +17,17 @@ namespace jarp {
 
 	void VulkanSemaphore::CreateSemaphore()
 	{
-		VkSemaphoreCreateInfo SemaphoreCreateInfo = {};
-		SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		SemaphoreCreateInfo.flags = 0;
-		SemaphoreCreateInfo.pNext = nullptr;
+		VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		semaphoreCreateInfo.flags = 0;
+		semaphoreCreateInfo.pNext = nullptr;
 
-		VK_ASSERT(vkCreateSemaphore(VulkanRendererAPI::pDevice->GetInstanceHandle(), &SemaphoreCreateInfo, nullptr, &Semaphore));
+		VK_ASSERT(vkCreateSemaphore(VulkanRendererAPI::s_Device->GetInstanceHandle(), &semaphoreCreateInfo, nullptr, &m_Semaphore));
 	}
 
 	void VulkanSemaphore::Destroy()
 	{
-		vkDestroySemaphore(VulkanRendererAPI::pDevice->GetInstanceHandle(), Semaphore, nullptr);
+		vkDestroySemaphore(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Semaphore, nullptr);
 	}
 
 }

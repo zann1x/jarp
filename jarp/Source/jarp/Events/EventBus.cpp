@@ -1,47 +1,49 @@
 #include "jarppch.h"
 #include "EventBus.h"
 
+#include "jarp/Core.h"
+
 namespace jarp {
 
-	EventBus* EventBus::Instance = new EventBus();
+	EventBus* EventBus::s_Instance = new EventBus();
 
 	EventBus::EventBus()
 	{
-		JARP_CORE_ASSERT(!Instance, "EventBus instance already exists!");
-		Instance = this;
+		JARP_CORE_ASSERT(!s_Instance, "EventBus instance already exists!");
+		s_Instance = this;
 	}
 
-	void EventBus::Register(EventType Type, EventListener* Listener)
+	void EventBus::Register(EventType type, EventListener* listener)
 	{
-		EventTypeSubscribers[Type].push_back(Listener);
+		m_EventTypeSubscribers[type].push_back(listener);
 	}
 
-	void EventBus::Deregister(EventType Type, EventListener* Listener)
+	void EventBus::Deregister(EventType type, EventListener* listener)
 	{
-		auto& Listeners = EventTypeSubscribers[Type];
-		Listeners.erase(std::remove(Listeners.begin(), Listeners.end(), Listener), Listeners.end());
+		auto& listeners = m_EventTypeSubscribers[type];
+		listeners.erase(std::remove(listeners.begin(), listeners.end(), listener), listeners.end());
 	}
 
-	void EventBus::Register(EventCategory Category, EventListener* Listener)
+	void EventBus::Register(EventCategory category, EventListener* listener)
 	{
-		EventCategorySubscribers[Category].push_back(Listener);
+		m_EventCategorySubscribers[category].push_back(listener);
 	}
 
-	void EventBus::Deregister(EventCategory Category, EventListener* Listener)
+	void EventBus::Deregister(EventCategory category, EventListener* listener)
 	{
-		auto& Listeners = EventCategorySubscribers[Category];
-		Listeners.erase(std::remove(Listeners.begin(), Listeners.end(), Listener), Listeners.end());
+		auto& listeners = m_EventCategorySubscribers[category];
+		listeners.erase(std::remove(listeners.begin(), listeners.end(), listener), listeners.end());
 	}
 
-	void EventBus::Dispatch(Event& E)
+	void EventBus::Dispatch(Event& event)
 	{
 		// Publish the event to all subscribers of its specific type
 		{
-			auto& TypeListeners = EventTypeSubscribers[E.GetEventType()];
-			for (EventListener* Listener : TypeListeners)
+			auto& typeListeners = m_EventTypeSubscribers[event.GetEventType()];
+			for (EventListener* listener : typeListeners)
 			{
-				Listener->OnEvent(E);
-				if (E.bIsHandled)
+				listener->OnEvent(event);
+				if (event.m_bIsHandled)
 					break;
 			}
 		}
@@ -50,12 +52,12 @@ namespace jarp {
 		{
 			for (int i = 0; i < EventCategoryCOUNT; ++i)
 			{
-				int tmp = E.GetCategoryFlags() & (1 << i);
-				auto& CategoryListeners = EventCategorySubscribers[E.GetCategoryFlags() & (1 << i)];
-				for (EventListener* Listener : CategoryListeners)
+				int tmp = event.GetCategoryFlags() & (1 << i);
+				auto& categoryListeners = m_EventCategorySubscribers[event.GetCategoryFlags() & (1 << i)];
+				for (EventListener* listener : categoryListeners)
 				{
-					Listener->OnEvent(E);
-					if (E.bIsHandled)
+					listener->OnEvent(event);
+					if (event.m_bIsHandled)
 						break;
 				}
 			}

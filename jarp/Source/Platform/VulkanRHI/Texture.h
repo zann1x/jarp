@@ -14,17 +14,17 @@ namespace jarp {
 		Texture();
 		~Texture();
 
-		void Load(VulkanCommandBuffer& CommandBuffer, const std::string& FileName);
+		void Load(VulkanCommandBuffer& commandBuffer, const std::string& fileName);
 		void Destroy();
 
-		inline const VkSampler GetSampler() const { return Sampler; }
-		inline const VulkanImageView& GetImageView() const { return *pTextureImageView; }
+		inline const VkSampler GetSampler() const { return m_Sampler; }
+		inline const VulkanImageView& GetImageView() const { return *m_TextureImageView; }
 
 	private:
-		VulkanImage* pTextureImage;
-		VulkanImageView* pTextureImageView;
+		VulkanImage* m_TextureImage;
+		VulkanImageView* m_TextureImageView;
 
-		VkSampler Sampler;
+		VkSampler m_Sampler;
 	};
 
 }

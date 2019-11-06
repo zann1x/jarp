@@ -13,13 +13,13 @@ namespace jarp {
 		void CreateDescriptorSetLayout();
 		void Destroy();
 
-		void AddLayout(uint32_t Binding, VkDescriptorType DescriptorType, VkShaderStageFlags StageFlags);
+		void AddLayout(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags);
 
-		inline const VkDescriptorSetLayout& GetHandle() const { return DescriptorSetLayout; }
+		inline const VkDescriptorSetLayout& GetHandle() const { return m_DescriptorSetLayout; }
 
 	private:
-		std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
-		VkDescriptorSetLayout DescriptorSetLayout;
+		std::vector<VkDescriptorSetLayoutBinding> m_DescriptorSetLayoutBindings;
+		VkDescriptorSetLayout m_DescriptorSetLayout;
 	};
 
 }

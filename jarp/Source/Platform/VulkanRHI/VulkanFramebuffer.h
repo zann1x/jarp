@@ -9,18 +9,18 @@ namespace jarp {
 	class VulkanFramebuffer
 	{
 	public:
-		VulkanFramebuffer(VulkanRenderPass& RenderPass);
+		VulkanFramebuffer(VulkanRenderPass& renderPass);
 		~VulkanFramebuffer();
 
-		void CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent);
+		void CreateFramebuffer(const std::vector<VkImageView> attachments, const VkExtent2D& extent);
 		void Destroy();
 
-		inline const VkFramebuffer& GetHandle() const { return Framebuffer; }
+		inline const VkFramebuffer& GetHandle() const { return m_Framebuffer; }
 
 	private:
-		VulkanRenderPass& RenderPass;
+		VulkanRenderPass& m_RenderPass;
 
-		VkFramebuffer Framebuffer;
+		VkFramebuffer m_Framebuffer;
 	};
 
 }

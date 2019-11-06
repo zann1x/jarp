@@ -9,45 +9,45 @@
 namespace jarp {
 
 	VulkanDevice::VulkanDevice()
-		: PhysicalDevice(VK_NULL_HANDLE)
+		: m_PhysicalDevice(VK_NULL_HANDLE)
 	{
-		pSurface = new VulkanSurface();
-		pSurface->CreateSurface();
+		m_Surface = new VulkanSurface();
+		m_Surface->CreateSurface();
 
 		PickPhysicalDevice();
 
-		vkGetPhysicalDeviceProperties(PhysicalDevice, &PhysicalDeviceProperties);
-		vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &PhysicalDeviceMemoryProperties);
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_PhysicalDeviceProperties);
+		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_PhysicalDeviceMemoryProperties);
 
 		// Check for desired features
-		vkGetPhysicalDeviceFeatures(PhysicalDevice, &PhysicalDeviceFeatures);
-		EnabledPhysicalDeviceFeatures = { };
-		if (!PhysicalDeviceFeatures.samplerAnisotropy)
+		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_PhysicalDeviceFeatures);
+		m_EnabledPhysicalDeviceFeatures = { };
+		if (!m_PhysicalDeviceFeatures.samplerAnisotropy)
 			throw std::runtime_error("Not all enabled features are supported");
-		EnabledPhysicalDeviceFeatures.samplerAnisotropy = VK_TRUE; // for sampler creation
+		m_EnabledPhysicalDeviceFeatures.samplerAnisotropy = VK_TRUE; // for sampler creation
 
 		// Get queue family properties for later use
-		uint32_t QueueFamilyCount;
-		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, nullptr);
-		assert(QueueFamilyCount > 0);
-		QueueFamilyProperties.resize(QueueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, QueueFamilyProperties.data());
+		uint32_t queueFamilyCount;
+		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, nullptr);
+		assert(queueFamilyCount > 0);
+		m_QueueFamilyProperties.resize(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, m_QueueFamilyProperties.data());
 
 		// Check for desired device extensions
-		uint32_t PropertyCount;
-		vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &PropertyCount, nullptr);
-		if (PropertyCount > 0)
+		uint32_t propertyCount;
+		vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &propertyCount, nullptr);
+		if (propertyCount > 0)
 		{
-			std::vector<VkExtensionProperties> ExtensionProperties(PropertyCount);
-			VK_ASSERT(vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &PropertyCount, ExtensionProperties.data()));
-			for (auto Extension : ExtensionProperties)
+			std::vector<VkExtensionProperties> extensionProperties(propertyCount);
+			VK_ASSERT(vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &propertyCount, extensionProperties.data()));
+			for (auto extension : extensionProperties)
 			{
-				SupportedExtensions.push_back(Extension.extensionName);
+				m_SupportedExtensions.push_back(extension.extensionName);
 			}
 		}
 
-		if (std::find(SupportedExtensions.begin(), SupportedExtensions.end(), VK_KHR_SWAPCHAIN_EXTENSION_NAME) != SupportedExtensions.end())
-			EnabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+		if (std::find(m_SupportedExtensions.begin(), m_SupportedExtensions.end(), VK_KHR_SWAPCHAIN_EXTENSION_NAME) != m_SupportedExtensions.end())
+			m_EnabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 		else
 			throw std::runtime_error("Not all required extensions supported by the physical device!");
 	}
@@ -58,154 +58,154 @@ namespace jarp {
 
 	void VulkanDevice::Destroy()
 	{
-		delete PresentQueue;
-		delete TransferQueue;
-		delete ComputeQueue;
-		delete GraphicsQueue;
+		delete m_PresentQueue;
+		delete m_TransferQueue;
+		delete m_ComputeQueue;
+		delete m_GraphicsQueue;
 
 
-		if (LogicalDevice != VK_NULL_HANDLE)
+		if (m_LogicalDevice != VK_NULL_HANDLE)
 		{
-			vkDestroyDevice(LogicalDevice, nullptr);
-			LogicalDevice = VK_NULL_HANDLE;
+			vkDestroyDevice(m_LogicalDevice, nullptr);
+			m_LogicalDevice = VK_NULL_HANDLE;
 		}
 	}
 
-	void VulkanDevice::SetupPresentQueue(VkSurfaceKHR Surface)
+	void VulkanDevice::SetupPresentQueue(VkSurfaceKHR surface)
 	{
-		VkBool32 PresentSupported;
-		vkGetPhysicalDeviceSurfaceSupportKHR(PhysicalDevice, GraphicsQueue->GetFamilyIndex(), Surface, &PresentSupported);
+		VkBool32 bIsPresentSupported;
+		vkGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, m_GraphicsQueue->GetFamilyIndex(), surface, &bIsPresentSupported);
 
-		if (QueueFamilyProperties[GraphicsQueue->GetFamilyIndex()].queueCount > 0 && PresentSupported)
-			PresentQueue = new VulkanQueue(*this, GraphicsQueue->GetFamilyIndex());
+		if (m_QueueFamilyProperties[m_GraphicsQueue->GetFamilyIndex()].queueCount > 0 && bIsPresentSupported)
+			m_PresentQueue = new VulkanQueue(m_GraphicsQueue->GetFamilyIndex());
 		else
 			std::runtime_error("Graphics queue does not support present!");
 	}
 
 	void VulkanDevice::CreateLogicalDevice()
 	{
-		// Prepare Queue Info for Device creation
-		std::vector<VkDeviceQueueCreateInfo> DeviceQueueCreateInfos;
-		int NumberOfQueuePriorities = 0;
-		uint32_t GraphicsFamilyIndex = -1;
-		uint32_t ComputeFamilyIndex = -1;
-		uint32_t TransferFamilyIndex = -1;
+		// Prepare m_Queue Info for Device creation
+		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
+		int numberOfQueuePriorities = 0;
+		uint32_t graphicsFamilyIndex = -1;
+		uint32_t computeFamilyIndex = -1;
+		uint32_t transferFamilyIndex = -1;
 
 		// Pick the first found queue that supports a desired queue
-		for (uint32_t i = 0; i < static_cast<uint32_t>(QueueFamilyProperties.size()); i++)
+		for (uint32_t i = 0; i < static_cast<uint32_t>(m_QueueFamilyProperties.size()); i++)
 		{
-			bool IsValidQueue = false;
+			bool bIsValidQueue = false;
 
-			if (QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			if (m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
-				if (GraphicsFamilyIndex == -1)
+				if (graphicsFamilyIndex == -1)
 				{
-					GraphicsFamilyIndex = i;
-					IsValidQueue = true;
+					graphicsFamilyIndex = i;
+					bIsValidQueue = true;
 				}
 			}
 
-			if (QueueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+			if (m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
-				if (ComputeFamilyIndex == -1)
+				if (computeFamilyIndex == -1)
 				{
-					ComputeFamilyIndex = i;
-					IsValidQueue = true;
+					computeFamilyIndex = i;
+					bIsValidQueue = true;
 				}
 			}
 
-			if (QueueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+			if (m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
 			{
-				if (TransferFamilyIndex == -1)
+				if (transferFamilyIndex == -1)
 				{
-					TransferFamilyIndex = i;
-					IsValidQueue = true;
+					transferFamilyIndex = i;
+					bIsValidQueue = true;
 				}
 			}
 
-			if (!IsValidQueue)
+			if (!bIsValidQueue)
 				continue;
 
-			VkDeviceQueueCreateInfo DeviceQueueCreateInfo = {};
-			DeviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			DeviceQueueCreateInfo.pNext = nullptr;
-			DeviceQueueCreateInfo.flags = 0;
-			DeviceQueueCreateInfo.queueFamilyIndex = i;
-			DeviceQueueCreateInfo.queueCount = QueueFamilyProperties[i].queueCount;
-			NumberOfQueuePriorities += QueueFamilyProperties[i].queueCount;
+			VkDeviceQueueCreateInfo deviceQueueCreateInfo = {};
+			deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			deviceQueueCreateInfo.pNext = nullptr;
+			deviceQueueCreateInfo.flags = 0;
+			deviceQueueCreateInfo.queueFamilyIndex = i;
+			deviceQueueCreateInfo.queueCount = m_QueueFamilyProperties[i].queueCount;
+			numberOfQueuePriorities += m_QueueFamilyProperties[i].queueCount;
 
-			DeviceQueueCreateInfos.push_back(DeviceQueueCreateInfo);
+			deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
 		}
 
-		std::vector<float> QueuePriorities(NumberOfQueuePriorities, 1.0f);
-		for (auto& QueueCreateInfo : DeviceQueueCreateInfos)
-			QueueCreateInfo.pQueuePriorities = QueuePriorities.data();
+		std::vector<float> queuePriorities(numberOfQueuePriorities, 1.0f);
+		for (auto& queueCreateInfo : deviceQueueCreateInfos)
+			queueCreateInfo.pQueuePriorities = queuePriorities.data();
 
-		if (GraphicsFamilyIndex == -1)
+		if (graphicsFamilyIndex == -1)
 			throw std::runtime_error("Could not find a queue family supporting VK_QUEUE_GRAPHICS_BIT!");
-		if (ComputeFamilyIndex == -1)
-			ComputeFamilyIndex = GraphicsFamilyIndex;
-		if (TransferFamilyIndex == -1)
-			TransferFamilyIndex = ComputeFamilyIndex;
+		if (computeFamilyIndex == -1)
+			computeFamilyIndex = graphicsFamilyIndex;
+		if (transferFamilyIndex == -1)
+			transferFamilyIndex = computeFamilyIndex;
 
 		// Create the logical device
-		VkDeviceCreateInfo DeviceCreateInfo = {};
-		DeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		DeviceCreateInfo.pNext = nullptr;
-		DeviceCreateInfo.flags = 0;
-		DeviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(DeviceQueueCreateInfos.size());
-		DeviceCreateInfo.pQueueCreateInfos = DeviceQueueCreateInfos.data();
-		DeviceCreateInfo.enabledLayerCount = 0; // deprecated
-		DeviceCreateInfo.ppEnabledLayerNames = nullptr; // deprecated
-		DeviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(EnabledExtensions.size());
-		DeviceCreateInfo.ppEnabledExtensionNames = EnabledExtensions.data();
-		DeviceCreateInfo.pEnabledFeatures = &EnabledPhysicalDeviceFeatures;
+		VkDeviceCreateInfo deviceCreateInfo = {};
+		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		deviceCreateInfo.pNext = nullptr;
+		deviceCreateInfo.flags = 0;
+		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
+		deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
+		deviceCreateInfo.enabledLayerCount = 0; // deprecated
+		deviceCreateInfo.ppEnabledLayerNames = nullptr; // deprecated
+		deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_EnabledExtensions.size());
+		deviceCreateInfo.ppEnabledExtensionNames = m_EnabledExtensions.data();
+		deviceCreateInfo.pEnabledFeatures = &m_EnabledPhysicalDeviceFeatures;
 
-		VK_ASSERT(vkCreateDevice(PhysicalDevice, &DeviceCreateInfo, nullptr, &LogicalDevice));
+		VK_ASSERT(vkCreateDevice(m_PhysicalDevice, &deviceCreateInfo, nullptr, &m_LogicalDevice));
 
 		// Get queues of the logical device
-		GraphicsQueue = new VulkanQueue(*this, GraphicsFamilyIndex);
-		ComputeQueue = new VulkanQueue(*this, ComputeFamilyIndex);
-		TransferQueue = new VulkanQueue(*this, TransferFamilyIndex);
+		m_GraphicsQueue = new VulkanQueue(graphicsFamilyIndex);
+		m_ComputeQueue = new VulkanQueue(computeFamilyIndex);
+		m_TransferQueue = new VulkanQueue(transferFamilyIndex);
 
-		SetupPresentQueue(pSurface->GetHandle());
+		SetupPresentQueue(m_Surface->GetHandle());
 	}
 
 	void VulkanDevice::PickPhysicalDevice()
 	{
 		// TODO: properly check queue families, device extensions, device features and swapchain support here
-		uint32_t PhysicalDeviceCount;
-		VK_ASSERT(vkEnumeratePhysicalDevices(VulkanRendererAPI::pInstance->GetHandle(), &PhysicalDeviceCount, nullptr));
-		std::vector<VkPhysicalDevice> PhysicalDevices(PhysicalDeviceCount);
-		VK_ASSERT(vkEnumeratePhysicalDevices(VulkanRendererAPI::pInstance->GetHandle(), &PhysicalDeviceCount, PhysicalDevices.data()));
+		uint32_t physicalDeviceCount;
+		VK_ASSERT(vkEnumeratePhysicalDevices(VulkanRendererAPI::s_Instance->GetHandle(), &physicalDeviceCount, nullptr));
+		std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
+		VK_ASSERT(vkEnumeratePhysicalDevices(VulkanRendererAPI::s_Instance->GetHandle(), &physicalDeviceCount, physicalDevices.data()));
 
 		// Get info about the available physical devices and pick one for use
-		for (size_t i = 0; i < PhysicalDevices.size(); ++i)
+		for (size_t i = 0; i < physicalDevices.size(); ++i)
 		{
-			VkPhysicalDeviceProperties PhysicalDeviceProperties;
-			vkGetPhysicalDeviceProperties(PhysicalDevices[i], &PhysicalDeviceProperties);
+			VkPhysicalDeviceProperties physicalDeviceProperties;
+			vkGetPhysicalDeviceProperties(physicalDevices[i], &physicalDeviceProperties);
 
-			uint32_t QueueFamilyCount;
-			vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevices[i], &QueueFamilyCount, nullptr);
-			if (QueueFamilyCount < 1)
+			uint32_t queueFamilyCount;
+			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &queueFamilyCount, nullptr);
+			if (queueFamilyCount < 1)
 				continue;
 
-			PhysicalDevice = PhysicalDevices[i];
+			m_PhysicalDevice = physicalDevices[i];
 
-			if (PhysicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+			if (physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 				break;
 		}
 
-		if (PhysicalDevice == VK_NULL_HANDLE)
+		if (m_PhysicalDevice == VK_NULL_HANDLE)
 			throw std::runtime_error("No suitable physical device found!");
 	}
 
-	uint32_t VulkanDevice::GetMemoryTypeIndex(const uint32_t MemoryTypeBits, const VkMemoryPropertyFlags MemoryProperties) const
+	uint32_t VulkanDevice::GetMemoryTypeIndex(const uint32_t memoryTypeBits, const VkMemoryPropertyFlags memoryProperties) const
 	{
-		for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
+		for (uint32_t i = 0; i < m_PhysicalDeviceMemoryProperties.memoryTypeCount; ++i)
 		{
 			// Pick the first found memory type that supports the memory type bits
-			if ((MemoryTypeBits & (1 << i) && (PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & MemoryProperties) == MemoryProperties))
+			if ((memoryTypeBits & (1 << i) && (m_PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & memoryProperties) == memoryProperties))
 			{
 				return i;
 			}
@@ -213,17 +213,17 @@ namespace jarp {
 		throw std::runtime_error("Failed to find suitable memory type for buffer!");
 	}
 
-	VkFormat VulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& Formats, VkImageTiling ImageTiling, VkFormatFeatureFlags FormatFeatureFlags)
+	VkFormat VulkanDevice::FindSupportedFormat(const std::vector<VkFormat>& formats, VkImageTiling imageTiling, VkFormatFeatureFlags formatFeatureFlags)
 	{
-		for (VkFormat Format : Formats)
+		for (VkFormat format : formats)
 		{
-			VkFormatProperties FormatProperties;
-			vkGetPhysicalDeviceFormatProperties(PhysicalDevice, Format, &FormatProperties);
+			VkFormatProperties formatProperties;
+			vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &formatProperties);
 
-			if (ImageTiling == VK_IMAGE_TILING_LINEAR && (FormatProperties.linearTilingFeatures & FormatFeatureFlags) == FormatFeatureFlags)
-				return Format;
-			else if (ImageTiling == VK_IMAGE_TILING_OPTIMAL && (FormatProperties.optimalTilingFeatures & FormatFeatureFlags) == FormatFeatureFlags)
-				return Format;
+			if (imageTiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & formatFeatureFlags) == formatFeatureFlags)
+				return format;
+			else if (imageTiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & formatFeatureFlags) == formatFeatureFlags)
+				return format;
 		}
 
 		throw std::runtime_error("Failed to find a supported image format");
@@ -240,7 +240,7 @@ namespace jarp {
 
 	void VulkanDevice::WaitUntilIdle()
 	{
-		VK_ASSERT(vkDeviceWaitIdle(LogicalDevice));
+		VK_ASSERT(vkDeviceWaitIdle(m_LogicalDevice));
 	}
 
 }

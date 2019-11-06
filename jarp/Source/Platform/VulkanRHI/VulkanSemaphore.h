@@ -13,10 +13,10 @@ namespace jarp {
 		void CreateSemaphore();
 		void Destroy();
 
-		inline const VkSemaphore& GetHandle() const { return Semaphore; }
+		inline const VkSemaphore& GetHandle() const { return m_Semaphore; }
 
 	private:
-		VkSemaphore Semaphore;
+		VkSemaphore m_Semaphore;
 	};
 
 }

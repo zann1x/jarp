@@ -27,30 +27,30 @@ namespace jarp {
 		VulkanSwapchain();
 		~VulkanSwapchain();
 
-		void CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync = true);
+		void CreateSwapchain(uint32_t width, uint32_t height, bool bUseVSync = true);
 		void Destroy();
 
-		inline const VkSwapchainKHR GetHandle() const { return Swapchain; }
-		inline const VkSurfaceKHR GetSurfaceHandle() const { return SurfaceKHR; }
-		inline const SSwapchainDetails GetDetails() const { return SwapchainDetails; }
-		inline const std::vector<VkImage>& GetImages() const { return SwapchainImages; }
-		inline const std::vector<VulkanImageView>& GetImageViews() const { return SwapchainImageViews; }
-		inline const uint32_t GetActiveImageIndex() const { return ActiveImageIndex; }
+		inline const VkSwapchainKHR GetHandle() const { return m_Swapchain; }
+		inline const VkSurfaceKHR GetSurfaceHandle() const { return m_SurfaceKHR; }
+		inline const SSwapchainDetails GetDetails() const { return m_SwapchainDetails; }
+		inline const std::vector<VkImage>& GetImages() const { return m_SwapchainImages; }
+		inline const std::vector<VulkanImageView>& GetImageViews() const { return m_SwapchainImageViews; }
+		inline const uint32_t GetActiveImageIndex() const { return m_ActiveImageIndex; }
 
-		static SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice Device, VkSurfaceKHR SurfaceKHR);
+		static SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surfaceKHR);
 
-		VkResult AcquireNextImage(const VkSemaphore WaitSemaphore);
+		VkResult AcquireNextImage(const VkSemaphore waitSemaphore);
 
 	private:
-		VkSurfaceKHR SurfaceKHR;
-		VkSwapchainKHR Swapchain;
+		VkSurfaceKHR m_SurfaceKHR;
+		VkSwapchainKHR m_Swapchain;
 
-		SSwapchainSupportDetails SwapchainSupportDetails;
-		SSwapchainDetails SwapchainDetails;
-		std::vector<VkImage> SwapchainImages;
-		std::vector<VulkanImageView> SwapchainImageViews;
+		SSwapchainSupportDetails m_SwapchainSupportDetails;
+		SSwapchainDetails m_SwapchainDetails;
+		std::vector<VkImage> m_SwapchainImages;
+		std::vector<VulkanImageView> m_SwapchainImageViews;
 
-		uint32_t ActiveImageIndex;
+		uint32_t m_ActiveImageIndex;
 	};
 
 }

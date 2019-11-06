@@ -6,8 +6,8 @@ namespace jarp {
 
 	struct VulkanRendererAPI
 	{
-		static std::unique_ptr<VulkanInstance> pInstance;
-		static std::unique_ptr<VulkanDevice> pDevice;
+		static std::unique_ptr<VulkanInstance> s_Instance;
+		static std::unique_ptr<VulkanDevice> s_Device;
 	};
 
 }

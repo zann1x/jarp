@@ -34,10 +34,10 @@ namespace jarp {
 		EventCategoryCOUNT = 5
 	};
 
-#define EVENT_CLASS_TYPE(Type)	virtual EventType GetEventType() const override { return Type; }\
-								virtual const char* GetName() const override { return #Type; }
+#define EVENT_CLASS_TYPE(type)	virtual EventType GetEventType() const override { return type; }\
+								virtual const char* GetName() const override { return #type; }
 
-#define EVENT_CLASS_CATEGORY(Category)	virtual int GetCategoryFlags() const override { return Category; }
+#define EVENT_CLASS_CATEGORY(category)	virtual int GetCategoryFlags() const override { return category; }
 
 	class Event
 	{
@@ -46,10 +46,10 @@ namespace jarp {
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
 
-		inline bool IsInCategory(EventCategory Category) { return Category & GetCategoryFlags(); }
+		inline bool IsInCategory(EventCategory category) { return category & GetCategoryFlags(); }
 
 	public:
-		bool bIsHandled = false;
+		bool m_bIsHandled = false;
 	};
 
 }

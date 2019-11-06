@@ -7,7 +7,7 @@
 namespace jarp {
 
 	VulkanFence::VulkanFence()
-		: Fence(VK_NULL_HANDLE)
+		: m_Fence(VK_NULL_HANDLE)
 	{
 	}
 
@@ -17,17 +17,17 @@ namespace jarp {
 
 	void VulkanFence::CreateFence()
 	{
-		VkFenceCreateInfo FenceCreateInfo = {};
-		FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		FenceCreateInfo.pNext = nullptr;
-		FenceCreateInfo.flags = 0;
+		VkFenceCreateInfo fenceCreateInfo = {};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfo.pNext = nullptr;
+		fenceCreateInfo.flags = 0;
 
-		VK_ASSERT(vkCreateFence(VulkanRendererAPI::pDevice->GetInstanceHandle(), &FenceCreateInfo, nullptr, &Fence));
+		VK_ASSERT(vkCreateFence(VulkanRendererAPI::s_Device->GetInstanceHandle(), &fenceCreateInfo, nullptr, &m_Fence));
 	}
 
 	void VulkanFence::Destroy()
 	{
-		vkDestroyFence(VulkanRendererAPI::pDevice->GetInstanceHandle(), Fence, nullptr);
+		vkDestroyFence(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Fence, nullptr);
 	}
 
 }

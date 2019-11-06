@@ -3,14 +3,16 @@
 extern jarp::Application* jarp::CreateApplication();
 
 #if defined(JARP_PLATFORM_WINDOWS)
-int main(int argc, char** argv)
-{
-	auto App = jarp::CreateApplication();
-	App->Run();
-	delete App;
 
-	return 0;
-}
+	int main(int argc, char** argv)
+	{
+		auto app = jarp::CreateApplication();
+		app->Run();
+		delete app;
+
+		return 0;
+	}
+
 #else
-#error UNSUPPORTED PLATFORM
+	#error UNSUPPORTED PLATFORM
 #endif

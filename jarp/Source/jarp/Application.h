@@ -1,9 +1,7 @@
 #pragma once
 
-#include "jarp/Core.h"
-#include "jarp/Window.h"
-#include "jarp/Events/Event.h"
 #include "jarp/Events/EventListener.h"
+#include "jarp/Window.h"
 
 namespace jarp {
 
@@ -13,18 +11,18 @@ namespace jarp {
 		Application();
 		virtual ~Application();
 
-		static inline Application& Get() { return *Instance; }
-		inline Window& GetWindow() { return *pWindow; }
+		static inline Application& Get() { return *s_Instance; }
+		inline Window& GetWindow() const { return *m_Window; }
 
 		void Run();
 
-		virtual void OnEvent(Event& E) override;
+		virtual void OnEvent(Event& outEvent) override;
 
 	private:
-		static Application* Instance;
-		bool bIsRunning = false;
+		static Application* s_Instance;
+		bool m_bIsRunning = false;
 
-		std::unique_ptr<Window> pWindow;
+		std::unique_ptr<Window> m_Window;
 	};
 
 	// To be defined in Client

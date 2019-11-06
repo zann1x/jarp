@@ -12,108 +12,108 @@ namespace jarp {
 
 	void TempVulkanApplication::StartVulkan()
 	{
-		VulkanRendererAPI::pInstance = std::make_unique<VulkanInstance>();
-		VulkanRendererAPI::pInstance->CreateInstance();
+		VulkanRendererAPI::s_Instance = std::make_unique<VulkanInstance>();
+		VulkanRendererAPI::s_Instance->CreateInstance();
 
-		VulkanRendererAPI::pDevice = std::make_unique<VulkanDevice>();
-		VulkanRendererAPI::pDevice->CreateLogicalDevice();
+		VulkanRendererAPI::s_Device = std::make_unique<VulkanDevice>();
+		VulkanRendererAPI::s_Device->CreateLogicalDevice();
 
-		pSwapchain = new VulkanSwapchain();
-		pSwapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), Settings.VSync);
-		MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
-		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
+		m_Swapchain = new VulkanSwapchain();
+		m_Swapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), m_settings.VSync);
+		m_Camera.SetAspectRatio(m_Swapchain->GetDetails().Extent.width / static_cast<float>(m_Swapchain->GetDetails().Extent.height));
+		m_MaxFramesInFlight = static_cast<uint32_t>(m_Swapchain->GetImageViews().size());
 
 		// TODO: replace all occurrences of plain device ptr with Renderer API object
-		pCommandPool = new VulkanCommandPool();
-		pCommandPool->CreateCommandPool();
-		pTransientCommandPool = new VulkanCommandPool();
-		pTransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
-		pTransientCommandBuffer = new VulkanCommandBuffer(*pTransientCommandPool);
+		m_CommandPool = new VulkanCommandPool();
+		m_CommandPool->CreateCommandPool();
+		m_TransientCommandPool = new VulkanCommandPool();
+		m_TransientCommandPool->CreateCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+		m_TransientCommandBuffer = new VulkanCommandBuffer(*m_TransientCommandPool);
 
-		pDepthImage = new VulkanImage();
-		pDepthImageView = new VulkanImageView();
-		VkFormat DepthFormat = VulkanRendererAPI::pDevice->FindDepthFormat();
-		pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-		pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		m_DepthImage = new VulkanImage();
+		m_DepthImageView = new VulkanImageView();
+		VkFormat DepthFormat = VulkanRendererAPI::s_Device->FindDepthFormat();
+		m_DepthImage->CreateImage(m_Swapchain->GetDetails().Extent.width, m_Swapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_DepthImageView->CreateImageView(m_DepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		m_DepthImage->TransitionImageLayout(*m_TransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-		pDescriptorSetLayout = new VulkanDescriptorSetLayout();
-		pDescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-		pDescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		pDescriptorSetLayout->CreateDescriptorSetLayout();
+		m_DescriptorSetLayout = new VulkanDescriptorSetLayout();
+		m_DescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+		m_DescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+		m_DescriptorSetLayout->CreateDescriptorSetLayout();
 
-		pModel = new Model();
-		pTexture = new Texture();
+		m_Model = new Model();
+		m_Texture = new Texture();
 
-		pRenderPass = new VulkanRenderPass(*pSwapchain);
-		pRenderPass->CreateRenderPass();
-		pShader = new VulkanShader();
-		pShader->AddDescriptorSetLayout(*pDescriptorSetLayout);
-		pShader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "E:/VisualStudioProjects/jarp-master/jarp/Shaders/Phong.vert.spv");
-		pShader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "E:/VisualStudioProjects/jarp-master/jarp/Shaders/Phong.frag.spv");
-		pGraphicsPipeline = new VulkanGraphicsPipeline(*pRenderPass, *pShader);
-		pGraphicsPipeline->CreateGraphicsPipeline(pModel->GetPipelineVertexInputStateCreateInfo(), pSwapchain->GetDetails().Extent);
+		m_RenderPass = new VulkanRenderPass(*m_Swapchain);
+		m_RenderPass->CreateRenderPass();
+		m_Shader = new VulkanShader();
+		m_Shader->AddDescriptorSetLayout(*m_DescriptorSetLayout);
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.vert.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.frag.spv");
+		m_GraphicsPipeline = new VulkanGraphicsPipeline(*m_RenderPass, *m_Shader);
+		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
 
-		pFramebuffers.resize(pSwapchain->GetImages().size());
-		for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
+		m_Framebuffers.resize(m_Swapchain->GetImages().size());
+		for (size_t i = 0; i < m_Swapchain->GetImages().size(); ++i)
 		{
-			pFramebuffers[i] = new VulkanFramebuffer(*pRenderPass);
-			pFramebuffers[i]->CreateFramebuffer({ pSwapchain->GetImageViews()[i].GetHandle(), pDepthImageView->GetHandle() }, pSwapchain->GetDetails().Extent);
+			m_Framebuffers[i] = new VulkanFramebuffer(*m_RenderPass);
+			m_Framebuffers[i]->CreateFramebuffer({ m_Swapchain->GetImageViews()[i].GetHandle(), m_DepthImageView->GetHandle() }, m_Swapchain->GetDetails().Extent);
 		}
 
-		pDescriptorPool = new VulkanDescriptorPool(*pSwapchain);
-		pDescriptorPool->CreateDescriptorPool();
+		m_DescriptorPool = new VulkanDescriptorPool(*m_Swapchain);
+		m_DescriptorPool->CreateDescriptorPool();
 
-		pDrawCommandBuffers.resize(pFramebuffers.size());
-		for (size_t i = 0; i < pFramebuffers.size(); ++i)
+		m_DrawCommandBuffers.resize(m_Framebuffers.size());
+		for (size_t i = 0; i < m_Framebuffers.size(); ++i)
 		{
-			pDrawCommandBuffers[i] = new VulkanCommandBuffer(*pCommandPool);
-			pDrawCommandBuffers[i]->CreateCommandBuffer();
+			m_DrawCommandBuffers[i] = new VulkanCommandBuffer(*m_CommandPool);
+			m_DrawCommandBuffers[i]->CreateCommandBuffer();
 		}
 
-		pModel->Load("E:/VisualStudioProjects/jarp-master/jarp/Content/kitten.obj");
-		pTexture->Load(*pTransientCommandBuffer, "E:/VisualStudioProjects/jarp-master/jarp/Content/texture.jpg");
-		pVertexBuffer = new VulkanBuffer(pModel->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-		pVertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		pVertexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetVertices());
-		pIndexBuffer = new VulkanBuffer(pModel->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-		pIndexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		pIndexBuffer->UploadBuffer(*pTransientCommandBuffer, pModel->GetIndices());
-		delete pTransientCommandBuffer;
+		m_Model->Load("E:/VisualStudioProjects/jarp/jarp/Content/kitten.obj");
+		m_Texture->Load(*m_TransientCommandBuffer, "E:/VisualStudioProjects/jarp/jarp/Content/texture.jpg");
+		m_VertexBuffer = new VulkanBuffer(m_Model->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+		m_VertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_VertexBuffer->UploadBuffer(*m_TransientCommandBuffer, m_Model->GetVertices());
+		m_IndexBuffer = new VulkanBuffer(m_Model->GetIndicesDeviceSize(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+		m_IndexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_IndexBuffer->UploadBuffer(*m_TransientCommandBuffer, m_Model->GetIndices());
+		delete m_TransientCommandBuffer;
 
-		UniformBuffers.resize(pSwapchain->GetImages().size());
-		for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
+		m_UniformBuffers.resize(m_Swapchain->GetImages().size());
+		for (size_t i = 0; i < m_Swapchain->GetImages().size(); ++i)
 		{
-			UniformBuffers[i] = new VulkanBuffer(sizeof(UBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-			UniformBuffers[i]->CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			m_UniformBuffers[i] = new VulkanBuffer(sizeof(m_UBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+			m_UniformBuffers[i]->CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		}
-		std::vector<VkBuffer> UniBuffers;
-		for (auto& UniformBuffer : UniformBuffers)
-			UniBuffers.push_back(UniformBuffer->GetHandle());
-		pDescriptorSet = new VulkanDescriptorSet();
-		pDescriptorSet->CreateDescriptorSets(*pDescriptorSetLayout, *pDescriptorPool, pSwapchain->GetImages().size(), sizeof(UBO), UniBuffers, pTexture->GetSampler(), pTexture->GetImageView().GetHandle());
+		std::vector<VkBuffer> uniBuffers;
+		for (auto& uniformBuffer : m_UniformBuffers)
+			uniBuffers.push_back(uniformBuffer->GetHandle());
+		m_DescriptorSet = new VulkanDescriptorSet();
+		m_DescriptorSet->CreateDescriptorSets(*m_DescriptorSetLayout, *m_DescriptorPool, m_Swapchain->GetImages().size(), sizeof(m_UBO), uniBuffers, m_Texture->GetSampler(), m_Texture->GetImageView().GetHandle());
 
-		pRenderingFinishedSemaphores.resize(MaxFramesInFlight);
-		pImageAvailableSemaphores.resize(MaxFramesInFlight);
-		pFencesInFlight.resize(MaxFramesInFlight);
-		for (uint32_t i = 0; i < MaxFramesInFlight; ++i)
+		m_RenderingFinishedSemaphores.resize(m_MaxFramesInFlight);
+		m_ImageAvailableSemaphores.resize(m_MaxFramesInFlight);
+		m_FencesInFlight.resize(m_MaxFramesInFlight);
+		for (uint32_t i = 0; i < m_MaxFramesInFlight; ++i)
 		{
-			pRenderingFinishedSemaphores[i] = new VulkanSemaphore();
-			pRenderingFinishedSemaphores[i]->CreateSemaphore();
+			m_RenderingFinishedSemaphores[i] = new VulkanSemaphore();
+			m_RenderingFinishedSemaphores[i]->CreateSemaphore();
 
-			pImageAvailableSemaphores[i] = new VulkanSemaphore();
-			pImageAvailableSemaphores[i]->CreateSemaphore();
+			m_ImageAvailableSemaphores[i] = new VulkanSemaphore();
+			m_ImageAvailableSemaphores[i]->CreateSemaphore();
 
-			pFencesInFlight[i] = new VulkanFence();
-			pFencesInFlight[i]->CreateFence();
+			m_FencesInFlight[i] = new VulkanFence();
+			m_FencesInFlight[i]->CreateFence();
 		}
 
 		RecordCommandBuffer();
 	}
 	
-	void TempVulkanApplication::Render(uint32_t DeltaTime)
+	void TempVulkanApplication::Render(uint32_t deltaTime)
 	{
-		static size_t CurrentFrame = 0;
+		static size_t currentFrame = 0;
 
 		// Don't try to draw to a minimized window
 		if (Application::Get().GetWindow().IsMinimized())
@@ -121,193 +121,193 @@ namespace jarp {
 
 		// Get the next available image to work on
 		{
-			VkResult Result = pSwapchain->AcquireNextImage(pImageAvailableSemaphores[CurrentFrame]->GetHandle());
-			if (Result == VK_ERROR_OUT_OF_DATE_KHR)
+			VkResult result = m_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[currentFrame]->GetHandle());
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
 			{
 				RecreateSwapchain();
 				return;
 			}
 			else
 			{
-				VK_ASSERT(Result);
+				VK_ASSERT(result);
 			}
 		}
 
-		MyCamera.Move(DeltaTime);
-		UpdateMVP(pSwapchain->GetActiveImageIndex());
+		m_Camera.Move(deltaTime);
+		UpdateMVP(m_Swapchain->GetActiveImageIndex());
 
 		// Submit commands to the queue
-		VulkanRendererAPI::pDevice->GetGraphicsQueue().QueueSubmitAndWait(
-			{ pDrawCommandBuffers[pSwapchain->GetActiveImageIndex()]->GetHandle() },
+		VulkanRendererAPI::s_Device->GetGraphicsQueue().QueueSubmitAndWait(
+			{ m_DrawCommandBuffers[m_Swapchain->GetActiveImageIndex()]->GetHandle() },
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			{ pImageAvailableSemaphores[CurrentFrame]->GetHandle() },
-			{ pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() },
-			pFencesInFlight[CurrentFrame]->GetHandle(),
-			{ pFencesInFlight[CurrentFrame]->GetHandle() }
+			{ m_ImageAvailableSemaphores[currentFrame]->GetHandle() },
+			{ m_RenderingFinishedSemaphores[currentFrame]->GetHandle() },
+			m_FencesInFlight[currentFrame]->GetHandle(),
+			{ m_FencesInFlight[currentFrame]->GetHandle() }
 		);
 
 		{
-			VkResult Result = VulkanRendererAPI::pDevice->GetPresentQueue().QueuePresent(
-				pSwapchain->GetHandle(),
-				{ pSwapchain->GetActiveImageIndex() },
-				{ pRenderingFinishedSemaphores[CurrentFrame]->GetHandle() }
+			VkResult result = VulkanRendererAPI::s_Device->GetPresentQueue().QueuePresent(
+				m_Swapchain->GetHandle(),
+				{ m_Swapchain->GetActiveImageIndex() },
+				{ m_RenderingFinishedSemaphores[currentFrame]->GetHandle() }
 			);
 			// TODO: register Renderer for WindowResizedEvent to omit explicitly checking for resize here
-			WindowsWindow& Win = static_cast<WindowsWindow&>(Application::Get().GetWindow());
-			if (Result == VK_ERROR_OUT_OF_DATE_KHR || Result == VK_SUBOPTIMAL_KHR || Win.IsFramebufferResized())
+			WindowsWindow& windowsWindow = static_cast<WindowsWindow&>(Application::Get().GetWindow());
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowsWindow.IsFramebufferResized())
 			{
-				Win.SetFramebufferResized(false);
+				windowsWindow.SetFramebufferResized(false);
 				RecreateSwapchain();
 			}
 			else
 			{
-				VK_ASSERT(Result);
+				VK_ASSERT(result);
 			}
 		}
 
-		CurrentFrame = (CurrentFrame + 1) % MaxFramesInFlight;
+		currentFrame = (currentFrame + 1) % m_MaxFramesInFlight;
 	}
 	
 	void TempVulkanApplication::ShutdownVulkan()
 	{
 		// Free all resources
-		VulkanRendererAPI::pDevice->WaitUntilIdle();
+		VulkanRendererAPI::s_Device->WaitUntilIdle();
 
 		CleanupSwapchain();
-		delete pRenderPass;
-		delete pSwapchain;
-		for (auto& CommandBuffer : pDrawCommandBuffers)
+		delete m_RenderPass;
+		delete m_Swapchain;
+		for (auto& commandBuffer : m_DrawCommandBuffers)
 		{
-			delete CommandBuffer;
+			delete commandBuffer;
 		}
 
-		delete pDepthImageView;
-		delete pDepthImage;
+		delete m_DepthImageView;
+		delete m_DepthImage;
 
-		pShader->Destroy();
-		delete pShader;
+		m_Shader->Destroy();
+		delete m_Shader;
 
-		pTexture->Destroy();
-		delete pTexture;
-		delete pModel;
+		m_Texture->Destroy();
+		delete m_Texture;
+		delete m_Model;
 
-		for (uint32_t i = 0; i < MaxFramesInFlight; ++i)
+		for (uint32_t i = 0; i < m_MaxFramesInFlight; ++i)
 		{
-			pFencesInFlight[i]->Destroy();
-			delete pFencesInFlight[i];
-			pRenderingFinishedSemaphores[i]->Destroy();
-			delete pRenderingFinishedSemaphores[i];
-			pImageAvailableSemaphores[i]->Destroy();
-			delete pImageAvailableSemaphores[i];
+			m_FencesInFlight[i]->Destroy();
+			delete m_FencesInFlight[i];
+			m_RenderingFinishedSemaphores[i]->Destroy();
+			delete m_RenderingFinishedSemaphores[i];
+			m_ImageAvailableSemaphores[i]->Destroy();
+			delete m_ImageAvailableSemaphores[i];
 		}
 
 		// Even though the uniform buffer depends on the number of swapchain images, it seems that it doesn't need to be recreated with the swapchain
-		for (auto& UniformBuffer : UniformBuffers)
+		for (auto& uniformBuffer : m_UniformBuffers)
 		{
-			UniformBuffer->Destroy();
-			delete UniformBuffer;
+			uniformBuffer->Destroy();
+			delete uniformBuffer;
 		}
-		pIndexBuffer->Destroy();
-		delete pIndexBuffer;
-		pVertexBuffer->Destroy();
-		delete pVertexBuffer;
+		m_IndexBuffer->Destroy();
+		delete m_IndexBuffer;
+		m_VertexBuffer->Destroy();
+		delete m_VertexBuffer;
 
-		pTransientCommandPool->Destroy();
-		delete pTransientCommandPool;
-		pCommandPool->Destroy();
-		delete pCommandPool;
+		m_TransientCommandPool->Destroy();
+		delete m_TransientCommandPool;
+		m_CommandPool->Destroy();
+		delete m_CommandPool;
 
-		pDescriptorPool->Destroy();
-		delete pDescriptorPool;
-		delete pDescriptorSet; // Vulkan objects are implicitly destroyed by the owning pool
-		pDescriptorSetLayout->Destroy();
-		delete pDescriptorSetLayout;
+		m_DescriptorPool->Destroy();
+		delete m_DescriptorPool;
+		delete m_DescriptorSet; // Vulkan objects are implicitly destroyed by the owning pool
+		m_DescriptorSetLayout->Destroy();
+		delete m_DescriptorSetLayout;
 
-		VulkanRendererAPI::pDevice->Destroy();
-		VulkanRendererAPI::pInstance->Destroy();
+		VulkanRendererAPI::s_Device->Destroy();
+		VulkanRendererAPI::s_Instance->Destroy();
 	}
 
 	void TempVulkanApplication::RecordCommandBuffer()
 	{
-		for (size_t i = 0; i < pDrawCommandBuffers.size(); ++i)
+		for (size_t i = 0; i < m_DrawCommandBuffers.size(); ++i)
 		{
-			const VkCommandBuffer& CommandBuffer = pDrawCommandBuffers[i]->GetHandle();
+			const VkCommandBuffer& commandBuffer = m_DrawCommandBuffers[i]->GetHandle();
 
-			VkCommandBufferBeginInfo CommandBufferBeginInfo = {};
-			CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			CommandBufferBeginInfo.pNext = nullptr;
-			CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-			CommandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
+			VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+			commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			commandBufferBeginInfo.pNext = nullptr;
+			commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+			commandBufferBeginInfo.pInheritanceInfo = nullptr; // This is a primary command buffer, so the value can be ignored
 
-			VK_ASSERT(vkBeginCommandBuffer(CommandBuffer, &CommandBufferBeginInfo));
+			VK_ASSERT(vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo));
 
-			std::array<VkClearValue, 2> ClearValues = {};
-			ClearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
-			ClearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
+			std::array<VkClearValue, 2> clearValues = {};
+			clearValues[0] = { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f };
+			clearValues[1] = { 1.0f, 0.0f }; // Initial value should be the furthest possible depth (= 1.0)
 
-			VkRenderPassBeginInfo RenderPassBeginInfo = {};
-			RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			RenderPassBeginInfo.pNext = nullptr;
-			RenderPassBeginInfo.renderPass = pRenderPass->GetHandle();
-			RenderPassBeginInfo.framebuffer = pFramebuffers[i]->GetHandle();
-			RenderPassBeginInfo.renderArea.extent = pSwapchain->GetDetails().Extent;
-			RenderPassBeginInfo.renderArea.offset = { 0, 0 };
-			RenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(ClearValues.size());
-			RenderPassBeginInfo.pClearValues = ClearValues.data();
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			renderPassBeginInfo.renderPass = m_RenderPass->GetHandle();
+			renderPassBeginInfo.framebuffer = m_Framebuffers[i]->GetHandle();
+			renderPassBeginInfo.renderArea.extent = m_Swapchain->GetDetails().Extent;
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
+			renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+			renderPassBeginInfo.pClearValues = clearValues.data();
 
-			vkCmdBeginRenderPass(CommandBuffer, &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
+			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
 
-			vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetHandle());
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetHandle());
 
-			VkBuffer VertexBuffers[] = { pVertexBuffer->GetHandle() };
-			VkDeviceSize Offsets[] = { 0 };
-			vkCmdBindVertexBuffers(CommandBuffer, 0, 1, VertexBuffers, Offsets);
-			vkCmdBindIndexBuffer(CommandBuffer, pIndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-			vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pGraphicsPipeline->GetLayoutHandle(), 0, 1, &pDescriptorSet->At(i), 0, nullptr);
+			VkBuffer vertexBuffers[] = { m_VertexBuffer->GetHandle() };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer->GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetLayoutHandle(), 0, 1, &m_DescriptorSet->At(i), 0, nullptr);
 
-			vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(pModel->GetIndices().size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_Model->GetIndices().size()), 1, 0, 0, 0);
 
-			vkCmdEndRenderPass(CommandBuffer);
+			vkCmdEndRenderPass(commandBuffer);
 
-			VK_ASSERT(vkEndCommandBuffer(CommandBuffer));
+			VK_ASSERT(vkEndCommandBuffer(commandBuffer));
 		}
 	}
 
 	void TempVulkanApplication::RecreateSwapchain()
 	{
 		// If the window is minimized, the framebuffer size will be 0
-		auto [FramebufferWidth, FramebufferHeight] = Application::Get().GetWindow().GetFramebufferSize();
-		while (FramebufferWidth == 0 || FramebufferHeight == 0)
+		auto [framebufferWidth, framebufferHeight] = Application::Get().GetWindow().GetFramebufferSize();
+		while (framebufferWidth == 0 || framebufferHeight == 0)
 		{
-			auto [FramebufferWidth, FramebufferHeight] = Application::Get().GetWindow().GetFramebufferSize();
+			auto [framebufferWidth, framebufferHeight] = Application::Get().GetWindow().GetFramebufferSize();
 			SDL_WaitEvent(nullptr);
 		}
 
-		VulkanRendererAPI::pDevice->WaitUntilIdle();
+		VulkanRendererAPI::s_Device->WaitUntilIdle();
 		CleanupSwapchain();
 
-		pSwapchain->CreateSwapchain(FramebufferWidth, FramebufferHeight, Settings.VSync);
-		MyCamera.SetAspectRatio(pSwapchain->GetDetails().Extent.width / static_cast<float>(pSwapchain->GetDetails().Extent.height));
-		MaxFramesInFlight = static_cast<uint32_t>(pSwapchain->GetImageViews().size());
+		m_Swapchain->CreateSwapchain(framebufferWidth, framebufferHeight, m_settings.VSync);
+		m_Camera.SetAspectRatio(m_Swapchain->GetDetails().Extent.width / static_cast<float>(m_Swapchain->GetDetails().Extent.height));
+		m_MaxFramesInFlight = static_cast<uint32_t>(m_Swapchain->GetImageViews().size());
 
-		VkFormat DepthFormat = VulkanRendererAPI::pDevice->FindDepthFormat();
-		pDepthImage->CreateImage(pSwapchain->GetDetails().Extent.width, pSwapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		pDepthImageView->CreateImageView(pDepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-		pTransientCommandBuffer = new VulkanCommandBuffer(*pTransientCommandPool);
-		pDepthImage->TransitionImageLayout(*pTransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		delete pTransientCommandBuffer;
+		VkFormat depthFormat = VulkanRendererAPI::s_Device->FindDepthFormat();
+		m_DepthImage->CreateImage(m_Swapchain->GetDetails().Extent.width, m_Swapchain->GetDetails().Extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_DepthImageView->CreateImageView(m_DepthImage->GetHandle(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		m_TransientCommandBuffer = new VulkanCommandBuffer(*m_TransientCommandPool);
+		m_DepthImage->TransitionImageLayout(*m_TransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		delete m_TransientCommandBuffer;
 
-		pRenderPass->CreateRenderPass();
-		pGraphicsPipeline->CreateGraphicsPipeline(pModel->GetPipelineVertexInputStateCreateInfo(), pSwapchain->GetDetails().Extent);
+		m_RenderPass->CreateRenderPass();
+		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
 
-		for (size_t i = 0; i < pSwapchain->GetImages().size(); ++i)
+		for (size_t i = 0; i < m_Swapchain->GetImages().size(); ++i)
 		{
-			pFramebuffers[i]->CreateFramebuffer({ pSwapchain->GetImageViews()[i].GetHandle(), pDepthImageView->GetHandle() }, pSwapchain->GetDetails().Extent);
+			m_Framebuffers[i]->CreateFramebuffer({ m_Swapchain->GetImageViews()[i].GetHandle(), m_DepthImageView->GetHandle() }, m_Swapchain->GetDetails().Extent);
 		}
 
-		for (size_t i = 0; i < pFramebuffers.size(); ++i)
+		for (size_t i = 0; i < m_Framebuffers.size(); ++i)
 		{
-			pDrawCommandBuffers[i]->CreateCommandBuffer();
+			m_DrawCommandBuffers[i]->CreateCommandBuffer();
 		}
 
 		RecordCommandBuffer();
@@ -315,37 +315,37 @@ namespace jarp {
 
 	void TempVulkanApplication::CleanupSwapchain()
 	{
-		for (auto & pDrawCommandBuffer : pDrawCommandBuffers)
-			pDrawCommandBuffer->Destroy();
-		for (auto& Framebuffer : pFramebuffers)
-			Framebuffer->Destroy();
-		pDepthImageView->Destroy();
-		pDepthImage->Destroy();
-		pGraphicsPipeline->Destroy();
-		pRenderPass->Destroy();
-		pSwapchain->Destroy();
+		for (auto& drawCommandBuffer : m_DrawCommandBuffers)
+			drawCommandBuffer->Destroy();
+		for (auto& framebuffer : m_Framebuffers)
+			framebuffer->Destroy();
+		m_DepthImageView->Destroy();
+		m_DepthImage->Destroy();
+		m_GraphicsPipeline->Destroy();
+		m_RenderPass->Destroy();
+		m_Swapchain->Destroy();
 	}
 
 	void TempVulkanApplication::UpdateMVP(uint32_t CurrentImage)
 	{
-		static auto StartTime = std::chrono::high_resolution_clock::now();
+		static auto startTime = std::chrono::high_resolution_clock::now();
 
-		auto CurrentTime = std::chrono::high_resolution_clock::now();
-		float TimePassed = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float timePassed = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-		UBO.Model = glm::mat4();
-		UBO.Model = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		UBO.Model = glm::translate(UBO.Model, glm::vec3(0.0f, 0.0f, 0.0f));
-		UBO.Model = glm::rotate(UBO.Model, TimePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		UBO.View = MyCamera.GetViewMatrix();
-		UBO.Projection = MyCamera.GetProjectionMatrix();
-		UBO.LightPosition = glm::vec3(10.0f, 100.0f, -100.0f);
+		m_UBO.Model = glm::mat4();
+		m_UBO.Model = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		m_UBO.Model = glm::translate(m_UBO.Model, glm::vec3(0.0f, 0.0f, 0.0f));
+		m_UBO.Model = glm::rotate(m_UBO.Model, timePassed * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		m_UBO.View = m_Camera.GetViewMatrix();
+		m_UBO.Projection = m_Camera.GetProjectionMatrix();
+		m_UBO.LightPosition = glm::vec3(10.0f, 100.0f, -100.0f);
 
 		// Map uniform buffer data persistently
-		static void* RawData[3];
-		if (!RawData[CurrentImage])
-			vkMapMemory(VulkanRendererAPI::pDevice->GetInstanceHandle(), UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(UBO), 0, &RawData[CurrentImage]);
-		memcpy(RawData[CurrentImage], &UBO, sizeof(UBO));
+		static void* rawData[3];
+		if (!rawData[CurrentImage])
+			vkMapMemory(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_UniformBuffers[CurrentImage]->GetMemoryHandle(), 0, sizeof(m_UBO), 0, &rawData[CurrentImage]);
+		memcpy(rawData[CurrentImage], &m_UBO, sizeof(m_UBO));
 	}
 
 }

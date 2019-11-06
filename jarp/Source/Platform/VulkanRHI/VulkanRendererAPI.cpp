@@ -3,7 +3,7 @@
 
 namespace jarp {
 
-	std::unique_ptr<VulkanInstance> VulkanRendererAPI::pInstance;
-	std::unique_ptr<VulkanDevice> VulkanRendererAPI::pDevice;
+	std::unique_ptr<VulkanInstance> VulkanRendererAPI::s_Instance;
+	std::unique_ptr<VulkanDevice> VulkanRendererAPI::s_Device;
 
 }

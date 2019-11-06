@@ -10,23 +10,23 @@ namespace jarp {
 	class VulkanGraphicsPipeline
 	{
 	public:
-		VulkanGraphicsPipeline(VulkanRenderPass& OutRenderPass, VulkanShader& OutShader);
+		VulkanGraphicsPipeline(VulkanRenderPass& renderPass, VulkanShader& shader);
 		~VulkanGraphicsPipeline();
 
-		void CreateGraphicsPipeline(const VkPipelineVertexInputStateCreateInfo& PipelineVertexInputStateCreateInfo, const VkExtent2D SwapchainExtent);
+		void CreateGraphicsPipeline(const VkPipelineVertexInputStateCreateInfo& pipelineVertexInputStateCreateInfo, const VkExtent2D swapchainExtent);
 		void Destroy();
 
-		inline const VkPipeline& GetHandle() const { return Pipeline; }
-		inline const VkPipelineLayout& GetLayoutHandle() const { return PipelineLayout; }
+		inline const VkPipeline& GetHandle() const { return m_Pipeline; }
+		inline const VkPipelineLayout& GetLayoutHandle() const { return m_PipelineLayout; }
 
 	private:
-		VulkanRenderPass& RenderPass;
-		VulkanShader& Shader;
+		VulkanRenderPass& m_RenderPass;
+		VulkanShader& m_Shader;
 
-		VkPipelineLayout PipelineLayout;
-		VkPipeline Pipeline;
+		VkPipelineLayout m_PipelineLayout;
+		VkPipeline m_Pipeline;
 
-		std::vector<VkDynamicState> DynamicStates;
+		std::vector<VkDynamicState> m_DynamicStates;
 	};
 
 }

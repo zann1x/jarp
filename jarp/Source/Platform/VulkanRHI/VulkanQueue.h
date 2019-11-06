@@ -4,27 +4,23 @@
 
 namespace jarp {
 
-	class VulkanDevice;
-
 	class VulkanQueue
 	{
 	public:
-		VulkanQueue(VulkanDevice& Device, uint32_t QueueFamilyIndex, uint32_t QueueIndex = 0);
+		VulkanQueue(uint32_t queueFamilyIndex, uint32_t queueIndex = 0);
 		~VulkanQueue();
 
-		inline const VkQueue& GetHandle() const { return Queue; }
-		inline uint32_t GetFamilyIndex() const { return QueueFamilyIndex; }
+		inline const VkQueue& GetHandle() const { return m_Queue; }
+		inline uint32_t GetFamilyIndex() const { return m_QueueFamilyIndex; }
 
-		void QueueSubmitAndWait(const std::vector<VkCommandBuffer>& CommandBuffers, const VkPipelineStageFlags WaitDstStageMask, const std::vector<VkSemaphore>& WaitSemaphores, const std::vector<VkSemaphore>& SignalSemaphores, VkFence SubmitFence, const std::vector<VkFence>& Fences) const;
-		VkResult QueuePresent(const VkSwapchainKHR Swapchain, std::vector<uint32_t> ActiveImageIndices, const std::vector<VkSemaphore>& WaitSemaphores) const;
+		void QueueSubmitAndWait(const std::vector<VkCommandBuffer>& commandBuffers, const VkPipelineStageFlags waitDstStageMask, const std::vector<VkSemaphore>& waitSemaphores, const std::vector<VkSemaphore>& signalSemaphores, VkFence submitFence, const std::vector<VkFence>& fences) const;
+		VkResult QueuePresent(const VkSwapchainKHR swapchain, std::vector<uint32_t> activeImageIndices, const std::vector<VkSemaphore>& waitSemaphores) const;
 		void WaitUntilIdle() const;
 
 	private:
-		VulkanDevice& Device;
-
-		VkQueue Queue;
-		uint32_t QueueFamilyIndex;
-		uint32_t QueueIndex;
+		VkQueue m_Queue;
+		uint32_t m_QueueFamilyIndex;
+		uint32_t m_QueueIndex;
 	};
 
 }

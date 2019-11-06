@@ -8,8 +8,8 @@ namespace jarp {
 	{
 		extern std::vector<const char*> ValidationLayers;
 
-		void SetupDebugCallback(const VkInstance& Instance);
-		void DestroyDebugCallback(const VkInstance& Instance);
+		void SetupDebugCallback(const VkInstance& instance);
+		void DestroyDebugCallback(const VkInstance& instance);
 	}
 
 }

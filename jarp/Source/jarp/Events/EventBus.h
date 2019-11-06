@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Event.h"
-#include "EventListener.h"
-
-#include "jarp/Core.h"
+#include "jarp/Events/Event.h"
+#include "jarp/Events/EventListener.h"
 
 namespace jarp {
 
@@ -12,23 +10,23 @@ namespace jarp {
 	public:
 		EventBus();
 
-		static inline EventBus& Get() { return *Instance; }
+		static inline EventBus& Get() { return *s_Instance; }
 
 		// Subscribers of specific event types
-		void Register(EventType Type, EventListener* Listener);
-		void Deregister(EventType Type, EventListener* Listener);
+		void Register(EventType type, EventListener* listener);
+		void Deregister(EventType type, EventListener* listener);
 
 		// Subscribers of whole event categories
-		void Register(EventCategory Type, EventListener* Listener);
-		void Deregister(EventCategory Type, EventListener* Listener);
+		void Register(EventCategory type, EventListener* listener);
+		void Deregister(EventCategory type, EventListener* listener);
 
-		void Dispatch(Event& E);
+		void Dispatch(Event& event);
 
 	private:
-		static EventBus* Instance;
+		static EventBus* s_Instance;
 
-		std::unordered_map<uint32_t, std::vector<EventListener*>> EventTypeSubscribers;
-		std::unordered_map<uint32_t, std::vector<EventListener*>> EventCategorySubscribers;
+		std::unordered_map<uint32_t, std::vector<EventListener*>> m_EventTypeSubscribers;
+		std::unordered_map<uint32_t, std::vector<EventListener*>> m_EventCategorySubscribers;
 	};
 
 }

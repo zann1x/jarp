@@ -13,13 +13,13 @@ namespace jarp {
 		void CreateInstance();
 		void Destroy();
 
-		inline const VkInstance& GetHandle() const { return Instance; }
+		inline const VkInstance& GetHandle() const { return m_Instance; }
 
 	private:
-		VkInstance Instance;
+		VkInstance m_Instance;
 
-		std::vector<const char*> InstanceLayers;
-		std::vector<const char*> InstanceExtensions;
+		std::vector<const char*> m_InstanceLayers;
+		std::vector<const char*> m_InstanceExtensions;
 	};
 
 }
