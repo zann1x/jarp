@@ -9,23 +9,23 @@ namespace jarp {
 	class VulkanCommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(VulkanCommandPool& OutCommandPool);
+		VulkanCommandBuffer(VulkanCommandPool& commandPool);
 		~VulkanCommandBuffer();
 
 		void CreateCommandBuffer();
 		void Destroy();
 
-		inline const VkCommandBuffer& GetHandle() const { return CommandBuffer; }
+		inline const VkCommandBuffer& GetHandle() const { return m_CommandBuffer; }
 
 		void BeginOneTimeSubmitCommand();
 		void EndOneTimeSubmitCommand();
 
-		void CopyBuffer(VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	private:
-		VulkanCommandPool& CommandPool;
+		VulkanCommandPool& m_CommandPool;
 
-		VkCommandBuffer CommandBuffer;
+		VkCommandBuffer m_CommandBuffer;
 	};
 
 }

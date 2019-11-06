@@ -15,10 +15,10 @@ namespace jarp {
 		void CreateSurface();
 		void Destroy();
 
-		inline VkSurfaceKHR GetHandle() const { return SurfaceKHR; }
+		inline VkSurfaceKHR GetHandle() const { return m_SurfaceKHR; }
 
 	private:
-		VkSurfaceKHR SurfaceKHR;
+		VkSurfaceKHR m_SurfaceKHR;
 	};
 
 }

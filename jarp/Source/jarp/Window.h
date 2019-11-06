@@ -1,35 +1,38 @@
 #pragma once
 
-#include "jarppch.h"
-#include "jarp/Events/Event.h"
+#include <memory>
+#include <utility>
 
 namespace jarp {
 
 	struct WindowProperties
 	{
-		std::string Title;
+		const char* Title;
 		int Width;
 		int Height;
 
-		WindowProperties(const std::string& Title = "jarp", int Width = 1280, int Height = 720)
-			: Title(Title), Width(Width), Height(Height) { }
+		WindowProperties(const char* title = "jarp", int width = 1280, int height = 720)
+			: Title(title), Width(width), Height(height)
+		{
+		}
 	};
 
 	class Window
 	{
 	public:
-		virtual ~Window() { };
+		virtual ~Window() = default;
 
-		virtual void Update(uint32_t DeltaTime) = 0;
+		virtual void Update(uint32_t deltaTime) = 0;
 
 		virtual std::pair<int, int> GetFramebufferSize() const = 0;
 		virtual int GetWidth() const = 0;
 		virtual int GetHeight() const = 0;
+		virtual const char* GetTitle() const = 0;
 		virtual void* GetNativeWindow() const = 0;
 
 		virtual bool IsMinimized() const = 0;
 
-		static Window* Create(const WindowProperties& Properties = WindowProperties());
+		static Window* Create(const WindowProperties& properties = WindowProperties());
 	};
 
 }

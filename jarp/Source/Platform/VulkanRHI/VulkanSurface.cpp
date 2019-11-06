@@ -21,16 +21,16 @@ namespace jarp {
 	void VulkanSurface::CreateSurface()
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-		WindowsWindow& Win32 = dynamic_cast<WindowsWindow&>(Application::Get().GetWindow());
+		WindowsWindow& win32Window = dynamic_cast<WindowsWindow&>(Application::Get().GetWindow());
 
-		VkWin32SurfaceCreateInfoKHR Win32SurfaceCreateInfoKHR = {};
-		Win32SurfaceCreateInfoKHR.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		Win32SurfaceCreateInfoKHR.pNext = nullptr;
-		Win32SurfaceCreateInfoKHR.flags = 0;
-		Win32SurfaceCreateInfoKHR.hinstance = Win32.GetNativeInstanceHandle();
-		Win32SurfaceCreateInfoKHR.hwnd = Win32.GetNativeWindowHandle();
+		VkWin32SurfaceCreateInfoKHR win32SurfaceCreateInfoKHR = {};
+		win32SurfaceCreateInfoKHR.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		win32SurfaceCreateInfoKHR.pNext = nullptr;
+		win32SurfaceCreateInfoKHR.flags = 0;
+		win32SurfaceCreateInfoKHR.hinstance = win32Window.GetNativeInstanceHandle();
+		win32SurfaceCreateInfoKHR.hwnd = win32Window.GetNativeWindowHandle();
 
-		VK_ASSERT(vkCreateWin32SurfaceKHR(VulkanRendererAPI::pInstance->GetHandle(), &Win32SurfaceCreateInfoKHR, nullptr, &SurfaceKHR));
+		VK_ASSERT(vkCreateWin32SurfaceKHR(VulkanRendererAPI::s_Instance->GetHandle(), &win32SurfaceCreateInfoKHR, nullptr, &m_SurfaceKHR));
 #else
 #error UNSUPPORTED PLATFORM
 #endif
@@ -38,7 +38,7 @@ namespace jarp {
 
 	void VulkanSurface::Destroy()
 	{
-		vkDestroySurfaceKHR(VulkanRendererAPI::pInstance->GetHandle(), SurfaceKHR, nullptr);
+		vkDestroySurfaceKHR(VulkanRendererAPI::s_Instance->GetHandle(), m_SurfaceKHR, nullptr);
 	}
 
 }

@@ -11,7 +11,7 @@
 namespace jarp {
 
 	VulkanSwapchain::VulkanSwapchain()
-		: SurfaceKHR(VK_NULL_HANDLE), Swapchain(VK_NULL_HANDLE)
+		: m_SurfaceKHR(VK_NULL_HANDLE), m_Swapchain(VK_NULL_HANDLE)
 	{
 	}
 
@@ -19,175 +19,175 @@ namespace jarp {
 	{
 		Destroy();
 
-		if (SurfaceKHR != VK_NULL_HANDLE)
+		if (m_SurfaceKHR != VK_NULL_HANDLE)
 		{
-			vkDestroySurfaceKHR(VulkanRendererAPI::pInstance->GetHandle(), SurfaceKHR, nullptr);
-			SurfaceKHR = VK_NULL_HANDLE;
+			vkDestroySurfaceKHR(VulkanRendererAPI::s_Instance->GetHandle(), m_SurfaceKHR, nullptr);
+			m_SurfaceKHR = VK_NULL_HANDLE;
 		}
 	}
 
-	void VulkanSwapchain::CreateSwapchain(uint32_t Width, uint32_t Height, bool bUseVSync)
+	void VulkanSwapchain::CreateSwapchain(uint32_t width, uint32_t height, bool bUseVSync)
 	{
-		SwapchainSupportDetails = QuerySwapchainSupport(VulkanRendererAPI::pDevice->GetPhysicalHandle(), VulkanRendererAPI::pDevice->GetSurface().GetHandle());
+		m_SwapchainSupportDetails = QuerySwapchainSupport(VulkanRendererAPI::s_Device->GetPhysicalHandle(), VulkanRendererAPI::s_Device->GetSurface().GetHandle());
 
 		// Check image count of swapchain
 		// If max image count is 0 then there are no limits besides memory requirements
-		uint32_t SwapchainMinImageCount = SwapchainSupportDetails.SurfaceCapabilities.minImageCount + 1;
-		if (SwapchainSupportDetails.SurfaceCapabilities.maxImageCount > 0 && SwapchainMinImageCount > SwapchainSupportDetails.SurfaceCapabilities.maxImageCount)
-			SwapchainMinImageCount = SwapchainSupportDetails.SurfaceCapabilities.maxImageCount;
+		uint32_t swapchainMinImageCount = m_SwapchainSupportDetails.SurfaceCapabilities.minImageCount + 1;
+		if (m_SwapchainSupportDetails.SurfaceCapabilities.maxImageCount > 0 && swapchainMinImageCount > m_SwapchainSupportDetails.SurfaceCapabilities.maxImageCount)
+			swapchainMinImageCount = m_SwapchainSupportDetails.SurfaceCapabilities.maxImageCount;
 
 		// Choose surface format
-		SwapchainDetails.SurfaceFormat = SwapchainSupportDetails.SurfaceFormats[0];
-		if (SwapchainSupportDetails.SurfaceFormats.size() == 1 && SwapchainSupportDetails.SurfaceFormats[0].format == VK_FORMAT_UNDEFINED)
+		m_SwapchainDetails.SurfaceFormat = m_SwapchainSupportDetails.SurfaceFormats[0];
+		if (m_SwapchainSupportDetails.SurfaceFormats.size() == 1 && m_SwapchainSupportDetails.SurfaceFormats[0].format == VK_FORMAT_UNDEFINED)
 		{
-			SwapchainDetails.SurfaceFormat = { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
+			m_SwapchainDetails.SurfaceFormat = { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
 		}
 		else
 		{
-			for (const auto& AvailableImageFormat : SwapchainSupportDetails.SurfaceFormats)
+			for (const auto& availableImageFormat : m_SwapchainSupportDetails.SurfaceFormats)
 			{
-				if (AvailableImageFormat.format == VK_FORMAT_B8G8R8A8_UNORM && AvailableImageFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+				if (availableImageFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableImageFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 				{
-					SwapchainDetails.SurfaceFormat = AvailableImageFormat;
+					m_SwapchainDetails.SurfaceFormat = availableImageFormat;
 					break;
 				}
 			}
 		}
 
 		// Choose extent
-		if (SwapchainSupportDetails.SurfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		if (m_SwapchainSupportDetails.SurfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		{
-			SwapchainDetails.Extent = SwapchainSupportDetails.SurfaceCapabilities.currentExtent;
+			m_SwapchainDetails.Extent = m_SwapchainSupportDetails.SurfaceCapabilities.currentExtent;
 		}
 		else
 		{
-			VkExtent2D ActualExtent = { static_cast<uint32_t>(Width), static_cast<uint32_t>(Height) };
-			ActualExtent.width = std::max(SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.width, std::min(SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.width, ActualExtent.width));
-			ActualExtent.height = std::max(SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.height, std::min(SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.height, ActualExtent.height));
+			VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+			actualExtent.width = std::max(m_SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.width, std::min(m_SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.width, actualExtent.width));
+			actualExtent.height = std::max(m_SwapchainSupportDetails.SurfaceCapabilities.minImageExtent.height, std::min(m_SwapchainSupportDetails.SurfaceCapabilities.maxImageExtent.height, actualExtent.height));
 
-			SwapchainDetails.Extent = ActualExtent;
+			m_SwapchainDetails.Extent = actualExtent;
 		}
 
 		// Choose present mode
-		VkPresentModeKHR PresentMode = VK_PRESENT_MODE_FIFO_KHR;
+		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
 		if (!bUseVSync)
 		{
-			for (const auto& AvailablePresentMode : SwapchainSupportDetails.PresentModes)
+			for (const auto& availablePresentMode : m_SwapchainSupportDetails.PresentModes)
 			{
-				if (AvailablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 				{
-					PresentMode = AvailablePresentMode;
+					presentMode = availablePresentMode;
 					break;
 				}
-				else if (AvailablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+				else if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
 				{
-					PresentMode = AvailablePresentMode;
+					presentMode = availablePresentMode;
 				}
 			}
 		}
 
 		// Create swapchain
-		VkSwapchainCreateInfoKHR SwapchainCreateInfoKHR = {};
-		SwapchainCreateInfoKHR.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		SwapchainCreateInfoKHR.pNext = nullptr;
-		SwapchainCreateInfoKHR.flags = 0;
-		SwapchainCreateInfoKHR.surface = VulkanRendererAPI::pDevice->GetSurface().GetHandle();
-		SwapchainCreateInfoKHR.minImageCount = SwapchainMinImageCount;
-		SwapchainCreateInfoKHR.imageFormat = SwapchainDetails.SurfaceFormat.format;
-		SwapchainCreateInfoKHR.imageColorSpace = SwapchainDetails.SurfaceFormat.colorSpace;
-		SwapchainCreateInfoKHR.imageExtent = SwapchainDetails.Extent;
-		SwapchainCreateInfoKHR.imageArrayLayers = SwapchainSupportDetails.SurfaceCapabilities.maxImageArrayLayers;
-		SwapchainCreateInfoKHR.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		SwapchainCreateInfoKHR.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		SwapchainCreateInfoKHR.queueFamilyIndexCount = 0;
-		SwapchainCreateInfoKHR.pQueueFamilyIndices = nullptr;
+		VkSwapchainCreateInfoKHR swapchainCreateInfoKHR = {};
+		swapchainCreateInfoKHR.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		swapchainCreateInfoKHR.pNext = nullptr;
+		swapchainCreateInfoKHR.flags = 0;
+		swapchainCreateInfoKHR.surface = VulkanRendererAPI::s_Device->GetSurface().GetHandle();
+		swapchainCreateInfoKHR.minImageCount = swapchainMinImageCount;
+		swapchainCreateInfoKHR.imageFormat = m_SwapchainDetails.SurfaceFormat.format;
+		swapchainCreateInfoKHR.imageColorSpace = m_SwapchainDetails.SurfaceFormat.colorSpace;
+		swapchainCreateInfoKHR.imageExtent = m_SwapchainDetails.Extent;
+		swapchainCreateInfoKHR.imageArrayLayers = m_SwapchainSupportDetails.SurfaceCapabilities.maxImageArrayLayers;
+		swapchainCreateInfoKHR.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		swapchainCreateInfoKHR.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		swapchainCreateInfoKHR.queueFamilyIndexCount = 0;
+		swapchainCreateInfoKHR.pQueueFamilyIndices = nullptr;
 
 		// Prefer non rotated transforms
-		if (SwapchainSupportDetails.SurfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
-			SwapchainCreateInfoKHR.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+		if (m_SwapchainSupportDetails.SurfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+			swapchainCreateInfoKHR.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 		else
-			SwapchainCreateInfoKHR.preTransform = SwapchainSupportDetails.SurfaceCapabilities.currentTransform;
+			swapchainCreateInfoKHR.preTransform = m_SwapchainSupportDetails.SurfaceCapabilities.currentTransform;
 
 		// Find a composite alpha to use as not all devices support alpha opaque
-		SwapchainCreateInfoKHR.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		std::vector<VkCompositeAlphaFlagBitsKHR> CompositeAlphaFlags = {
+		swapchainCreateInfoKHR.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		std::vector<VkCompositeAlphaFlagBitsKHR> compositeAlphaFlags = {
 			VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 			VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
 			VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
 			VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
 		};
-		for (auto& CompositeAlpha : CompositeAlphaFlags)
+		for (auto& compositeAlpha : compositeAlphaFlags)
 		{
 			// Select the first one that is supported
-			if (SwapchainSupportDetails.SurfaceCapabilities.supportedCompositeAlpha & CompositeAlpha)
+			if (m_SwapchainSupportDetails.SurfaceCapabilities.supportedCompositeAlpha & compositeAlpha)
 			{
-				SwapchainCreateInfoKHR.compositeAlpha = CompositeAlpha;
+				swapchainCreateInfoKHR.compositeAlpha = compositeAlpha;
 				break;
 			}
 		}
 
-		SwapchainCreateInfoKHR.presentMode = PresentMode;
-		SwapchainCreateInfoKHR.clipped = VK_TRUE;
-		SwapchainCreateInfoKHR.oldSwapchain = VK_NULL_HANDLE;
+		swapchainCreateInfoKHR.presentMode = presentMode;
+		swapchainCreateInfoKHR.clipped = VK_TRUE;
+		swapchainCreateInfoKHR.oldSwapchain = VK_NULL_HANDLE;
 
-		VkDevice device = VulkanRendererAPI::pDevice->GetInstanceHandle();
-		VK_ASSERT(vkCreateSwapchainKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), &SwapchainCreateInfoKHR, nullptr, &Swapchain));
+		VkDevice device = VulkanRendererAPI::s_Device->GetInstanceHandle();
+		VK_ASSERT(vkCreateSwapchainKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), &swapchainCreateInfoKHR, nullptr, &m_Swapchain));
 
 		// Get images from the created swapchain
-		uint32_t SwapchainImageCount;
-		vkGetSwapchainImagesKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, &SwapchainImageCount, nullptr);
-		SwapchainImages.resize(SwapchainImageCount);
-		vkGetSwapchainImagesKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, &SwapchainImageCount, SwapchainImages.data());
+		uint32_t swapchainImageCount;
+		vkGetSwapchainImagesKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Swapchain, &swapchainImageCount, nullptr);
+		m_SwapchainImages.resize(swapchainImageCount);
+		vkGetSwapchainImagesKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Swapchain, &swapchainImageCount, m_SwapchainImages.data());
 
 		// Create image views
-		SwapchainImageViews.reserve(SwapchainImages.size());
-		for (size_t i = 0; i < SwapchainImages.size(); ++i)
+		m_SwapchainImageViews.reserve(m_SwapchainImages.size());
+		for (size_t i = 0; i < m_SwapchainImages.size(); ++i)
 		{
-			SwapchainImageViews.push_back(VulkanImageView());
-			SwapchainImageViews[i].CreateImageView(SwapchainImages[i], SwapchainDetails.SurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
+			m_SwapchainImageViews.push_back(VulkanImageView());
+			m_SwapchainImageViews[i].CreateImageView(m_SwapchainImages[i], m_SwapchainDetails.SurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 	}
 
 	void VulkanSwapchain::Destroy()
 	{
-		if (!SwapchainImageViews.empty())
+		if (!m_SwapchainImageViews.empty())
 		{
-			for (auto& ImageView : SwapchainImageViews)
+			for (auto& imageView : m_SwapchainImageViews)
 			{
-				ImageView.Destroy();
+				imageView.Destroy();
 			}
-			SwapchainImageViews.clear();
+			m_SwapchainImageViews.clear();
 		}
 
-		if (Swapchain != VK_NULL_HANDLE)
+		if (m_Swapchain != VK_NULL_HANDLE)
 		{
-			vkDestroySwapchainKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, nullptr);
-			Swapchain = VK_NULL_HANDLE;
+			vkDestroySwapchainKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Swapchain, nullptr);
+			m_Swapchain = VK_NULL_HANDLE;
 		}
 	}
 
-	VulkanSwapchain::SSwapchainSupportDetails VulkanSwapchain::QuerySwapchainSupport(VkPhysicalDevice Device, VkSurfaceKHR SurfaceKHR)
+	VulkanSwapchain::SSwapchainSupportDetails VulkanSwapchain::QuerySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surfaceKHR)
 	{
-		SSwapchainSupportDetails SupportDetails = {};
+		SSwapchainSupportDetails supportDetails = {};
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Device, SurfaceKHR, &SupportDetails.SurfaceCapabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surfaceKHR, &supportDetails.SurfaceCapabilities);
 
-		uint32_t SurfaceFormatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(Device, SurfaceKHR, &SurfaceFormatCount, nullptr);
-		SupportDetails.SurfaceFormats.resize(SurfaceFormatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(Device, SurfaceKHR, &SurfaceFormatCount, SupportDetails.SurfaceFormats.data());
+		uint32_t surfaceFormatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceKHR, &surfaceFormatCount, nullptr);
+		supportDetails.SurfaceFormats.resize(surfaceFormatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceKHR, &surfaceFormatCount, supportDetails.SurfaceFormats.data());
 
-		uint32_t PresentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(Device, SurfaceKHR, &PresentModeCount, nullptr);
-		SupportDetails.PresentModes.resize(PresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(Device, SurfaceKHR, &PresentModeCount, SupportDetails.PresentModes.data());
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceKHR, &presentModeCount, nullptr);
+		supportDetails.PresentModes.resize(presentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceKHR, &presentModeCount, supportDetails.PresentModes.data());
 
-		return SupportDetails;
+		return supportDetails;
 	}
 
-	VkResult VulkanSwapchain::AcquireNextImage(const VkSemaphore WaitSemaphore)
+	VkResult VulkanSwapchain::AcquireNextImage(const VkSemaphore waitSemaphore)
 	{
-		return vkAcquireNextImageKHR(VulkanRendererAPI::pDevice->GetInstanceHandle(), Swapchain, std::numeric_limits<uint64_t>::max(), WaitSemaphore, VK_NULL_HANDLE, &ActiveImageIndex);
+		return vkAcquireNextImageKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Swapchain, std::numeric_limits<uint64_t>::max(), waitSemaphore, VK_NULL_HANDLE, &m_ActiveImageIndex);
 	}
 
 }

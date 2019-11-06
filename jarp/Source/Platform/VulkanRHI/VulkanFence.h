@@ -13,11 +13,11 @@ namespace jarp {
 		void CreateFence();
 		void Destroy();
 
-		inline const VkFence GetHandle() const { return Fence; }
-		inline const VkFence* GetHandlePointer() const { return &Fence; }
+		inline const VkFence GetHandle() const { return m_Fence; }
+		inline const VkFence* GetHandlePointer() const { return &m_Fence; }
 
 	private:
-		VkFence Fence;
+		VkFence m_Fence;
 	};
 
 }

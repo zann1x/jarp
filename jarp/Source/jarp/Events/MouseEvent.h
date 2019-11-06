@@ -7,23 +7,23 @@ namespace jarp {
 	class MouseButtonEvent : public Event
 	{
 	public:
-		inline int GetMouseButton() const { return MouseButton; }
+		inline int GetMouseButton() const { return m_MouseButton; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse | EventCategoryMouseButton)
 
 	protected:
-		MouseButtonEvent(int Button)
-			: MouseButton(Button) { }
+		MouseButtonEvent(int button)
+			: m_MouseButton(button) { }
 
 	private:
-		int MouseButton;
+		int m_MouseButton;
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int Button)
-			: MouseButtonEvent(Button) { }
+		MouseButtonPressedEvent(int button)
+			: MouseButtonEvent(button) { }
 
 		EVENT_CLASS_TYPE(EventTypeMouseButtonPressed)
 	};
@@ -31,8 +31,8 @@ namespace jarp {
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(int Button)
-			: MouseButtonEvent(Button) { }
+		MouseButtonReleasedEvent(int button)
+			: MouseButtonEvent(button) { }
 
 		EVENT_CLASS_TYPE(EventTypeMouseButtonReleased)
 	};
@@ -40,18 +40,18 @@ namespace jarp {
 	class MouseMovedEvent : public Event
 	{
 	public:
-		MouseMovedEvent(int XPos, int YPos)
-			: MouseX(XPos), MouseY(YPos) { }
+		MouseMovedEvent(int x, int y)
+			: m_MouseX(x), m_MouseY(y) { }
 
-		inline int GetXPos() const { return MouseX; }
-		inline int GetYPos() const { return MouseY; }
+		inline int GetXPos() const { return m_MouseX; }
+		inline int GetYPos() const { return m_MouseY; }
 
 		EVENT_CLASS_TYPE(EventTypeMouseMoved)
 		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse)
 
 	private:
-		int MouseX;
-		int MouseY;
+		int m_MouseX;
+		int m_MouseY;
 	};
 
 }

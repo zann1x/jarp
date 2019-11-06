@@ -8,7 +8,7 @@
 namespace jarp {
 
 	VulkanCommandPool::VulkanCommandPool()
-		: CommandPool(VK_NULL_HANDLE)
+		: commandPool(VK_NULL_HANDLE)
 	{
 	}
 
@@ -16,21 +16,21 @@ namespace jarp {
 	{
 	}
 
-	void VulkanCommandPool::CreateCommandPool(const VkCommandPoolCreateFlags Flags)
+	void VulkanCommandPool::CreateCommandPool(const VkCommandPoolCreateFlags flags)
 	{
-		VkCommandPoolCreateInfo CommandPoolCreateInfo = {};
-		CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		CommandPoolCreateInfo.pNext = nullptr;
-		CommandPoolCreateInfo.flags = Flags;
-		CommandPoolCreateInfo.queueFamilyIndex = VulkanRendererAPI::pDevice->GetGraphicsQueue().GetFamilyIndex();
+		VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfo.pNext = nullptr;
+		commandPoolCreateInfo.flags = flags;
+		commandPoolCreateInfo.queueFamilyIndex = VulkanRendererAPI::s_Device->GetGraphicsQueue().GetFamilyIndex();
 
-		VK_ASSERT(vkCreateCommandPool(VulkanRendererAPI::pDevice->GetInstanceHandle(), &CommandPoolCreateInfo, nullptr, &CommandPool));
+		VK_ASSERT(vkCreateCommandPool(VulkanRendererAPI::s_Device->GetInstanceHandle(), &commandPoolCreateInfo, nullptr, &commandPool));
 	}
 
 	void VulkanCommandPool::Destroy()
 	{
 		// Also frees all command buffers created from this pool
-		vkDestroyCommandPool(VulkanRendererAPI::pDevice->GetInstanceHandle(), CommandPool, nullptr);
+		vkDestroyCommandPool(VulkanRendererAPI::s_Device->GetInstanceHandle(), commandPool, nullptr);
 	}
 
 }

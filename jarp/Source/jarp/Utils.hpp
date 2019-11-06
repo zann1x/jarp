@@ -1,27 +1,27 @@
-#include "jarppch.h"
-
 #include <fstream>
+#include <string>
+#include <vector>
 
 namespace jarp {
 
 	class Utils
 	{
 	public:
-		static std::vector<char> ReadFile(const std::string& Filename)
+		static std::vector<char> ReadFile(const std::string& filename)
 		{
-			std::ifstream File(Filename.c_str(), std::ios::binary | std::ios::ate);
-			if (!File.is_open())
+			std::ifstream file(filename.c_str(), std::ios::binary | std::ios::ate);
+			if (!file.is_open())
 			{
 				throw std::runtime_error("Failed to open file!");
 			}
-			std::streampos Size = File.tellg();
-			std::vector<char> Buffer(Size);
+			std::streampos size = file.tellg();
+			std::vector<char> buffer(size);
 
-			File.seekg(0);
-			File.read(Buffer.data(), Size);
-			File.close();
+			file.seekg(0);
+			file.read(buffer.data(), size);
+			file.close();
 
-			return Buffer;
+			return buffer;
 		}
 	};
 

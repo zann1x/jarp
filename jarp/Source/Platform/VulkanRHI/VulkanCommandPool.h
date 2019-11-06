@@ -10,13 +10,13 @@ namespace jarp {
 		VulkanCommandPool();
 		~VulkanCommandPool();
 
-		void CreateCommandPool(const VkCommandPoolCreateFlags Flags = 0);
+		void CreateCommandPool(const VkCommandPoolCreateFlags flags = 0);
 		void Destroy();
 
-		inline VkCommandPool GetHandle() { return CommandPool; };
+		inline VkCommandPool GetHandle() const { return commandPool; };
 
 	private:
-		VkCommandPool CommandPool;
+		VkCommandPool commandPool;
 	};
 
 }

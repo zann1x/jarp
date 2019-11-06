@@ -7,7 +7,7 @@ namespace jarp {
 	class EventListener
 	{
 	public:
-		virtual void OnEvent(Event& E) = 0;
+		virtual void OnEvent(Event& event) = 0;
 	};
 
 }

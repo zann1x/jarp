@@ -13,12 +13,12 @@ namespace jarp {
 		VulkanDescriptorSet();
 		~VulkanDescriptorSet();
 
-		void CreateDescriptorSets(const VulkanDescriptorSetLayout& DescriptorSetLayout, const VulkanDescriptorPool& DescriptorPool, const size_t Amount, const VkDeviceSize Size, const std::vector<VkBuffer>& Buffers, VkSampler Sampler, VkImageView ImageView);
+		void CreateDescriptorSets(const VulkanDescriptorSetLayout& descriptorSetLayout, const VulkanDescriptorPool& descriptorPool, const size_t amount, const VkDeviceSize size, const std::vector<VkBuffer>& buffers, VkSampler sampler, VkImageView imageView);
 
-		inline const VkDescriptorSet& At(size_t Index) const { return DescriptorSets[Index]; }
+		inline const VkDescriptorSet& At(size_t index) const { return m_DescriptorSets[index]; }
 
 	private:
-		std::vector<VkDescriptorSet> DescriptorSets;
+		std::vector<VkDescriptorSet> m_DescriptorSets;
 	};
 
 }

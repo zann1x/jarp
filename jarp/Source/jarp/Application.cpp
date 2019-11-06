@@ -1,23 +1,25 @@
 #include "jarppch.h"
+
 #include "Application.h"
 
-#include "Time.h"
-
+#include "jarp/Core.h"
+#include "jarp/Time.h"
+#include "jarp/Window.h"
 #include "jarp/Events/ApplicationEvent.h"
 #include "Platform/VulkanRHI/TempVulkanApplication.h"
 
 namespace jarp {
 
-	Application* Application::Instance = nullptr;
+	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
 	{
-		JARP_CORE_ASSERT(!Instance, "Application instance already exists!");
-		Instance = this;
+		JARP_CORE_ASSERT(!s_Instance, "Application instance already exists!");
+		s_Instance = this;
 
 		Log::Init();
 
-		pWindow = std::unique_ptr<Window>(Window::Create());
+		m_Window = std::unique_ptr<Window>(Window::Create());
 
 		EventBus::Get().Register(EventTypeWindowClosed, this);
 	}
@@ -29,54 +31,54 @@ namespace jarp {
 
 	void Application::Run()
 	{
-		bIsRunning = true;
+		m_bIsRunning = true;
 
-		auto CurrentFPSTime = Time::GetTicks();
-		auto LastFPSTime = CurrentFPSTime;
-		uint32_t FPSCount = 0;
+		auto currentFPSTime = Time::GetTicks();
+		auto lastFPSTime = currentFPSTime;
+		uint32_t frames = 0;
 
-		auto CurrentFrameTime = Time::GetTicks();
-		auto LastFrameTime = CurrentFrameTime;
-		uint32_t DeltaFrameTime;
+		auto currentFrameTime = Time::GetTicks();
+		auto lastFrameTime = currentFrameTime;
+		uint32_t deltaFrameTime;
 
 		TempVulkanApplication Renderer;
 		Renderer.StartVulkan();
 
-		while (bIsRunning)
+		while (m_bIsRunning)
 		{
 			// Calculate frames per second
-			CurrentFPSTime = Time::GetTicks();
-			++FPSCount;
-			if (CurrentFPSTime > LastFPSTime + 1000)
+			currentFPSTime = Time::GetTicks();
+			++frames;
+			if (currentFPSTime > lastFPSTime + 1000)
 			{
-				JARP_CORE_TRACE("{0} fps", FPSCount);
-				LastFPSTime = CurrentFPSTime;
-				FPSCount = 0;
+				JARP_CORE_TRACE("{0} fps", frames);
+				lastFPSTime = currentFPSTime;
+				frames = 0;
 			}
 
 			// Calculate frame time for correct timestep at drawing, input etc.
-			CurrentFrameTime = Time::GetTicks();
-			DeltaFrameTime = CurrentFrameTime - LastFrameTime;
-			LastFrameTime = CurrentFrameTime;
+			currentFrameTime = Time::GetTicks();
+			deltaFrameTime = currentFrameTime - lastFrameTime;
+			lastFrameTime = currentFrameTime;
 
 			// Update everything
-			Renderer.Render(DeltaFrameTime);
-			pWindow->Update(DeltaFrameTime);
+			Renderer.Render(deltaFrameTime);
+			m_Window->Update(deltaFrameTime);
 		}
 
 		Renderer.ShutdownVulkan();
 	}
 
-	void Application::OnEvent(Event& E)
+	void Application::OnEvent(Event& event)
 	{
-		JARP_CORE_TRACE("On event (application): {0}", E.GetName());
+		JARP_CORE_TRACE("On event (application): {0}", event.GetName());
 
-		switch (E.GetEventType())
+		switch (event.GetEventType())
 		{
 			case EventTypeWindowClosed:
 			{
-				bIsRunning = false;
-				E.bIsHandled = true;
+				m_bIsRunning = false;
+				event.m_bIsHandled = true;
 				break;
 			}
 		}

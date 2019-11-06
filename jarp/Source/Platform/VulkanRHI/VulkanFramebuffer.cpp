@@ -7,8 +7,8 @@
 
 namespace jarp {
 
-	VulkanFramebuffer::VulkanFramebuffer(VulkanRenderPass& RenderPass)
-		: RenderPass(RenderPass), Framebuffer(VK_NULL_HANDLE)
+	VulkanFramebuffer::VulkanFramebuffer(VulkanRenderPass& renderPass)
+		: m_RenderPass(renderPass), m_Framebuffer(VK_NULL_HANDLE)
 	{
 	}
 
@@ -16,25 +16,25 @@ namespace jarp {
 	{
 	}
 
-	void VulkanFramebuffer::CreateFramebuffer(const std::vector<VkImageView> Attachments, const VkExtent2D& Extent)
+	void VulkanFramebuffer::CreateFramebuffer(const std::vector<VkImageView> attachments, const VkExtent2D& extent)
 	{
-		VkFramebufferCreateInfo FramebufferCreateInfo = {};
-		FramebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		FramebufferCreateInfo.pNext = nullptr;
-		FramebufferCreateInfo.flags = 0;
-		FramebufferCreateInfo.renderPass = RenderPass.GetHandle();
-		FramebufferCreateInfo.attachmentCount = static_cast<uint32_t>(Attachments.size());
-		FramebufferCreateInfo.pAttachments = Attachments.data();
-		FramebufferCreateInfo.width = Extent.width;
-		FramebufferCreateInfo.height = Extent.height;
-		FramebufferCreateInfo.layers = 1;
+		VkFramebufferCreateInfo framebufferCreateInfo = {};
+		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferCreateInfo.pNext = nullptr;
+		framebufferCreateInfo.flags = 0;
+		framebufferCreateInfo.renderPass = m_RenderPass.GetHandle();
+		framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferCreateInfo.pAttachments = attachments.data();
+		framebufferCreateInfo.width = extent.width;
+		framebufferCreateInfo.height = extent.height;
+		framebufferCreateInfo.layers = 1;
 
-		VK_ASSERT(vkCreateFramebuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), &FramebufferCreateInfo, nullptr, &Framebuffer));
+		VK_ASSERT(vkCreateFramebuffer(VulkanRendererAPI::s_Device->GetInstanceHandle(), &framebufferCreateInfo, nullptr, &m_Framebuffer));
 	}
 
 	void VulkanFramebuffer::Destroy()
 	{
-		vkDestroyFramebuffer(VulkanRendererAPI::pDevice->GetInstanceHandle(), Framebuffer, nullptr);
+		vkDestroyFramebuffer(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Framebuffer, nullptr);
 	}
 
 }

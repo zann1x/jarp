@@ -10,13 +10,13 @@ namespace jarp {
 		VulkanImageView();
 		~VulkanImageView();
 
-		void CreateImageView(VkImage Image, VkFormat Format, VkImageAspectFlags ImageAspectFlags);
+		void CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags imageAspectFlags);
 		void Destroy();
 
-		inline const VkImageView GetHandle() const { return ImageView; }
+		inline const VkImageView GetHandle() const { return m_ImageView; }
 
 	private:
-		VkImageView ImageView;
+		VkImageView m_ImageView;
 	};
 
 }

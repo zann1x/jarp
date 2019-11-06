@@ -28,18 +28,18 @@ namespace jarp {
 	class WindowResizedEvent : public Event
 	{
 	public:
-		WindowResizedEvent(int Width, int Height)
-			: Width(Width), Height(Height) { }
+		WindowResizedEvent(int width, int height)
+			: m_Width(width), m_Height(height) { }
 
-		inline int GetWidth() const { return Width; }
-		inline int GetHeight() const { return Height; }
+		inline int GetWidth() const { return m_Width; }
+		inline int GetHeight() const { return m_Height; }
 
 		EVENT_CLASS_TYPE(EventTypeWindowResized)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
 	private:
-		int Width;
-		int Height;
+		int m_Width;
+		int m_Height;
 	};
 
 }

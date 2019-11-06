@@ -16,57 +16,57 @@ namespace jarp {
 	{
 	}
 
-	void VulkanDescriptorSet::CreateDescriptorSets(const VulkanDescriptorSetLayout& DescriptorSetLayout, const VulkanDescriptorPool& DescriptorPool, const size_t Amount, const VkDeviceSize Size, const std::vector<VkBuffer>& Buffers, VkSampler Sampler, VkImageView ImageView)
+	void VulkanDescriptorSet::CreateDescriptorSets(const VulkanDescriptorSetLayout& descriptorSetLayout, const VulkanDescriptorPool& descriptorPool, const size_t amount, const VkDeviceSize size, const std::vector<VkBuffer>& buffers, VkSampler sampler, VkImageView imageView)
 	{
-		std::vector<VkDescriptorSetLayout> DescriptorSetLayouts(Amount, DescriptorSetLayout.GetHandle());
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts(amount, descriptorSetLayout.GetHandle());
 
-		VkDescriptorSetAllocateInfo DescriptorSetAllocateInfo = {};
-		DescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		DescriptorSetAllocateInfo.pNext = nullptr;
-		DescriptorSetAllocateInfo.descriptorPool = DescriptorPool.GetHandle();
-		DescriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(DescriptorSetLayouts.size());
-		DescriptorSetAllocateInfo.pSetLayouts = DescriptorSetLayouts.data();
+		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+		descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descriptorSetAllocateInfo.pNext = nullptr;
+		descriptorSetAllocateInfo.descriptorPool = descriptorPool.GetHandle();
+		descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+		descriptorSetAllocateInfo.pSetLayouts = descriptorSetLayouts.data();
 
-		DescriptorSets.resize(Amount);
-		VK_ASSERT(vkAllocateDescriptorSets(VulkanRendererAPI::pDevice->GetInstanceHandle(), &DescriptorSetAllocateInfo, DescriptorSets.data()));
+		m_DescriptorSets.resize(amount);
+		VK_ASSERT(vkAllocateDescriptorSets(VulkanRendererAPI::s_Device->GetInstanceHandle(), &descriptorSetAllocateInfo, m_DescriptorSets.data()));
 
-		for (size_t i = 0; i < Amount; ++i)
+		for (size_t i = 0; i < amount; ++i)
 		{
-			VkDescriptorBufferInfo DescriptorBufferInfo = {};
-			DescriptorBufferInfo.buffer = Buffers[i];
-			DescriptorBufferInfo.offset = 0;
-			DescriptorBufferInfo.range = Size;
+			VkDescriptorBufferInfo descriptorBufferInfo = {};
+			descriptorBufferInfo.buffer = buffers[i];
+			descriptorBufferInfo.offset = 0;
+			descriptorBufferInfo.range = size;
 
-			VkDescriptorImageInfo DescriptorImageInfo = {};
-			DescriptorImageInfo.sampler = Sampler;
-			DescriptorImageInfo.imageView = ImageView;
-			DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			VkDescriptorImageInfo descriptorImageInfo = {};
+			descriptorImageInfo.sampler = sampler;
+			descriptorImageInfo.imageView = imageView;
+			descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			std::array<VkWriteDescriptorSet, 2> WriteDescriptorSets;
-			WriteDescriptorSets[0] = {};
-			WriteDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			WriteDescriptorSets[0].pNext = nullptr;
-			WriteDescriptorSets[0].dstSet = DescriptorSets[i];
-			WriteDescriptorSets[0].dstBinding = 0;
-			WriteDescriptorSets[0].dstArrayElement = 0;
-			WriteDescriptorSets[0].descriptorCount = 1;
-			WriteDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			WriteDescriptorSets[0].pImageInfo = nullptr;
-			WriteDescriptorSets[0].pBufferInfo = &DescriptorBufferInfo;
-			WriteDescriptorSets[0].pTexelBufferView = nullptr;
-			WriteDescriptorSets[1] = {};
-			WriteDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			WriteDescriptorSets[1].pNext = nullptr;
-			WriteDescriptorSets[1].dstSet = DescriptorSets[i];
-			WriteDescriptorSets[1].dstBinding = 1;
-			WriteDescriptorSets[1].dstArrayElement = 0;
-			WriteDescriptorSets[1].descriptorCount = 1;
-			WriteDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			WriteDescriptorSets[1].pImageInfo = &DescriptorImageInfo;
-			WriteDescriptorSets[1].pBufferInfo = nullptr;
-			WriteDescriptorSets[1].pTexelBufferView = nullptr;
+			std::array<VkWriteDescriptorSet, 2> writeDescriptorSets;
+			writeDescriptorSets[0] = {};
+			writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSets[0].pNext = nullptr;
+			writeDescriptorSets[0].dstSet = m_DescriptorSets[i];
+			writeDescriptorSets[0].dstBinding = 0;
+			writeDescriptorSets[0].dstArrayElement = 0;
+			writeDescriptorSets[0].descriptorCount = 1;
+			writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSets[0].pImageInfo = nullptr;
+			writeDescriptorSets[0].pBufferInfo = &descriptorBufferInfo;
+			writeDescriptorSets[0].pTexelBufferView = nullptr;
+			writeDescriptorSets[1] = {};
+			writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSets[1].pNext = nullptr;
+			writeDescriptorSets[1].dstSet = m_DescriptorSets[i];
+			writeDescriptorSets[1].dstBinding = 1;
+			writeDescriptorSets[1].dstArrayElement = 0;
+			writeDescriptorSets[1].descriptorCount = 1;
+			writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSets[1].pImageInfo = &descriptorImageInfo;
+			writeDescriptorSets[1].pBufferInfo = nullptr;
+			writeDescriptorSets[1].pTexelBufferView = nullptr;
 
-			vkUpdateDescriptorSets(VulkanRendererAPI::pDevice->GetInstanceHandle(), static_cast<uint32_t>(WriteDescriptorSets.size()), WriteDescriptorSets.data(), 0, nullptr);
+			vkUpdateDescriptorSets(VulkanRendererAPI::s_Device->GetInstanceHandle(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 		}
 	}
 

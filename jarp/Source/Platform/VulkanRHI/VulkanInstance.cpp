@@ -7,7 +7,7 @@
 namespace jarp {
 
 	VulkanInstance::VulkanInstance()
-		: Instance{ VK_NULL_HANDLE }
+		: m_Instance{ VK_NULL_HANDLE }
 	{
 		VK_ASSERT(volkInitialize());
 	}
@@ -19,75 +19,75 @@ namespace jarp {
 	void VulkanInstance::CreateInstance()
 	{
 		// Get the required extensions from the displaying window
-		//InstanceExtensions = Window.GetInstanceExtensions();
+		//m_InstanceExtensions = Window.GetInstanceExtensions();
 #if defined(JARP_PLATFORM_WINDOWS)
-		InstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-		InstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+		m_InstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+		m_InstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #endif
 #if defined(_DEBUG)
-		InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		m_InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
 		// Check layer support
-		uint32_t LayerPropertyCount;
-		vkEnumerateInstanceLayerProperties(&LayerPropertyCount, nullptr);
-		std::vector<VkLayerProperties> LayerProperties(LayerPropertyCount);
-		vkEnumerateInstanceLayerProperties(&LayerPropertyCount, LayerProperties.data());
+		uint32_t layerPropertyCount;
+		vkEnumerateInstanceLayerProperties(&layerPropertyCount, nullptr);
+		std::vector<VkLayerProperties> layerProperties(layerPropertyCount);
+		vkEnumerateInstanceLayerProperties(&layerPropertyCount, layerProperties.data());
 
-		for (const char* LayerName : InstanceLayers)
+		for (const char* layerName : m_InstanceLayers)
 		{
-			bool LayerFound = false;
-			for (const auto& LayerProperty : LayerProperties)
+			bool bLayerFound = false;
+			for (const auto& layerProperty : layerProperties)
 			{
-				if (strcmp(LayerName, LayerProperty.layerName) == 0)
+				if (strcmp(layerName, layerProperty.layerName) == 0)
 				{
-					LayerFound = true;
+					bLayerFound = true;
 					break;
 				}
 			}
-			if (!LayerFound)
+			if (!bLayerFound)
 				throw std::runtime_error("Not all layers supported!");
 		}
 
 		// Create instance
-		VkApplicationInfo AppInfo = {};
-		AppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		AppInfo.pNext = nullptr;
-		AppInfo.pApplicationName = nullptr;
-		AppInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
-		AppInfo.pEngineName = "JARP";
-		AppInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-		AppInfo.apiVersion = VK_API_VERSION_1_1; // TODO: check for availability of that version
+		VkApplicationInfo appInfo = {};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pNext = nullptr;
+		appInfo.pApplicationName = nullptr;
+		appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
+		appInfo.pEngineName = "JARP";
+		appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
+		appInfo.apiVersion = VK_API_VERSION_1_1; // TODO: check for availability of that version
 
-		VkInstanceCreateInfo InstInfo = {};
-		InstInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		InstInfo.pNext = nullptr;
-		InstInfo.flags = 0;
-		InstInfo.pApplicationInfo = &AppInfo;
-		InstInfo.enabledExtensionCount = static_cast<uint32_t>(InstanceExtensions.size());
-		InstInfo.ppEnabledExtensionNames = InstanceExtensions.data();
+		VkInstanceCreateInfo instInfo = {};
+		instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		instInfo.pNext = nullptr;
+		instInfo.flags = 0;
+		instInfo.pApplicationInfo = &appInfo;
+		instInfo.enabledExtensionCount = static_cast<uint32_t>(m_InstanceExtensions.size());
+		instInfo.ppEnabledExtensionNames = m_InstanceExtensions.data();
 #if defined(_DEBUG)
 		for (auto& LayerName : VulkanDebug::ValidationLayers)
-			InstanceLayers.push_back(LayerName);
+			m_InstanceLayers.push_back(LayerName);
 #endif
-		InstInfo.enabledLayerCount = static_cast<uint32_t>(InstanceLayers.size());
-		InstInfo.ppEnabledLayerNames = InstanceLayers.data();
+		instInfo.enabledLayerCount = static_cast<uint32_t>(m_InstanceLayers.size());
+		instInfo.ppEnabledLayerNames = m_InstanceLayers.data();
 
-		VK_ASSERT(vkCreateInstance(&InstInfo, nullptr, &Instance));
+		VK_ASSERT(vkCreateInstance(&instInfo, nullptr, &m_Instance));
 
-		volkLoadInstance(Instance);
+		volkLoadInstance(m_Instance);
 
 #if defined(_DEBUG)
-		VulkanDebug::SetupDebugCallback(Instance);
+		VulkanDebug::SetupDebugCallback(m_Instance);
 #endif
 	}
 
 	void VulkanInstance::Destroy()
 	{
 #if defined(_DEBUG)
-		VulkanDebug::DestroyDebugCallback(Instance);
+		VulkanDebug::DestroyDebugCallback(m_Instance);
 #endif
-		vkDestroyInstance(Instance, nullptr);
+		vkDestroyInstance(m_Instance, nullptr);
 	}
 
 }

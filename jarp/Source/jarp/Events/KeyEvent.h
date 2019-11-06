@@ -7,23 +7,23 @@ namespace jarp {
 	class KeyEvent : public Event
 	{
 	public:
-		inline int GetKeycode() const { return Keycode; }
+		inline int GetKeycode() const { return m_Keycode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyboard)
 
 	protected:
-		KeyEvent(int Keycode)
-			: Keycode(Keycode) { }
+		KeyEvent(int keycode)
+			: m_Keycode(keycode) { }
 
 	private:
-		int Keycode;
+		int m_Keycode;
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int Keycode)
-			: KeyEvent(Keycode) { }
+		KeyPressedEvent(int keycode)
+			: KeyEvent(keycode) { }
 
 		EVENT_CLASS_TYPE(EventTypeKeyPressed)
 	};
@@ -31,8 +31,8 @@ namespace jarp {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int Keycode)
-			: KeyEvent(Keycode) { }
+		KeyReleasedEvent(int keycode)
+			: KeyEvent(keycode) { }
 
 		EVENT_CLASS_TYPE(EventTypeKeyReleased)
 	};
