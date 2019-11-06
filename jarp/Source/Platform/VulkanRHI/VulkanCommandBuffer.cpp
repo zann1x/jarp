@@ -8,9 +8,10 @@
 
 namespace jarp {
 
-	VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandPool& commandPool)
+	VulkanCommandBuffer::VulkanCommandBuffer(const std::shared_ptr<VulkanCommandPool>& commandPool)
 		: m_CommandPool(commandPool), m_CommandBuffer(VK_NULL_HANDLE)
 	{
+		CreateCommandBuffer();
 	}
 
 	VulkanCommandBuffer::~VulkanCommandBuffer()
@@ -22,7 +23,7 @@ namespace jarp {
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.pNext = nullptr;
-		commandBufferAllocateInfo.commandPool = m_CommandPool.GetHandle();
+		commandBufferAllocateInfo.commandPool = m_CommandPool->GetHandle();
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		commandBufferAllocateInfo.commandBufferCount = 1;
 
@@ -31,7 +32,7 @@ namespace jarp {
 
 	void VulkanCommandBuffer::Destroy()
 	{
-		vkFreeCommandBuffers(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_CommandPool.GetHandle(), 1, &m_CommandBuffer);
+		vkFreeCommandBuffers(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_CommandPool->GetHandle(), 1, &m_CommandBuffer);
 	}
 
 	void VulkanCommandBuffer::BeginOneTimeSubmitCommand()

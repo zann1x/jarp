@@ -1,15 +1,16 @@
 #pragma once
 
+#include "jarp/Renderer/CommandBuffer.h"
+#include "Platform/VulkanRHI/VulkanCommandPool.h"
+
 #include <volk.h>
 
 namespace jarp {
 
-	class VulkanCommandPool;
-
-	class VulkanCommandBuffer
+	class VulkanCommandBuffer : public CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(VulkanCommandPool& commandPool);
+		VulkanCommandBuffer(const std::shared_ptr<VulkanCommandPool>& commandPool);
 		~VulkanCommandBuffer();
 
 		void CreateCommandBuffer();
@@ -23,7 +24,7 @@ namespace jarp {
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	private:
-		VulkanCommandPool& m_CommandPool;
+		std::shared_ptr<VulkanCommandPool> m_CommandPool;
 
 		VkCommandBuffer m_CommandBuffer;
 	};

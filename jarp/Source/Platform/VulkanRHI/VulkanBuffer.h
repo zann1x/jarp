@@ -5,6 +5,9 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanRendererAPI.h"
 
+#include "jarp/Renderer/IndexBuffer.h"
+#include "jarp/Renderer/VertexBuffer.h"
+
 namespace jarp {
 
 	class VulkanBuffer
@@ -20,19 +23,7 @@ namespace jarp {
 		inline const VkBuffer& GetHandle() const { return m_Buffer; }
 		inline const VkDeviceMemory& GetMemoryHandle() const { return m_BufferMemory; }
 
-		template <typename T>
-		void UploadBuffer(VulkanCommandBuffer& commandBuffer, const std::vector<T>& data)
-		{
-			VulkanBuffer stagingBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-			stagingBuffer.CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-			void* rawData;
-			vkMapMemory(VulkanRendererAPI::s_Device->GetInstanceHandle(), stagingBuffer.GetMemoryHandle(), 0, m_Size, 0, &rawData);
-			memcpy(rawData, data.data(), static_cast<size_t>(m_Size));
-			vkUnmapMemory(VulkanRendererAPI::s_Device->GetInstanceHandle(), stagingBuffer.GetMemoryHandle());
-
-			commandBuffer.CopyBuffer(stagingBuffer.GetHandle(), m_Buffer, m_Size);
-		}
+		void UploadBuffer(VulkanCommandBuffer& commandBuffer, const void* data);
 
 	private:
 		VkBuffer m_Buffer;
@@ -40,6 +31,46 @@ namespace jarp {
 
 		VkDeviceSize m_Size;
 		VkBufferUsageFlags m_Usage;
+	};
+
+	///////////////////////////////////////////////////////////////////
+	// Vertex Buffer //////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////
+
+	class VulkanVertexBuffer : public VertexBuffer
+	{
+	public:
+		VulkanVertexBuffer(const std::vector<SVertex>& vertices, uint32_t size);
+		virtual ~VulkanVertexBuffer();
+
+		void Destroy();
+
+		virtual void Bind(const std::shared_ptr<CommandBuffer> commandBuffer) override;
+
+		inline const VkBuffer& GetHandle() const { return m_Buffer->GetHandle(); }
+
+	private:
+		std::shared_ptr<VulkanBuffer> m_Buffer;
+	};
+
+	///////////////////////////////////////////////////////////////////
+	// Index Buffer ///////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////
+
+	class VulkanIndexBuffer : public IndexBuffer
+	{
+	public:
+		VulkanIndexBuffer(const std::vector<uint32_t>& indices, uint32_t size);
+		virtual ~VulkanIndexBuffer();
+
+		void Destroy();
+
+		virtual void Bind(const std::shared_ptr<CommandBuffer> commandBuffer) override;
+
+		inline const VkBuffer& GetHandle() const { return m_Buffer->GetHandle(); }
+
+	private:
+		std::shared_ptr<VulkanBuffer> m_Buffer;
 	};
 
 }

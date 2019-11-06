@@ -1,6 +1,9 @@
 #pragma once
 
 #include "jarp/Camera.h"
+#include "jarp/Renderer/CommandBuffer.h"
+#include "jarp/Renderer/CommandPool.h"
+#include "jarp/Renderer/VertexBuffer.h"
 #include "Platform/VulkanRHI/Model.h"
 #include "Platform/VulkanRHI/Texture.h"
 #include "Platform/VulkanRHI/VulkanBuffer.h"
@@ -51,9 +54,9 @@ namespace jarp {
 		SUniformBufferObject m_UBO;
 
 		VulkanSwapchain* m_Swapchain;
-		VulkanCommandPool* m_CommandPool;
-		VulkanCommandPool* m_TransientCommandPool;
-		VulkanCommandBuffer* m_TransientCommandBuffer;
+		std::shared_ptr<CommandPool> m_CommandPool;
+		std::shared_ptr<VulkanCommandPool> m_TransientCommandPool;
+		std::shared_ptr<VulkanCommandBuffer> m_TransientCommandBuffer;
 		VulkanImage* m_DepthImage;
 		VulkanImageView* m_DepthImageView;
 		VulkanDescriptorSetLayout* m_DescriptorSetLayout;
@@ -64,9 +67,9 @@ namespace jarp {
 		VulkanGraphicsPipeline* m_GraphicsPipeline;
 		std::vector<VulkanFramebuffer*> m_Framebuffers;
 		VulkanDescriptorPool* m_DescriptorPool;
-		std::vector<VulkanCommandBuffer*> m_DrawCommandBuffers;
-		VulkanBuffer* m_VertexBuffer;
-		VulkanBuffer* m_IndexBuffer;
+		std::vector<std::shared_ptr<CommandBuffer>> m_DrawCommandBuffers;
+		std::shared_ptr<VertexBuffer> m_VertexBuffer;
+		std::shared_ptr<IndexBuffer> m_IndexBuffer;
 		std::vector<VulkanBuffer*> m_UniformBuffers;
 		VulkanDescriptorSet* m_DescriptorSet;
 		std::vector<VulkanSemaphore*> m_RenderingFinishedSemaphores;

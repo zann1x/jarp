@@ -1,22 +1,24 @@
 #pragma once
 
+#include "jarp/Renderer/CommandPool.h"
+
 #include <volk.h>
 
 namespace jarp {
 
-	class VulkanCommandPool
+	class VulkanCommandPool : public CommandPool
 	{
 	public:
-		VulkanCommandPool();
+		VulkanCommandPool(const VkCommandPoolCreateFlags flags = 0);
 		~VulkanCommandPool();
 
-		void CreateCommandPool(const VkCommandPoolCreateFlags flags = 0);
+		void CreateCommandPool(const VkCommandPoolCreateFlags flags);
 		void Destroy();
 
-		inline VkCommandPool GetHandle() const { return commandPool; };
+		inline VkCommandPool GetHandle() const { return m_commandPool; };
 
 	private:
-		VkCommandPool commandPool;
+		VkCommandPool m_commandPool;
 	};
 
 }
