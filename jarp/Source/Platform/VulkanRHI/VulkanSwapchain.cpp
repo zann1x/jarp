@@ -1,29 +1,26 @@
 #include "jarppch.h"
 #include "VulkanSwapchain.h"
 
-#include "VulkanRendererAPI.h"
-#include "VulkanImageView.h"
-#include "VulkanUtils.hpp"
-
 #include "jarp/Window.h"
+
+#include "Platform/VulkanRHI/VulkanDevice.h"
+#include "Platform/VulkanRHI/VulkanInstance.h"
+#include "Platform/VulkanRHI/VulkanRendererAPI.h"
+#include "Platform/VulkanRHI/VulkanImageView.h"
+#include "Platform/VulkanRHI/VulkanUtils.hpp"
+
 #include "Platform/Windows/WindowsWindow.h"
 
 namespace jarp {
 
-	VulkanSwapchain::VulkanSwapchain()
+	VulkanSwapchain::VulkanSwapchain(uint32_t width, uint32_t height, bool bUseVSync)
 		: m_SurfaceKHR(VK_NULL_HANDLE), m_Swapchain(VK_NULL_HANDLE)
 	{
+		CreateSwapchain(width, height, bUseVSync);
 	}
 
 	VulkanSwapchain::~VulkanSwapchain()
 	{
-		Destroy();
-
-		if (m_SurfaceKHR != VK_NULL_HANDLE)
-		{
-			vkDestroySurfaceKHR(VulkanRendererAPI::s_Instance->GetHandle(), m_SurfaceKHR, nullptr);
-			m_SurfaceKHR = VK_NULL_HANDLE;
-		}
 	}
 
 	void VulkanSwapchain::CreateSwapchain(uint32_t width, uint32_t height, bool bUseVSync)
@@ -159,11 +156,8 @@ namespace jarp {
 			m_SwapchainImageViews.clear();
 		}
 
-		if (m_Swapchain != VK_NULL_HANDLE)
-		{
-			vkDestroySwapchainKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Swapchain, nullptr);
-			m_Swapchain = VK_NULL_HANDLE;
-		}
+		vkDestroySwapchainKHR(VulkanRendererAPI::s_Device->GetInstanceHandle(), m_Swapchain, nullptr);
+		m_Swapchain = VK_NULL_HANDLE;
 	}
 
 	VulkanSwapchain::SSwapchainSupportDetails VulkanSwapchain::QuerySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surfaceKHR)

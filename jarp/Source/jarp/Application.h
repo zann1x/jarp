@@ -1,7 +1,8 @@
 #pragma once
 
-#include "jarp/Events/EventListener.h"
 #include "jarp/Window.h"
+
+#include "jarp/Events/EventListener.h"
 
 namespace jarp {
 

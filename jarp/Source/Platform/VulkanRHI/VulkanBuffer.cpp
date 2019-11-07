@@ -2,6 +2,7 @@
 #include "VulkanBuffer.h"
 
 #include "Platform/VulkanRHI/CommandBufferPool.h"
+#include "Platform/VulkanRHI/VulkanDevice.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 
 namespace jarp {

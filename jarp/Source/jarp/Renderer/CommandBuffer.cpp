@@ -11,11 +11,11 @@ namespace jarp {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case Renderer::API::None:
-		case Renderer::API::DirectX:
-		case Renderer::API::OpenGL:
+		case RendererAPI::API::None:
+		case RendererAPI::API::DirectX:
+		case RendererAPI::API::OpenGL:
 			JARP_CORE_ASSERT(false, "Only Renderer API Vulkan is supported");
-		case Renderer::API::Vulkan:
+		case RendererAPI::API::Vulkan:
 			return new VulkanCommandBuffer(std::dynamic_pointer_cast<VulkanCommandPool>(commandPool));
 		}
 

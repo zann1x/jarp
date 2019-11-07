@@ -1,9 +1,10 @@
 #include "jarppch.h"
 #include "VulkanDescriptorPool.h"
 
-#include "VulkanRendererAPI.h"
-#include "VulkanSwapchain.h"
-#include "VulkanUtils.hpp"
+#include "Platform/VulkanRHI/VulkanDevice.h"
+#include "Platform/VulkanRHI/VulkanRendererAPI.h"
+#include "Platform/VulkanRHI/VulkanSwapchain.h"
+#include "Platform/VulkanRHI/VulkanUtils.hpp"
 
 namespace jarp {
 

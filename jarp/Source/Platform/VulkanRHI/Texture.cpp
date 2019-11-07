@@ -1,12 +1,13 @@
 #include "jarppch.h"
 #include "Texture.h"
 
-#include "VulkanBuffer.h"
-#include "VulkanCommandBuffer.h"
-#include "VulkanImage.h"
-#include "VulkanImageView.h"
-#include "VulkanRendererAPI.h"
-#include "VulkanUtils.hpp"
+#include "Platform/VulkanRHI/VulkanBuffer.h"
+#include "Platform/VulkanRHI/VulkanCommandBuffer.h"
+#include "Platform/VulkanRHI/VulkanDevice.h"
+#include "Platform/VulkanRHI/VulkanImage.h"
+#include "Platform/VulkanRHI/VulkanImageView.h"
+#include "Platform/VulkanRHI/VulkanRendererAPI.h"
+#include "Platform/VulkanRHI/VulkanUtils.hpp"
 
 #include <stb_image.h>
 

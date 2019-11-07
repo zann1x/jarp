@@ -2,12 +2,14 @@
 
 #include <volk.h>
 
+#include "jarp/Renderer/Swapchain.h"
+
 namespace jarp {
 
 	class Window;
 	class VulkanImageView;
 
-	class VulkanSwapchain
+	class VulkanSwapchain : public Swapchain
 	{
 	public:
 		struct SSwapchainSupportDetails
@@ -24,10 +26,8 @@ namespace jarp {
 		};
 
 	public:
-		VulkanSwapchain();
-		~VulkanSwapchain();
-
-		void CreateSwapchain(uint32_t width, uint32_t height, bool bUseVSync = true);
+		VulkanSwapchain(uint32_t width, uint32_t height, bool bUseVSync);
+		virtual ~VulkanSwapchain();
 		void Destroy();
 
 		inline const VkSwapchainKHR GetHandle() const { return m_Swapchain; }
@@ -40,6 +40,9 @@ namespace jarp {
 		static SSwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surfaceKHR);
 
 		VkResult AcquireNextImage(const VkSemaphore waitSemaphore);
+
+	private:
+		void CreateSwapchain(uint32_t width, uint32_t height, bool bUseVSync);
 
 	private:
 		VkSurfaceKHR m_SurfaceKHR;

@@ -9,19 +9,14 @@
 #include "Platform/VulkanRHI/CommandBufferPool.h"
 #include "Platform/VulkanRHI/VulkanRendererAPI.h"
 
+#include "Platform/VulkanRHI/VulkanInstance.h"
+#include "Platform/VulkanRHI/VulkanDevice.h"
+#include "Platform/VulkanRHI/VulkanSwapchain.h"
+
 namespace jarp {
 
 	void TempVulkanApplication::StartVulkan()
 	{
-		VulkanRendererAPI::s_Instance = std::make_unique<VulkanInstance>();
-		VulkanRendererAPI::s_Instance->CreateInstance();
-
-		VulkanRendererAPI::s_Device = std::make_unique<VulkanDevice>();
-		VulkanRendererAPI::s_Device->CreateLogicalDevice();
-
-		VulkanRendererAPI::s_Swapchain = std::make_unique<VulkanSwapchain>();
-		VulkanRendererAPI::s_Swapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), m_settings.VSync);
-
 		m_Camera.SetAspectRatio(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.width / static_cast<float>(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.height));
 		m_MaxFramesInFlight = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImageViews().size());
 
@@ -160,11 +155,18 @@ namespace jarp {
 		// Free all resources
 		VulkanRendererAPI::s_Device->WaitUntilIdle();
 
-		CleanupSwapchain();
-		delete m_RenderPass;
-
+		for (auto& framebuffer : m_Framebuffers)
+		{
+			framebuffer->Destroy();
+			delete framebuffer;
+		}
+		m_DepthImageView->Destroy();
 		delete m_DepthImageView;
+		m_DepthImage->Destroy();
 		delete m_DepthImage;
+		m_GraphicsPipeline->Destroy();
+		m_RenderPass->Destroy();
+		delete m_RenderPass;
 
 		std::dynamic_pointer_cast<VulkanShader>(m_Shader)->Destroy();
 
@@ -194,9 +196,6 @@ namespace jarp {
 		m_TransientCommandPool->Destroy();
 		std::dynamic_pointer_cast<VulkanCommandPool>(m_CommandPool)->Destroy();
 		CommandBufferPool::Get()->Destroy();
-
-		VulkanRendererAPI::s_Device->Destroy();
-		VulkanRendererAPI::s_Instance->Destroy();
 	}
 
 	void TempVulkanApplication::RecordCommandBuffer()
@@ -256,7 +255,7 @@ namespace jarp {
 		VulkanRendererAPI::s_Device->WaitUntilIdle();
 		CleanupSwapchain();
 
-		VulkanRendererAPI::s_Swapchain->CreateSwapchain(framebufferWidth, framebufferHeight, m_settings.VSync);
+		VulkanRendererAPI::s_Swapchain = std::make_shared<VulkanSwapchain>(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), false);
 		m_Camera.SetAspectRatio(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.width / static_cast<float>(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.height));
 		m_MaxFramesInFlight = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImageViews().size());
 

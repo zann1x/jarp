@@ -5,8 +5,10 @@
 #include "jarp/Core.h"
 #include "jarp/Time.h"
 #include "jarp/Window.h"
+
 #include "jarp/Events/ApplicationEvent.h"
-#include "Platform/VulkanRHI/TempVulkanApplication.h"
+
+#include "jarp/Renderer/Renderer.h"
 
 namespace jarp {
 
@@ -41,8 +43,7 @@ namespace jarp {
 		auto lastFrameTime = currentFrameTime;
 		uint32_t deltaFrameTime;
 
-		TempVulkanApplication Renderer;
-		Renderer.StartVulkan();
+		Renderer::Init();
 
 		while (m_bIsRunning)
 		{
@@ -62,14 +63,15 @@ namespace jarp {
 			lastFrameTime = currentFrameTime;
 
 			// Update everything
+			// Don't try to draw to a minimized window
 			if (!GetWindow().IsMinimized())
 			{
-				Renderer.Render(deltaFrameTime);
+				Renderer::Render(deltaFrameTime);
 			}
 			m_Window->Update(deltaFrameTime);
 		}
 
-		Renderer.ShutdownVulkan();
+		Renderer::Shutdown();
 	}
 
 	void Application::OnEvent(Event& outEvent)

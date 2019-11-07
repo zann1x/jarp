@@ -4,6 +4,7 @@
 #include "jarp/Renderer/CommandBuffer.h"
 #include "jarp/Renderer/CommandPool.h"
 #include "jarp/Renderer/Shader.h"
+#include "jarp/Renderer/Swapchain.h"
 #include "jarp/Renderer/VertexBuffer.h"
 #include "Platform/VulkanRHI/Model.h"
 #include "Platform/VulkanRHI/Texture.h"
@@ -35,12 +36,6 @@ namespace jarp {
 		void UpdateMVP(uint32_t durrentImage);
 
 	private:
-		struct SSettings
-		{
-			bool VSync = false;
-		};
-		SSettings m_settings;
-
 		SUniformBufferObject m_UBO;
 
 		std::shared_ptr<CommandPool> m_CommandPool;

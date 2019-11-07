@@ -1,6 +1,7 @@
 #include "jarppch.h"
 #include "VulkanDevice.h"
 
+#include "Platform/VulkanRHI/VulkanInstance.h"
 #include "Platform/VulkanRHI/VulkanRendererAPI.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 

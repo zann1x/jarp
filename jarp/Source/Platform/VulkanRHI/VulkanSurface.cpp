@@ -4,6 +4,7 @@
 #include "jarp/Application.h"
 #include "jarp/Window.h"
 
+#include "Platform/VulkanRHI/VulkanInstance.h"
 #include "Platform/VulkanRHI/VulkanRendererAPI.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 #include "Platform/Windows/WindowsWindow.h"

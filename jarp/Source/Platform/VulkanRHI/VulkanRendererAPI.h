@@ -1,16 +1,28 @@
 #pragma once
 
-#include "Platform/VulkanRHI/VulkanInstance.h"
-#include "Platform/VulkanRHI/VulkanDevice.h"
-#include "Platform/VulkanRHI/VulkanSwapchain.h"
+#include "jarp/Renderer/RendererAPI.h"
 
 namespace jarp {
 
-	struct VulkanRendererAPI
+	class TempVulkanApplication;
+	class VulkanInstance;
+	class VulkanDevice;
+	class VulkanSwapchain;
+
+	class VulkanRendererAPI : public RendererAPI
 	{
-		static std::unique_ptr<VulkanInstance> s_Instance;
-		static std::unique_ptr<VulkanDevice> s_Device;
-		static std::unique_ptr<VulkanSwapchain> s_Swapchain;
+	public:
+		virtual void Init() override;
+		virtual void Render(uint32_t deltaTime) override;
+		virtual void Shutdown() override;
+
+	public:
+		static std::shared_ptr<VulkanInstance> s_Instance;
+		static std::shared_ptr<VulkanDevice> s_Device;
+		static std::shared_ptr<VulkanSwapchain> s_Swapchain;
+
+	private:
+		static TempVulkanApplication s_VulkanRenderer;
 	};
 
 }

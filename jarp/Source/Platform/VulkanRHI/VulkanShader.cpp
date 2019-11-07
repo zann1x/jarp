@@ -5,14 +5,15 @@
 
 #include "Platform/VulkanRHI/VulkanCommandBuffer.h"
 #include "Platform/VulkanRHI/VulkanDescriptorSetLayout.h"
+#include "Platform/VulkanRHI/VulkanDevice.h"
 #include "Platform/VulkanRHI/VulkanGraphicsPipeline.h"
 #include "Platform/VulkanRHI/VulkanRendererAPI.h"
+#include "Platform/VulkanRHI/VulkanSwapchain.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 
 namespace jarp {
 
 	VulkanShader::VulkanShader()
-		: m_DescriptorPool(*VulkanRendererAPI::s_Swapchain)
 	{
 		m_DescriptorPool.CreateDescriptorPool();
 	}
