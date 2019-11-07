@@ -4,12 +4,10 @@
 
 namespace jarp {
 
-	class VulkanSwapchain;
-
 	class VulkanDescriptorPool
 	{
 	public:
-		VulkanDescriptorPool(VulkanSwapchain& swapchain);
+		VulkanDescriptorPool();
 		~VulkanDescriptorPool();
 
 		void CreateDescriptorPool();
@@ -18,8 +16,6 @@ namespace jarp {
 		inline const VkDescriptorPool& GetHandle() const { return m_DescriptorPool; }
 
 	private:
-		VulkanSwapchain& m_Swapchain;
-
 		VkDescriptorPool m_DescriptorPool;
 	};
 

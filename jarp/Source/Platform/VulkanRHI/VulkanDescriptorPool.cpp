@@ -7,8 +7,8 @@
 
 namespace jarp {
 
-	VulkanDescriptorPool::VulkanDescriptorPool(VulkanSwapchain& swapchain)
-		: m_Swapchain(swapchain), m_DescriptorPool(VK_NULL_HANDLE)
+	VulkanDescriptorPool::VulkanDescriptorPool()
+		: m_DescriptorPool(VK_NULL_HANDLE)
 	{
 	}
 
@@ -21,16 +21,16 @@ namespace jarp {
 		std::array<VkDescriptorPoolSize, 2> descriptorPoolSizes;
 		descriptorPoolSizes[0] = {};
 		descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorPoolSizes[0].descriptorCount = static_cast<uint32_t>(m_Swapchain.GetImages().size());
+		descriptorPoolSizes[0].descriptorCount = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImages().size());
 		descriptorPoolSizes[1] = {};
 		descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorPoolSizes[1].descriptorCount = static_cast<uint32_t>(m_Swapchain.GetImages().size());
+		descriptorPoolSizes[1].descriptorCount = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImages().size());
 
 		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 		descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolCreateInfo.pNext = nullptr;
 		descriptorPoolCreateInfo.flags = 0;
-		descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(m_Swapchain.GetImages().size());
+		descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImages().size());
 		descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
 		descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
 

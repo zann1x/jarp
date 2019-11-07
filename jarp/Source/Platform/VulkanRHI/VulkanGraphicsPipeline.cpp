@@ -119,14 +119,18 @@ namespace jarp {
 		pipelineDynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(m_DynamicStates.size());
 		pipelineDynamicStateCreateInfo.pDynamicStates = m_DynamicStates.data();
 
-		VkDescriptorSetLayout descriptorSetLayouts[] = { m_Shader.GetSetLayoutHandles().data()->GetHandle() };
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+		for (const auto& layout : m_Shader.GetDescriptorSetLayouts())
+		{
+			descriptorSetLayouts.push_back(layout->GetHandle());
+		}
 
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCreateInfo.pNext = nullptr;
 		pipelineLayoutCreateInfo.flags = 0;
-		pipelineLayoutCreateInfo.setLayoutCount = static_cast<uint32_t>(m_Shader.GetSetLayoutHandles().size());
-		pipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayouts;
+		pipelineLayoutCreateInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+		pipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 		pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 

@@ -2,16 +2,18 @@
 
 #include <volk.h>
 
+#include "jarp/Renderer/Pipeline.h"
+
 namespace jarp {
 
 	class VulkanRenderPass;
 	class VulkanShader;
 
-	class VulkanGraphicsPipeline
+	class VulkanGraphicsPipeline : public Pipeline
 	{
 	public:
 		VulkanGraphicsPipeline(VulkanRenderPass& renderPass, VulkanShader& shader);
-		~VulkanGraphicsPipeline();
+		virtual ~VulkanGraphicsPipeline();
 
 		void CreateGraphicsPipeline(const VkPipelineVertexInputStateCreateInfo& pipelineVertexInputStateCreateInfo, const VkExtent2D swapchainExtent);
 		void Destroy();

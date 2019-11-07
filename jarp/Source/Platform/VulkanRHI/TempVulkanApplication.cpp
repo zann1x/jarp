@@ -19,10 +19,11 @@ namespace jarp {
 		VulkanRendererAPI::s_Device = std::make_unique<VulkanDevice>();
 		VulkanRendererAPI::s_Device->CreateLogicalDevice();
 
-		m_Swapchain = new VulkanSwapchain();
-		m_Swapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), m_settings.VSync);
-		m_Camera.SetAspectRatio(m_Swapchain->GetDetails().Extent.width / static_cast<float>(m_Swapchain->GetDetails().Extent.height));
-		m_MaxFramesInFlight = static_cast<uint32_t>(m_Swapchain->GetImageViews().size());
+		VulkanRendererAPI::s_Swapchain = std::make_unique<VulkanSwapchain>();
+		VulkanRendererAPI::s_Swapchain->CreateSwapchain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), m_settings.VSync);
+
+		m_Camera.SetAspectRatio(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.width / static_cast<float>(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.height));
+		m_MaxFramesInFlight = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImageViews().size());
 
 		m_CommandPool.reset(CommandPool::Create());
 		m_TransientCommandPool = std::make_shared<VulkanCommandPool>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
@@ -31,50 +32,20 @@ namespace jarp {
 		m_DepthImage = new VulkanImage();
 		m_DepthImageView = new VulkanImageView();
 		VkFormat DepthFormat = VulkanRendererAPI::s_Device->FindDepthFormat();
-		m_DepthImage->CreateImage(m_Swapchain->GetDetails().Extent.width, m_Swapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_DepthImage->CreateImage(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.width, VulkanRendererAPI::s_Swapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		m_DepthImageView->CreateImageView(m_DepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		m_DepthImage->TransitionImageLayout(*m_TransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-		m_DescriptorSetLayout = new VulkanDescriptorSetLayout();
-		m_DescriptorSetLayout->AddLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-		m_DescriptorSetLayout->AddLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		m_DescriptorSetLayout->CreateDescriptorSetLayout();
-
 		m_Model = new Model();
-		m_Texture = new Texture();
-
-		m_RenderPass = new VulkanRenderPass(*m_Swapchain);
-		m_RenderPass->CreateRenderPass();
-		m_Shader = new VulkanShader();
-		m_Shader->AddDescriptorSetLayout(*m_DescriptorSetLayout);
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.vert.spv");
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.frag.spv");
-		m_GraphicsPipeline = new VulkanGraphicsPipeline(*m_RenderPass, *m_Shader);
-		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
-
-		m_Framebuffers.resize(m_Swapchain->GetImages().size());
-		for (size_t i = 0; i < m_Swapchain->GetImages().size(); ++i)
-		{
-			m_Framebuffers[i] = new VulkanFramebuffer(*m_RenderPass);
-			m_Framebuffers[i]->CreateFramebuffer({ m_Swapchain->GetImageViews()[i].GetHandle(), m_DepthImageView->GetHandle() }, m_Swapchain->GetDetails().Extent);
-		}
-
-		m_DescriptorPool = new VulkanDescriptorPool(*m_Swapchain);
-		m_DescriptorPool->CreateDescriptorPool();
-
-		m_DrawCommandBuffers.resize(m_Framebuffers.size());
-		for (size_t i = 0; i < m_Framebuffers.size(); ++i)
-		{
-			m_DrawCommandBuffers[i].reset(CommandBuffer::Create(m_CommandPool));
-		}
-
 		m_Model->Load("E:/VisualStudioProjects/jarp/jarp/Content/kitten.obj");
+		m_Texture = new Texture();
 		m_Texture->Load(*m_TransientCommandBuffer, "E:/VisualStudioProjects/jarp/jarp/Content/texture.jpg");
-		m_VertexBuffer.reset(VertexBuffer::Create(m_Model->GetVertices(), static_cast<uint32_t>(m_Model->GetVertices().size())));
-		m_IndexBuffer.reset(IndexBuffer::Create(m_Model->GetIndices(), static_cast<uint32_t>(m_Model->GetIndices().size())));
 
-		m_UniformBuffers.resize(m_Swapchain->GetImages().size());
-		for (size_t i = 0; i < m_Swapchain->GetImages().size(); ++i)
+		m_RenderPass = new VulkanRenderPass();
+		m_RenderPass->CreateRenderPass();
+
+		m_UniformBuffers.resize(VulkanRendererAPI::s_Swapchain->GetImages().size());
+		for (size_t i = 0; i < VulkanRendererAPI::s_Swapchain->GetImages().size(); ++i)
 		{
 			m_UniformBuffers[i] = new VulkanBuffer(sizeof(m_UBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 			m_UniformBuffers[i]->CreateBuffer(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -82,8 +53,36 @@ namespace jarp {
 		std::vector<VkBuffer> uniBuffers;
 		for (auto& uniformBuffer : m_UniformBuffers)
 			uniBuffers.push_back(uniformBuffer->GetHandle());
-		m_DescriptorSet = new VulkanDescriptorSet();
-		m_DescriptorSet->CreateDescriptorSets(*m_DescriptorSetLayout, *m_DescriptorPool, m_Swapchain->GetImages().size(), sizeof(m_UBO), uniBuffers, m_Texture->GetSampler(), m_Texture->GetImageView().GetHandle());
+
+		m_Shader.reset(Shader::Create());
+		m_Shader->AddLayout({
+			{ 0, ShaderLayout::Type::Uniform, Shader::Type::Vertex },
+			{ 1, ShaderLayout::Type::Sampler, Shader::Type::Fragment }
+		});
+		//m_Shader->AddLayout({ { 0, ShaderLayout::Type::Uniform, Shader::Type::Vertex } });
+		//m_Shader->AddLayout({ { 1, ShaderLayout::Type::Sampler, Shader::Type::Fragment } });
+		m_Shader->AddModule(Shader::Type::Fragment, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.frag.spv");
+		m_Shader->AddModule(Shader::Type::Vertex, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.vert.spv");
+		std::dynamic_pointer_cast<VulkanShader>(m_Shader)->UploadShaderData(uniBuffers, m_Texture->GetSampler(), m_Texture->GetImageView().GetHandle());
+
+		m_GraphicsPipeline = std::make_shared<VulkanGraphicsPipeline>(*m_RenderPass, *std::dynamic_pointer_cast<VulkanShader>(m_Shader));
+		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), VulkanRendererAPI::s_Swapchain->GetDetails().Extent);
+
+		m_Framebuffers.resize(VulkanRendererAPI::s_Swapchain->GetImages().size());
+		for (size_t i = 0; i < VulkanRendererAPI::s_Swapchain->GetImages().size(); ++i)
+		{
+			m_Framebuffers[i] = new VulkanFramebuffer(*m_RenderPass);
+			m_Framebuffers[i]->CreateFramebuffer({ VulkanRendererAPI::s_Swapchain->GetImageViews()[i].GetHandle(), m_DepthImageView->GetHandle() }, VulkanRendererAPI::s_Swapchain->GetDetails().Extent);
+		}
+
+		m_DrawCommandBuffers.resize(m_Framebuffers.size());
+		for (size_t i = 0; i < m_Framebuffers.size(); ++i)
+		{
+			m_DrawCommandBuffers[i].reset(CommandBuffer::Create(m_CommandPool));
+		}
+
+		m_VertexBuffer.reset(VertexBuffer::Create(m_Model->GetVertices(), static_cast<uint32_t>(m_Model->GetVertices().size())));
+		m_IndexBuffer.reset(IndexBuffer::Create(m_Model->GetIndices(), static_cast<uint32_t>(m_Model->GetIndices().size())));
 
 		m_RenderingFinishedSemaphores.resize(m_MaxFramesInFlight);
 		m_ImageAvailableSemaphores.resize(m_MaxFramesInFlight);
@@ -109,7 +108,7 @@ namespace jarp {
 
 		// Get the next available image to work on
 		{
-			VkResult result = m_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[currentFrame]->GetHandle());
+			VkResult result = VulkanRendererAPI::s_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[currentFrame]->GetHandle());
 			if (result == VK_ERROR_OUT_OF_DATE_KHR)
 			{
 				RecreateSwapchain();
@@ -122,11 +121,11 @@ namespace jarp {
 		}
 
 		m_Camera.Move(deltaTime);
-		UpdateMVP(m_Swapchain->GetActiveImageIndex());
+		UpdateMVP(VulkanRendererAPI::s_Swapchain->GetActiveImageIndex());
 
 		// Submit commands to the queue
 		VulkanRendererAPI::s_Device->GetGraphicsQueue().QueueSubmitAndWait(
-			{ std::dynamic_pointer_cast<VulkanCommandBuffer>(m_DrawCommandBuffers[m_Swapchain->GetActiveImageIndex()])->GetHandle() },
+			{ std::dynamic_pointer_cast<VulkanCommandBuffer>(m_DrawCommandBuffers[VulkanRendererAPI::s_Swapchain->GetActiveImageIndex()])->GetHandle() },
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 			{ m_ImageAvailableSemaphores[currentFrame]->GetHandle() },
 			{ m_RenderingFinishedSemaphores[currentFrame]->GetHandle() },
@@ -136,8 +135,8 @@ namespace jarp {
 
 		{
 			VkResult result = VulkanRendererAPI::s_Device->GetPresentQueue().QueuePresent(
-				m_Swapchain->GetHandle(),
-				{ m_Swapchain->GetActiveImageIndex() },
+				VulkanRendererAPI::s_Swapchain->GetHandle(),
+				{ VulkanRendererAPI::s_Swapchain->GetActiveImageIndex() },
 				{ m_RenderingFinishedSemaphores[currentFrame]->GetHandle() }
 			);
 			// TODO: register Renderer for WindowResizedEvent to omit explicitly checking for resize here
@@ -163,13 +162,11 @@ namespace jarp {
 
 		CleanupSwapchain();
 		delete m_RenderPass;
-		delete m_Swapchain;
 
 		delete m_DepthImageView;
 		delete m_DepthImage;
 
-		m_Shader->Destroy();
-		delete m_Shader;
+		std::dynamic_pointer_cast<VulkanShader>(m_Shader)->Destroy();
 
 		m_Texture->Destroy();
 		delete m_Texture;
@@ -197,12 +194,6 @@ namespace jarp {
 		m_TransientCommandPool->Destroy();
 		std::dynamic_pointer_cast<VulkanCommandPool>(m_CommandPool)->Destroy();
 		CommandBufferPool::Get()->Destroy();
-
-		m_DescriptorPool->Destroy();
-		delete m_DescriptorPool;
-		delete m_DescriptorSet; // Vulkan objects are implicitly destroyed by the owning pool
-		m_DescriptorSetLayout->Destroy();
-		delete m_DescriptorSetLayout;
 
 		VulkanRendererAPI::s_Device->Destroy();
 		VulkanRendererAPI::s_Instance->Destroy();
@@ -232,7 +223,7 @@ namespace jarp {
 			renderPassBeginInfo.pNext = nullptr;
 			renderPassBeginInfo.renderPass = m_RenderPass->GetHandle();
 			renderPassBeginInfo.framebuffer = m_Framebuffers[i]->GetHandle();
-			renderPassBeginInfo.renderArea.extent = m_Swapchain->GetDetails().Extent;
+			renderPassBeginInfo.renderArea.extent = VulkanRendererAPI::s_Swapchain->GetDetails().Extent;
 			renderPassBeginInfo.renderArea.offset = { 0, 0 };
 			renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 			renderPassBeginInfo.pClearValues = clearValues.data();
@@ -241,9 +232,9 @@ namespace jarp {
 
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetHandle());
 
+			m_Shader->Bind(i, vulkanDrawCommandBuffer, m_GraphicsPipeline);
 			m_VertexBuffer->Bind(vulkanDrawCommandBuffer);
 			m_IndexBuffer->Bind(vulkanDrawCommandBuffer);
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetLayoutHandle(), 0, 1, &m_DescriptorSet->At(i), 0, nullptr);
 
 			vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_Model->GetIndices().size()), 1, 0, 0, 0);
 
@@ -265,22 +256,22 @@ namespace jarp {
 		VulkanRendererAPI::s_Device->WaitUntilIdle();
 		CleanupSwapchain();
 
-		m_Swapchain->CreateSwapchain(framebufferWidth, framebufferHeight, m_settings.VSync);
-		m_Camera.SetAspectRatio(m_Swapchain->GetDetails().Extent.width / static_cast<float>(m_Swapchain->GetDetails().Extent.height));
-		m_MaxFramesInFlight = static_cast<uint32_t>(m_Swapchain->GetImageViews().size());
+		VulkanRendererAPI::s_Swapchain->CreateSwapchain(framebufferWidth, framebufferHeight, m_settings.VSync);
+		m_Camera.SetAspectRatio(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.width / static_cast<float>(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.height));
+		m_MaxFramesInFlight = static_cast<uint32_t>(VulkanRendererAPI::s_Swapchain->GetImageViews().size());
 
 		VkFormat depthFormat = VulkanRendererAPI::s_Device->FindDepthFormat();
-		m_DepthImage->CreateImage(m_Swapchain->GetDetails().Extent.width, m_Swapchain->GetDetails().Extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_DepthImage->CreateImage(VulkanRendererAPI::s_Swapchain->GetDetails().Extent.width, VulkanRendererAPI::s_Swapchain->GetDetails().Extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		m_DepthImageView->CreateImageView(m_DepthImage->GetHandle(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		m_TransientCommandBuffer = std::make_shared<VulkanCommandBuffer>(m_TransientCommandPool);
 		m_DepthImage->TransitionImageLayout(*m_TransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 		m_RenderPass->CreateRenderPass();
-		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
+		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), VulkanRendererAPI::s_Swapchain->GetDetails().Extent);
 
-		for (size_t i = 0; i < m_Swapchain->GetImages().size(); ++i)
+		for (size_t i = 0; i < VulkanRendererAPI::s_Swapchain->GetImages().size(); ++i)
 		{
-			m_Framebuffers[i]->CreateFramebuffer({ m_Swapchain->GetImageViews()[i].GetHandle(), m_DepthImageView->GetHandle() }, m_Swapchain->GetDetails().Extent);
+			m_Framebuffers[i]->CreateFramebuffer({ VulkanRendererAPI::s_Swapchain->GetImageViews()[i].GetHandle(), m_DepthImageView->GetHandle() }, VulkanRendererAPI::s_Swapchain->GetDetails().Extent);
 		}
 
 		for (size_t i = 0; i < m_Framebuffers.size(); ++i)
@@ -299,7 +290,7 @@ namespace jarp {
 		m_DepthImage->Destroy();
 		m_GraphicsPipeline->Destroy();
 		m_RenderPass->Destroy();
-		m_Swapchain->Destroy();
+		VulkanRendererAPI::s_Swapchain->Destroy();
 	}
 
 	void TempVulkanApplication::UpdateMVP(uint32_t CurrentImage)

@@ -4,12 +4,10 @@
 
 namespace jarp {
 
-	class VulkanSwapchain;
-
 	class VulkanRenderPass
 	{
 	public:
-		VulkanRenderPass(VulkanSwapchain& swapchain);
+		VulkanRenderPass();
 		~VulkanRenderPass();
 
 		void CreateRenderPass();
@@ -18,8 +16,6 @@ namespace jarp {
 		inline const VkRenderPass& GetHandle() const { return m_RenderPass; }
 
 	private:
-		VulkanSwapchain& m_Swapchain;
-
 		VkRenderPass m_RenderPass;
 	};
 

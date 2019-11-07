@@ -3,15 +3,13 @@
 #include "jarp/Camera.h"
 #include "jarp/Renderer/CommandBuffer.h"
 #include "jarp/Renderer/CommandPool.h"
+#include "jarp/Renderer/Shader.h"
 #include "jarp/Renderer/VertexBuffer.h"
 #include "Platform/VulkanRHI/Model.h"
 #include "Platform/VulkanRHI/Texture.h"
 #include "Platform/VulkanRHI/VulkanBuffer.h"
 #include "Platform/VulkanRHI/VulkanCommandBuffer.h"
 #include "Platform/VulkanRHI/VulkanCommandPool.h"
-#include "Platform/VulkanRHI/VulkanDescriptorPool.h"
-#include "Platform/VulkanRHI/VulkanDescriptorSet.h"
-#include "Platform/VulkanRHI/VulkanDescriptorSetLayout.h"
 #include "Platform/VulkanRHI/VulkanFence.h"
 #include "Platform/VulkanRHI/VulkanFramebuffer.h"
 #include "Platform/VulkanRHI/VulkanGraphicsPipeline.h"
@@ -20,7 +18,6 @@
 #include "Platform/VulkanRHI/VulkanRenderPass.h"
 #include "Platform/VulkanRHI/VulkanSemaphore.h"
 #include "Platform/VulkanRHI/VulkanShader.h"
-#include "Platform/VulkanRHI/VulkanSwapchain.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 
 namespace jarp {
@@ -44,34 +41,23 @@ namespace jarp {
 		};
 		SSettings m_settings;
 
-		struct SUniformBufferObject
-		{
-			alignas(16) glm::mat4 Model;
-			alignas(16) glm::mat4 View;
-			alignas(16) glm::mat4 Projection;
-			alignas(16) glm::vec3 LightPosition;
-		};
 		SUniformBufferObject m_UBO;
 
-		VulkanSwapchain* m_Swapchain;
 		std::shared_ptr<CommandPool> m_CommandPool;
 		std::shared_ptr<VulkanCommandPool> m_TransientCommandPool;
 		std::shared_ptr<VulkanCommandBuffer> m_TransientCommandBuffer;
 		VulkanImage* m_DepthImage;
 		VulkanImageView* m_DepthImageView;
-		VulkanDescriptorSetLayout* m_DescriptorSetLayout;
 		Model* m_Model;
 		Texture* m_Texture;
 		VulkanRenderPass* m_RenderPass;
-		VulkanShader* m_Shader;
-		VulkanGraphicsPipeline* m_GraphicsPipeline;
+		std::shared_ptr<Shader> m_Shader;
+		std::shared_ptr<VulkanGraphicsPipeline> m_GraphicsPipeline;
 		std::vector<VulkanFramebuffer*> m_Framebuffers;
-		VulkanDescriptorPool* m_DescriptorPool;
 		std::vector<std::shared_ptr<CommandBuffer>> m_DrawCommandBuffers;
 		std::shared_ptr<VertexBuffer> m_VertexBuffer;
 		std::shared_ptr<IndexBuffer> m_IndexBuffer;
 		std::vector<VulkanBuffer*> m_UniformBuffers;
-		VulkanDescriptorSet* m_DescriptorSet;
 		std::vector<VulkanSemaphore*> m_RenderingFinishedSemaphores;
 		std::vector<VulkanSemaphore*> m_ImageAvailableSemaphores;
 		std::vector<VulkanFence*> m_FencesInFlight;

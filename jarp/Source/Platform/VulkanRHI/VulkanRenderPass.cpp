@@ -7,8 +7,7 @@
 
 namespace jarp {
 
-	VulkanRenderPass::VulkanRenderPass(VulkanSwapchain& swapchain)
-		: m_Swapchain(swapchain)
+	VulkanRenderPass::VulkanRenderPass()
 	{
 	}
 
@@ -22,7 +21,7 @@ namespace jarp {
 		// Color attachment
 		attachmentDescriptions[0] = {};
 		attachmentDescriptions[0].flags = 0;
-		attachmentDescriptions[0].format = m_Swapchain.GetDetails().SurfaceFormat.format;
+		attachmentDescriptions[0].format = VulkanRendererAPI::s_Swapchain->GetDetails().SurfaceFormat.format;
 		attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
 		attachmentDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;

@@ -16,19 +16,24 @@ namespace jarp {
 	{
 	}
 
-	void VulkanDescriptorSet::CreateDescriptorSets(const VulkanDescriptorSetLayout& descriptorSetLayout, const VulkanDescriptorPool& descriptorPool, const size_t amount, const VkDeviceSize size, const std::vector<VkBuffer>& buffers, VkSampler sampler, VkImageView imageView)
+	void VulkanDescriptorSet::UpdateDescriptorSets(const std::vector<VulkanDescriptorSetLayout*>& descriptorSetLayouts, const VulkanDescriptorPool& descriptorPool, const size_t amount, const VkDeviceSize size, const std::vector<VkBuffer>& buffers, VkSampler sampler, VkImageView imageView)
 	{
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts(amount, descriptorSetLayout.GetHandle());
+		// TODO: handle the case when multiple layouts are specified
 
-		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
-		descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		descriptorSetAllocateInfo.pNext = nullptr;
-		descriptorSetAllocateInfo.descriptorPool = descriptorPool.GetHandle();
-		descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		descriptorSetAllocateInfo.pSetLayouts = descriptorSetLayouts.data();
+		if (m_DescriptorSets.empty())
+		{
+			std::vector<VkDescriptorSetLayout> descriptorSetLayoutHandles(amount, descriptorSetLayouts[0]->GetHandle());
 
-		m_DescriptorSets.resize(amount);
-		VK_ASSERT(vkAllocateDescriptorSets(VulkanRendererAPI::s_Device->GetInstanceHandle(), &descriptorSetAllocateInfo, m_DescriptorSets.data()));
+			VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+			descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descriptorSetAllocateInfo.pNext = nullptr;
+			descriptorSetAllocateInfo.descriptorPool = descriptorPool.GetHandle();
+			descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(descriptorSetLayoutHandles.size());
+			descriptorSetAllocateInfo.pSetLayouts = descriptorSetLayoutHandles.data();
+
+			m_DescriptorSets.resize(amount);
+			VK_ASSERT(vkAllocateDescriptorSets(VulkanRendererAPI::s_Device->GetInstanceHandle(), &descriptorSetAllocateInfo, m_DescriptorSets.data()));
+		}
 
 		for (size_t i = 0; i < amount; ++i)
 		{
@@ -43,11 +48,12 @@ namespace jarp {
 			descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			std::array<VkWriteDescriptorSet, 2> writeDescriptorSets;
+
 			writeDescriptorSets[0] = {};
 			writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSets[0].pNext = nullptr;
 			writeDescriptorSets[0].dstSet = m_DescriptorSets[i];
-			writeDescriptorSets[0].dstBinding = 0;
+			writeDescriptorSets[0].dstBinding = 0; // TODO: needs to be set via the shader layout
 			writeDescriptorSets[0].dstArrayElement = 0;
 			writeDescriptorSets[0].descriptorCount = 1;
 			writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -58,7 +64,7 @@ namespace jarp {
 			writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSets[1].pNext = nullptr;
 			writeDescriptorSets[1].dstSet = m_DescriptorSets[i];
-			writeDescriptorSets[1].dstBinding = 1;
+			writeDescriptorSets[1].dstBinding = 1; // TODO: needs to be set via the shader layout
 			writeDescriptorSets[1].dstArrayElement = 0;
 			writeDescriptorSets[1].descriptorCount = 1;
 			writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
