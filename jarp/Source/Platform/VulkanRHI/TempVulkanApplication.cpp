@@ -115,10 +115,6 @@ namespace jarp {
 	{
 		static size_t currentFrame = 0;
 
-		// Don't try to draw to a minimized window
-		if (Application::Get().GetWindow().IsMinimized())
-			return;
-
 		// Get the next available image to work on
 		{
 			VkResult result = m_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[currentFrame]->GetHandle());
@@ -275,12 +271,11 @@ namespace jarp {
 
 	void TempVulkanApplication::RecreateSwapchain()
 	{
-		// If the window is minimized, the framebuffer size will be 0
+		// If the window is minimized, the framebuffer size should theoretically be 0
 		auto [framebufferWidth, framebufferHeight] = Application::Get().GetWindow().GetFramebufferSize();
-		while (framebufferWidth == 0 || framebufferHeight == 0)
+		if (framebufferWidth == 0 || framebufferHeight == 0 || Application::Get().GetWindow().IsMinimized())
 		{
-			auto [framebufferWidth, framebufferHeight] = Application::Get().GetWindow().GetFramebufferSize();
-			SDL_WaitEvent(nullptr);
+			return;
 		}
 
 		VulkanRendererAPI::s_Device->WaitUntilIdle();

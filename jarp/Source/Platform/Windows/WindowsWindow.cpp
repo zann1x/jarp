@@ -100,26 +100,32 @@ namespace jarp {
 					EventBus::Get().Dispatch(event);
 					break;
 				}
-				case SDL_WINDOWEVENT_MINIMIZED:
+				case SDL_WINDOWEVENT:
 				{
-					m_bIsWindowMinimized = true;
-					WindowMinimizedEvent event;
-					EventBus::Get().Dispatch(event);
-					break;
-				}
-				case SDL_WINDOWEVENT_RESTORED:
-				{
-					m_bIsWindowMinimized = false;
-					break;
-				}
-				case SDL_WINDOWEVENT_RESIZED:
-				{
-					m_bIsFramebufferResized = true;
-					int width, height;
-					SDL_GetWindowSize(m_Window, &width, &height);
-					WindowResizedEvent event(width, height);
-					EventBus::Get().Dispatch(event);
-					break;
+					switch (sdlEvent.window.event)
+					{
+						case SDL_WINDOWEVENT_MINIMIZED:
+						{
+							m_bIsWindowMinimized = true;
+							WindowMinimizedEvent event;
+							EventBus::Get().Dispatch(event);
+							break;
+						}
+						case SDL_WINDOWEVENT_RESTORED:
+						{
+							m_bIsWindowMinimized = false;
+							WindowRestoredEvent event;
+							EventBus::Get().Dispatch(event);
+							break;
+						}
+						case SDL_WINDOWEVENT_SIZE_CHANGED:
+						{
+							m_bIsFramebufferResized = true;
+							WindowResizedEvent event(sdlEvent.window.data1, sdlEvent.window.data2);
+							EventBus::Get().Dispatch(event);
+							break;
+						}
+					}
 				}
 				case SDL_MOUSEMOTION:
 				{

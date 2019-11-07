@@ -62,7 +62,10 @@ namespace jarp {
 			lastFrameTime = currentFrameTime;
 
 			// Update everything
-			Renderer.Render(deltaFrameTime);
+			if (!GetWindow().IsMinimized())
+			{
+				Renderer.Render(deltaFrameTime);
+			}
 			m_Window->Update(deltaFrameTime);
 		}
 
