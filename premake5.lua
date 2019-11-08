@@ -78,11 +78,12 @@ project "jarp"
             "SDL2main"
         }
         postbuildcommands {
-			-- Copy the SDL2 dll to the bin folder
-			'{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
-		}
+            -- Copy the SDL2 dll to the bin folder
+            '{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
+	    }
 
     filter 'files:**/Shaders/**.glsl'
+        buildmessage 'Compiling shaders'
         buildcommands {
             'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
         }
@@ -117,6 +118,8 @@ project "Sandbox"
         "%{prj.name}/Source/**.h",
         "%{prj.name}/Source/**.hpp",
         "%{prj.name}/Source/**.cpp",
+
+        "%{prj.name}/Shaders/**.glsl",
     }
 
     includedirs {
@@ -138,6 +141,18 @@ project "Sandbox"
         postbuildcommands {
 			-- Copy the SDL2 dll to the bin folder
 			'{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
+        }
+
+    filter 'files:**/Shaders/**.glsl'
+        buildmessage 'Compiling shaders'
+        buildcommands {
+            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
+        }
+        buildinputs {
+            "%{prj.name}/Shaders",
+        }
+        buildoutputs {
+            "%{prj.location}/Shaders/%{file.basename}.spv"
         }
 
     filter "configurations:Debug"

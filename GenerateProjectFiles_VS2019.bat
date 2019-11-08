@@ -1,3 +1,5 @@
 @echo off
 call ThirdParty\bin\premake\premake5.exe vs2019
-pause
+if %errorlevel% neq 0 (
+  pause
+)

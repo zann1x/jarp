@@ -49,8 +49,8 @@ namespace jarp {
 		m_RenderPass->CreateRenderPass();
 		m_Shader = new VulkanShader();
 		m_Shader->AddDescriptorSetLayout(*m_DescriptorSetLayout);
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.vert.spv");
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "E:/VisualStudioProjects/jarp/jarp/Shaders/Phong.frag.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Phong.vert.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Phong.frag.spv");
 		m_GraphicsPipeline = new VulkanGraphicsPipeline(*m_RenderPass, *m_Shader);
 		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
 
@@ -71,8 +71,8 @@ namespace jarp {
 			m_DrawCommandBuffers[i]->CreateCommandBuffer();
 		}
 
-		m_Model->Load("E:/VisualStudioProjects/jarp/jarp/Content/kitten.obj");
-		m_Texture->Load(*m_TransientCommandBuffer, "E:/VisualStudioProjects/jarp/jarp/Content/texture.jpg");
+		m_Model->Load("Content/kitten.obj");
+		m_Texture->Load(*m_TransientCommandBuffer, "Content/texture.jpg");
 		m_VertexBuffer = new VulkanBuffer(m_Model->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 		m_VertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		m_VertexBuffer->UploadBuffer(*m_TransientCommandBuffer, m_Model->GetVertices());
