@@ -4,10 +4,7 @@ This is Just Another Rendering Project. The whole purpose of it is to understand
 
 ## Getting up and running
 
-```
-> git clone https://github.com/zann1x/jarp.git
-> GenerateProjectFiles_VS201x.bat
-```
+Execute `GenerateProjectFiles_VS2019.bat` and start the generated Visual Studio solution.
 
 ## Supported Platforms
 
