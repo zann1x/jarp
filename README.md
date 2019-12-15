@@ -1,10 +1,43 @@
 # jarp
 
-This is Just Another Rendering Project. The whole purpose of it is to understand vulkan, rendering and all that beautiful stuff a little better and see where we're ending at.
+This is Just Another Rendering Project.
+The whole purpose of it is to understand vulkan, rendering and all that beautiful stuff a little better and see where we're ending at.
 
 ## Getting up and running
 
-Execute `GenerateProjectFiles_VS2019.bat` and start the generated Visual Studio solution.
+### Windows
+
+- Install the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.1.126.0/windows/VulkanSDK-1.1.126.0-Installer.exe) under `C:\VulkanSDK`.
+- Execute `GenerateProjectFiles_VS2019.bat` and start the generated Visual Studio solution.
+
+### Linux
+
+- Install SDL2. 
+
+```bash
+# System wide installation and installation of components needed for building the project
+> sudo apt-get install libsdl2-2.0  \
+    sudo apt-get install libsdl2-dev
+```
+
+- Install the Vulkan SDK.
+
+```bash
+# Vulkan SDK installation
+> wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add - \
+    sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.1.126-bionic.list http://packages.lunarg.com/vulkan/1.1.126/lunarg-vulkan-1.1.126-bionic.list \
+    sudo apt update \
+    sudo apt install vulkan-sdk
+
+# Debugging symbols installation
+> sudo apt install libvulkan1-dbgsym vulkan-tools-dbgsym
+
+# Vulkan loader source installation
+> apt source libvulkan1
+```
+
+- Execute `GenerateProjectFiles.sh` to create the Makefiles.
+- Run the command `make`.
 
 ## Supported Platforms
 
@@ -18,11 +51,15 @@ Execute `GenerateProjectFiles_VS2019.bat` and start the generated Visual Studio 
 - stb *@052dce1*
 - tinyobjloader *2.0-rc1*
 - volk *@453c4de*
-- **Vulkan SDK** *1.1.101.0* (needs to be installed on your system)
+- **Vulkan SDK** *1.1.126* (needs to be installed on your system)
 
 ### Windows
 
 - SDL2 *2.0.9*
+
+### Linux
+
+- SDL2 *2.0*
 
 ## How it looks right now
 

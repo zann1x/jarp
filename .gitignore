@@ -1,8 +1,10 @@
 # Directories
 .vs/
+.vscode/
 **/Binaries/
 **/Intermediate/
 !ThirdParty/*
+vulkan-loader-**/
 
 # Files
 *.sln
@@ -10,3 +12,4 @@
 *.vcxproj.filters
 *.vcxproj.user
 **/*.spv
+**/Makefile
