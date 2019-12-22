@@ -15,6 +15,7 @@
             ],
             "defines": [
                 "JARP_PLATFORM_LINUX",
+                "VK_USE_PLATFORM_XCB_KHR",
                 "_DEBUG",
                 "_LIB"
             ],

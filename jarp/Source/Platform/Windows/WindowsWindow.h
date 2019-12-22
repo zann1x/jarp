@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(JARP_PLATFORM_WINDOWS)
+
 #include "jarp/Window.h"
 
 #include <volk.h>
@@ -13,7 +15,7 @@ namespace jarp {
 	{
 	public:
 		WindowsWindow(const WindowProperties& Properties = WindowProperties());
-		virtual ~WindowsWindow() override;
+		virtual ~WindowsWindow();
 
 		inline SDL_Window* GetHandle() { return m_Window; }
 
@@ -53,3 +55,5 @@ namespace jarp {
 	};
 
 }
+
+#endif

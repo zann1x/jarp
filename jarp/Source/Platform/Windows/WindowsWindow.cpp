@@ -1,3 +1,5 @@
+#if defined(JARP_PLATFORM_WINDOWS)
+
 #include "jarppch.h"
 #include "WindowsWindow.h"
 
@@ -11,12 +13,12 @@
 
 namespace jarp {
 
+	static bool bIsSDLInitialized = false;
+
 	Window* Window::Create(const WindowProperties& properties)
 	{
 		return new WindowsWindow(properties);
 	}
-
-	static bool bIsSDLInitialized = false;
 
 	WindowsWindow::WindowsWindow(const WindowProperties& properties)
 	{
@@ -147,3 +149,5 @@ namespace jarp {
 	}
 
 }
+
+#endif

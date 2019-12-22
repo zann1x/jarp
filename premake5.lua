@@ -48,7 +48,8 @@ project "jarp"
 
     filter "system:linux or configurations:gmake2"
         defines {
-            "JARP_PLATFORM_LINUX"
+            "JARP_PLATFORM_LINUX",
+            "VK_USE_PLATFORM_XCB_KHR"
         }
         buildoptions {
             "%{prj.name}/Source",
