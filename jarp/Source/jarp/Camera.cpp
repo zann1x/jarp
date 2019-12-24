@@ -1,5 +1,3 @@
-#include "jarppch.h"
-
 #include "Camera.h"
 
 #include "Utils.hpp"

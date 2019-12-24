@@ -1,7 +1,7 @@
-#include "jarppch.h"
 #include "VulkanDebug.h"
 
 #include "VulkanUtils.hpp"
+#include "jarp/Log.h"
 #include "jarp/Utils.hpp"
 
 namespace jarp {

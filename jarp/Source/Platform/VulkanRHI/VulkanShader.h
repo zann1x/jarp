@@ -4,6 +4,9 @@
 
 #include "VulkanDescriptorSetLayout.h"
 
+#include <map>
+#include <vector>
+
 namespace jarp {
 
 	class VulkanShader
@@ -23,7 +26,7 @@ namespace jarp {
 	private:
 		std::vector<VulkanDescriptorSetLayout> m_DescriptorSetLayouts;
 
-		std::map< VkShaderStageFlagBits, VkShaderModule> m_ShaderModules;
+		std::map<VkShaderStageFlagBits, VkShaderModule> m_ShaderModules;
 		std::vector<VkPipelineShaderStageCreateInfo> m_ShaderStageCreateInfos;
 	};
 

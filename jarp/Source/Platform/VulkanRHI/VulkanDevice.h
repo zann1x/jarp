@@ -5,6 +5,9 @@
 #include "Platform/VulkanRHI/VulkanQueue.h"
 #include "Platform/VulkanRHI/VulkanSurface.h"
 
+#include <string>
+#include <vector>
+
 namespace jarp {
 
 	class VulkanQueue;

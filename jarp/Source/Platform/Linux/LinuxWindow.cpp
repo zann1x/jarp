@@ -1,7 +1,5 @@
 #ifdef JARP_PLATFORM_LINUX
 
-#include "jarppch.h"
-
 #include "LinuxWindow.h"
 
 #include "jarp/Core.h"

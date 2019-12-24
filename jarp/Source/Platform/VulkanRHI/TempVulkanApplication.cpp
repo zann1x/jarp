@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "TempVulkanApplication.h"
 
 #include <volk.h>
@@ -7,6 +6,8 @@
 #include "jarp/Time.h"
 #include "Platform/Windows/WindowsWindow.h"
 #include "Platform/VulkanRHI/VulkanRendererAPI.h"
+
+#include <chrono>
 
 namespace jarp {
 
@@ -149,16 +150,17 @@ namespace jarp {
 				{ m_RenderingFinishedSemaphores[currentFrame]->GetHandle() }
 			);
 			// TODO: register Renderer for WindowResizedEvent to omit explicitly checking for resize here
-			WindowsWindow& windowsWindow = static_cast<WindowsWindow&>(Application::Get().GetWindow());
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowsWindow.IsFramebufferResized())
-			{
-				windowsWindow.SetFramebufferResized(false);
-				RecreateSwapchain();
-			}
-			else
-			{
-				VK_ASSERT(result);
-			}
+			// TODO: also provide a linux way of doing this
+			// WindowsWindow& windowsWindow = static_cast<WindowsWindow&>(Application::Get().GetWindow());
+			// if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowsWindow.IsFramebufferResized())
+			// {
+			// 	windowsWindow.SetFramebufferResized(false);
+			// 	RecreateSwapchain();
+			// }
+			// else
+			// {
+			// 	VK_ASSERT(result);
+			// }
 		}
 
 		currentFrame = (currentFrame + 1) % m_MaxFramesInFlight;

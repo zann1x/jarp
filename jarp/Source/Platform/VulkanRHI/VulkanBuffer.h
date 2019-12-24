@@ -5,6 +5,8 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanRendererAPI.h"
 
+#include <cstring>
+
 namespace jarp {
 
 	class VulkanBuffer
@@ -28,7 +30,7 @@ namespace jarp {
 
 			void* rawData;
 			vkMapMemory(VulkanRendererAPI::s_Device->GetInstanceHandle(), stagingBuffer.GetMemoryHandle(), 0, m_Size, 0, &rawData);
-			memcpy(rawData, data.data(), static_cast<size_t>(m_Size));
+			std::memcpy(rawData, data.data(), static_cast<size_t>(m_Size));
 			vkUnmapMemory(VulkanRendererAPI::s_Device->GetInstanceHandle(), stagingBuffer.GetMemoryHandle());
 
 			commandBuffer.CopyBuffer(stagingBuffer.GetHandle(), m_Buffer, m_Size);

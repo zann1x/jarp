@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanCommandPool.h"
 
 #include "VulkanQueue.h"

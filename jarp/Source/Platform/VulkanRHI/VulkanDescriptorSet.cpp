@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanDescriptorSet.h"
 
 #include "VulkanDescriptorPool.h"

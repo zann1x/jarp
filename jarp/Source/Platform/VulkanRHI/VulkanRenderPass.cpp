@@ -1,9 +1,10 @@
-#include "jarppch.h"
 #include "VulkanRenderPass.h"
 
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapchain.h"
 #include "VulkanUtils.hpp"
+
+#include <array>
 
 namespace jarp {
 

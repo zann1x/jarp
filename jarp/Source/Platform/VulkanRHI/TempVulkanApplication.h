@@ -20,6 +20,8 @@
 #include "Platform/VulkanRHI/VulkanSwapchain.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 
+#include <vector>
+
 namespace jarp {
 
 	class TempVulkanApplication

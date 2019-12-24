@@ -6,6 +6,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
+#include <array>
+#include <vector>
+
 namespace jarp {
 
 	enum class Component

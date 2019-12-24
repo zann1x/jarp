@@ -2,6 +2,8 @@
 
 #include <volk.h>
 
+#include <string>
+
 namespace jarp {
 
 	class VulkanCommandBuffer;

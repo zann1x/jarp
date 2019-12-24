@@ -1,7 +1,8 @@
-#include "jarppch.h"
 #include "Model.h"
 
 #include <tiny_obj_loader.h>
+
+#include <string>
 #include <unordered_map>
 
 namespace jarp {

@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanFence.h"
 
 #include "VulkanRendererAPI.h"

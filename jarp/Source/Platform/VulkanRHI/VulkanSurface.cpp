@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanSurface.h"
 
 #include "jarp/Application.h"

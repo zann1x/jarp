@@ -2,6 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <memory>
+
 namespace jarp {
 
 	class Log

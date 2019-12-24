@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanRendererAPI.h"
 
 namespace jarp {

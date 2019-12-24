@@ -1,6 +1,9 @@
 #pragma once
+
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
+
+#include <memory>
 
 namespace jarp {
 

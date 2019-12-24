@@ -3,6 +3,8 @@
 #include "jarp/Events/EventListener.h"
 #include "jarp/Window.h"
 
+#include <memory>
+
 namespace jarp {
 
 	class Application : public EventListener

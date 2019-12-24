@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanBuffer.h"
 #include "VulkanUtils.hpp"
 

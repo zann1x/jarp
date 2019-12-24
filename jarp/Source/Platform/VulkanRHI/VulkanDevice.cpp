@@ -1,9 +1,9 @@
-#include "jarppch.h"
 #include "VulkanDevice.h"
 
 #include "Platform/VulkanRHI/VulkanRendererAPI.h"
 #include "Platform/VulkanRHI/VulkanUtils.hpp"
 
+#include <algorithm>
 #include <assert.h>
 
 namespace jarp {

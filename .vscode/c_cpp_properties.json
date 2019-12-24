@@ -16,8 +16,7 @@
             "defines": [
                 "JARP_PLATFORM_LINUX",
                 "VK_USE_PLATFORM_XCB_KHR",
-                "_DEBUG",
-                "_LIB"
+                "_DEBUG"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c99",

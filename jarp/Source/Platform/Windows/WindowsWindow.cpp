@@ -1,6 +1,5 @@
 #if defined(JARP_PLATFORM_WINDOWS)
 
-#include "jarppch.h"
 #include "WindowsWindow.h"
 
 #include "jarp/Core.h"

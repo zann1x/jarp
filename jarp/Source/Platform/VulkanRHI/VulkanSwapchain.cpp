@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanSwapchain.h"
 
 #include "VulkanRendererAPI.h"
@@ -7,6 +6,8 @@
 
 #include "jarp/Window.h"
 #include "Platform/Windows/WindowsWindow.h"
+
+#include <algorithm>
 
 namespace jarp {
 

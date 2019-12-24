@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "Texture.h"
 
 #include "VulkanBuffer.h"

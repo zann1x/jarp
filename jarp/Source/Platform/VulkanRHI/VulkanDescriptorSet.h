@@ -2,6 +2,8 @@
 
 #include <volk.h>
 
+#include <vector>
+
 namespace jarp {
 
 	class VulkanDescriptorSetLayout;

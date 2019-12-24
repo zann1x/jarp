@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "EventBus.h"
 
 #include "jarp/Core.h"

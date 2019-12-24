@@ -1,5 +1,7 @@
 #pragma once
 
+#include "jarp/Log.h"
+
 #if defined(_DEBUG)
 	#if defined(JARP_PLATFORM_WINDOWS)
 		#define JARP_CORE_ASSERT(x, ...) {\

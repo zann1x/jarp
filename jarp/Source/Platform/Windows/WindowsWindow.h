@@ -9,6 +9,9 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
+#include <utility>
+#include <vector>
+
 namespace jarp {
 
 	class WindowsWindow : public Window

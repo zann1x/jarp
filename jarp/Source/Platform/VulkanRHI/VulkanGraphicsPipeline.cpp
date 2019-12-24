@@ -1,4 +1,3 @@
-#include "jarppch.h"
 #include "VulkanGraphicsPipeline.h"
 
 #include "VulkanRendererAPI.h"

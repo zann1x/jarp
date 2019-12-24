@@ -3,6 +3,9 @@
 #include "jarp/Events/Event.h"
 #include "jarp/Events/EventListener.h"
 
+#include <unordered_map>
+#include <vector>
+
 namespace jarp {
 
 	class EventBus

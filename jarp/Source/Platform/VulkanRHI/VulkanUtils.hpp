@@ -1,5 +1,7 @@
 #pragma once
 
+#include "jarp/Log.h"
+
 #if defined(JARP_PLATFORM_WINDOWS)
 	#define VK_ASSERT(val)\
 		if (val != VK_SUCCESS)\

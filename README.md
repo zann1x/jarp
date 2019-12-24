@@ -15,9 +15,8 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 - Install SDL2. 
 
 ```bash
-# System wide installation and installation of components needed for building the project
-> sudo apt-get install libsdl2-2.0  \
-    sudo apt-get install libsdl2-dev
+# Installation of components needed for building the project
+> sudo apt install libsdl2-dev
 ```
 
 - Install the Vulkan SDK.
