@@ -62,7 +62,8 @@ namespace jarp {
 		delete m_TransferQueue;
 		delete m_ComputeQueue;
 		delete m_GraphicsQueue;
-
+		m_Surface->Destroy();
+		delete m_Surface;
 
 		if (m_LogicalDevice != VK_NULL_HANDLE)
 		{
