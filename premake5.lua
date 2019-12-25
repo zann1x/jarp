@@ -4,10 +4,12 @@ workspace "jarp"
         "Debug",
         "Release"
     }
-    startproject "Sandbox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 sdllib = "%{wks.location}/jarp/ThirdParty/SDL2/lib/x64"
+
+targetdir ("jarp/Binaries/" .. outputdir .. "/%{prj.name}")
+objdir ("jarp/Intermediate/" .. outputdir .. "/%{prj.name}")
 
 IncludeDir = {}
 IncludeDir["glm"] = "jarp/ThirdParty/glm"
@@ -19,13 +21,10 @@ IncludeDir["volk"] = "jarp/ThirdParty/volk"
 
 project "jarp"
     location "jarp"
-    kind "StaticLib"
+    kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
     staticruntime "on"
-
-    targetdir ("jarp/Binaries/" .. outputdir .. "/%{prj.name}")
-    objdir ("jarp/Intermediate/" .. outputdir .. "/%{prj.name}")
 
     files {
         "%{prj.name}/Source/**.c",
@@ -55,20 +54,21 @@ project "jarp"
 
     filter "system:linux or configurations:gmake2"
         defines {
-            "JARP_PLATFORM_LINUX"
+            "JARP_PLATFORM_LINUX",
+            "VK_USE_PLATFORM_XCB_KHR"
         }
         removefiles {
             "%{prj.name}/Source/Platform/Windows/**"
         }
         includedirs {
-            "`sdl2-config --cflags`",
             "/usr/include/vulkan"
         }
         buildoptions {
             "`sdl2-config --cflags`"
         }
         linkoptions { 
-            "`sdl2-config --libs`",
+            "`sdl2-config --static-libs`",
+            "`pkg-config --libs x11-xcb`"
         }
 
     filter "system:windows"
@@ -76,6 +76,7 @@ project "jarp"
 
         defines {
             "JARP_PLATFORM_WINDOWS",
+            "VK_USE_PLATFORM_WIN32_KHR",
             "WIN32_LEAN_AND_MEAN",
             "NOMINMAX"
         }
@@ -97,78 +98,6 @@ project "jarp"
             -- Copy the SDL2 dll to the bin folder
             '{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
 	    }
-
-    filter 'files:**/Shaders/**.glsl'
-        buildmessage 'Compiling shaders'
-        buildcommands {
-            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
-        }
-        buildinputs {
-            "%{prj.name}/Shaders",
-        }
-        buildoutputs {
-            "%{prj.location}/Shaders/%{file.basename}.spv"
-        }
-
-    filter "configurations:Debug"
-        defines { "_DEBUG", "_CONSOLE" }
-        runtime "Debug"
-        symbols "on"
-
-    filter "configurations:Release"
-        defines { "NDEBUG", "_CONSOLE" }
-        runtime "Release"
-        optimize "on"
-
-project "Sandbox"
-    location "Sandbox"
-    kind "ConsoleApp"
-    language "C++"
-    cppdialect "C++17"
-    staticruntime "on"
-
-    targetdir ("Sandbox/Binaries/" .. outputdir .. "/%{prj.name}")
-    objdir ("Sandbox/Intermediate/" .. outputdir .. "/%{prj.name}")
-
-    files {
-        "%{prj.name}/Source/**.c",
-        "%{prj.name}/Source/**.cpp",
-        "%{prj.name}/Source/**.h",
-        "%{prj.name}/Source/**.hpp",
-
-        "%{prj.name}/Shaders/**.glsl",
-    }
-
-    includedirs {
-        "jarp/Source",
-        "%{prj.name}/Source",
-
-        "%{IncludeDir.glm}",
-        "%{IncludeDir.spdlog}"
-    }
-
-    links {
-        "jarp"
-    }
-
-    filter "system:linux or configurations:gmake2"
-        defines {
-            "JARP_PLATFORM_LINUX"
-        }
-        linkoptions { 
-            "`sdl2-config --libs`"
-        }
-
-    filter "system:windows"
-        systemversion "latest"
-
-        defines {
-            "JARP_PLATFORM_WINDOWS"
-        }
-        postbuildcommands {
-			-- Copy the SDL2 dll to the bin folder
-			'{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
-        }
 
     filter 'files:**/Shaders/**.glsl'
         buildmessage 'Compiling shaders'

@@ -38,8 +38,8 @@ namespace jarp {
 		virtual inline void* GetNativeWindow() const override { return m_Window; };
 
 		virtual inline bool IsMinimized() const override { return m_bIsWindowMinimized; }
-		inline bool IsFramebufferResized() const { return m_bIsFramebufferResized; }
-		void SetFramebufferResized(bool bIsFramebufferResized) { m_bIsFramebufferResized = bIsFramebufferResized; }
+		virtual inline bool IsFramebufferResized() const override { return m_bIsFramebufferResized; }
+		virtual void SetFramebufferResized(bool bIsFramebufferResized) override { m_bIsFramebufferResized = bIsFramebufferResized; }
 
 		virtual void Update(uint32_t deltaTime) override;
 

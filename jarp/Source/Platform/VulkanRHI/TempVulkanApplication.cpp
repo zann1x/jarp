@@ -50,8 +50,8 @@ namespace jarp {
 		m_RenderPass->CreateRenderPass();
 		m_Shader = new VulkanShader();
 		m_Shader->AddDescriptorSetLayout(*m_DescriptorSetLayout);
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Phong.vert.spv");
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Phong.frag.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "/home/zann1x/code/jarp/jarp/Shaders/Phong.vert.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "/home/zann1x/code/jarp/jarp/Shaders/Phong.frag.spv");
 		m_GraphicsPipeline = new VulkanGraphicsPipeline(*m_RenderPass, *m_Shader);
 		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
 
@@ -72,8 +72,8 @@ namespace jarp {
 			m_DrawCommandBuffers[i]->CreateCommandBuffer();
 		}
 
-		m_Model->Load("Content/kitten.obj");
-		m_Texture->Load(*m_TransientCommandBuffer, "Content/texture.jpg");
+		m_Model->Load("/home/zann1x/code/jarp/jarp/Content/kitten.obj");
+		m_Texture->Load(*m_TransientCommandBuffer, "/home/zann1x/code/jarp/jarp/Content/texture.jpg");
 		m_VertexBuffer = new VulkanBuffer(m_Model->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 		m_VertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		m_VertexBuffer->UploadBuffer(*m_TransientCommandBuffer, m_Model->GetVertices());
@@ -150,17 +150,15 @@ namespace jarp {
 				{ m_RenderingFinishedSemaphores[currentFrame]->GetHandle() }
 			);
 			// TODO: register Renderer for WindowResizedEvent to omit explicitly checking for resize here
-			// TODO: also provide a linux way of doing this
-			// WindowsWindow& windowsWindow = static_cast<WindowsWindow&>(Application::Get().GetWindow());
-			// if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowsWindow.IsFramebufferResized())
-			// {
-			// 	windowsWindow.SetFramebufferResized(false);
-			// 	RecreateSwapchain();
-			// }
-			// else
-			// {
-			// 	VK_ASSERT(result);
-			// }
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || Application::Get().GetWindow().IsFramebufferResized())
+			{
+				Application::Get().GetWindow().SetFramebufferResized(false);
+				RecreateSwapchain();
+			}
+			else
+			{
+				VK_ASSERT(result);
+			}
 		}
 
 		currentFrame = (currentFrame + 1) % m_MaxFramesInFlight;

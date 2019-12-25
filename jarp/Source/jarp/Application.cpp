@@ -14,7 +14,10 @@ namespace jarp {
 
 	Application::Application()
 	{
-		JARP_CORE_ASSERT(!s_Instance, "Application instance already exists!");
+		if (s_Instance)
+		{
+			throw new std::runtime_error("Application instance already exists!");
+		}
 		s_Instance = this;
 
 		Log::Init();

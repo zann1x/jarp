@@ -8,6 +8,9 @@
 #include "jarp/Events/KeyEvent.h"
 #include "jarp/Events/MouseEvent.h"
 
+#include <SDL_syswm.h>
+#include <X11/Xlib-xcb.h>
+
 namespace jarp {
 
     static bool bIsSDLInitialized = false;
@@ -42,15 +45,23 @@ namespace jarp {
 		SDL_Quit();
     }
 
+#if defined(VK_USE_PLATFORM_XCB_KHR)
 	xcb_connection_t* LinuxWindow::GetNativeConnectionHandle() const
 	{
-		
+		SDL_SysWMinfo systemInfo;
+		SDL_VERSION(&systemInfo.version);
+		SDL_GetWindowWMInfo(m_Window, &systemInfo);
+		return XGetXCBConnection(systemInfo.info.x11.display);
 	}
 
 	xcb_window_t LinuxWindow::GetNativeWindowHandle() const
 	{
-		
+		SDL_SysWMinfo systemInfo;
+		SDL_VERSION(&systemInfo.version);
+		SDL_GetWindowWMInfo(m_Window, &systemInfo);
+		return systemInfo.info.x11.window;
 	}
+#endif
 
 	void LinuxWindow::Update(uint32_t deltaTime)
 	{

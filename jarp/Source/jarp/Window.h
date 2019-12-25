@@ -31,6 +31,8 @@ namespace jarp {
 		virtual void* GetNativeWindow() const = 0;
 
 		virtual bool IsMinimized() const = 0;
+		virtual bool IsFramebufferResized() const = 0;
+		virtual void SetFramebufferResized(bool bIsFramebufferResized) = 0;
 
 		static Window* Create(const WindowProperties& properties = WindowProperties());
 	};

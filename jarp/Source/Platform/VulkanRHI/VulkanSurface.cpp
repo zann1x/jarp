@@ -41,7 +41,7 @@ namespace jarp {
 		xcbSurfaceCreateInfoKHR.connection = xcbWindow.GetNativeConnectionHandle();
 		xcbSurfaceCreateInfoKHR.window = xcbWindow.GetNativeWindowHandle();
 
-		vkCreateXcbSurfaceKHR(VulkanRendererAPI::s_Instance->GetHandle(), &xcbSurfaceCreateInfoKHR, nullptr, &m_SurfaceKHR);
+		VK_ASSERT(vkCreateXcbSurfaceKHR(VulkanRendererAPI::s_Instance->GetHandle(), &xcbSurfaceCreateInfoKHR, nullptr, &m_SurfaceKHR));
 #else
 #error UNSUPPORTED PLATFORM
 #endif

@@ -9,6 +9,8 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
+#include <xcb/xcb.h>
+
 namespace jarp {
 
     class LinuxWindow : public Window
@@ -17,10 +19,10 @@ namespace jarp {
         LinuxWindow(const WindowProperties& Properties = WindowProperties());
         virtual ~LinuxWindow();
 
-        // Linux XCB specific //
+#if defined(VK_USE_PLATFORM_XCB_KHR)
 		xcb_connection_t* GetNativeConnectionHandle() const;
 		xcb_window_t GetNativeWindowHandle() const;
-		// //
+#endif
 
         virtual void Update(uint32_t deltaTime) override;
 
@@ -31,6 +33,8 @@ namespace jarp {
 		virtual void* GetNativeWindow() const override { return m_Window; }
 
 		virtual bool IsMinimized() const override { return m_bIsWindowMinimized; }
+		virtual inline bool IsFramebufferResized() const override { return m_bIsFramebufferResized; }
+		virtual void SetFramebufferResized(bool bIsFramebufferResized) override { m_bIsFramebufferResized = bIsFramebufferResized; }
 
     private:
         SDL_Window* m_Window;
