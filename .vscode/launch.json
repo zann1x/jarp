@@ -8,7 +8,7 @@
             "name": "(gdb) Launch sandbox",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/jarp/Binaries/Debug-linux-x86_64/jarp/jarp",
+            "program": "${workspaceFolder}/Sandbox/Binaries/Debug-linux-x86_64/Sandbox/Sandbox",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

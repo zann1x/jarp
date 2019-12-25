@@ -30,9 +30,6 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 
 # Debugging symbols installation
 > sudo apt install libvulkan1-dbgsym vulkan-tools-dbgsym
-
-# Vulkan loader source installation
-> apt source libvulkan1
 ```
 
 - Execute `GenerateProjectFiles.sh` to create the Makefiles.
@@ -58,7 +55,7 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 
 ### Linux
 
-- SDL2 *2.0*
+- SDL2 *2.0.8*
 
 ## How it looks right now
 

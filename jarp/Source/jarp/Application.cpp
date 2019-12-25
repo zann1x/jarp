@@ -20,8 +20,6 @@ namespace jarp {
 		}
 		s_Instance = this;
 
-		Log::Init();
-
 		m_Window = std::unique_ptr<Window>(Window::Create());
 
 		EventBus::Get().Register(EventTypeWindowClosed, this);
