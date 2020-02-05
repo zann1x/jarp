@@ -7,7 +7,7 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 
 ### Windows
 
-- Install the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.1.126.0/windows/VulkanSDK-1.1.126.0-Installer.exe) under `C:\VulkanSDK`.
+- Install the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.1/windows/VulkanSDK-1.2.131.1-Installer.exe) under `C:\VulkanSDK`.
 - Execute `GenerateProjectFiles_VS2019.bat` and start the generated Visual Studio solution.
 
 ### Linux
@@ -24,7 +24,7 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 ```bash
 # Vulkan SDK installation
 > wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add - \
-    sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.1.126-bionic.list http://packages.lunarg.com/vulkan/1.1.126/lunarg-vulkan-1.1.126-bionic.list \
+    sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.131-bionic.list http://packages.lunarg.com/vulkan/1.2.131/lunarg-vulkan-1.2.131-bionic.list \
     sudo apt update \
     sudo apt install vulkan-sdk
 
@@ -47,7 +47,7 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 - stb *@052dce1*
 - tinyobjloader *2.0-rc1*
 - volk *@453c4de*
-- **Vulkan SDK** *1.1.126* (needs to be installed on your system)
+- **Vulkan SDK** *1.2.131* (needs to be installed on your system)
 
 ### Windows
 
