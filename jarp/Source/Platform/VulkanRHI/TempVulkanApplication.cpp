@@ -45,13 +45,18 @@ namespace jarp {
 
 		m_Model = new Model();
 		m_Texture = new Texture();
+#ifdef JARP_PLATFORM_LINUX
+		std::string contentBasePath = "/home/zann1x/code/jarp/Sandbox/";
+#elif JARP_PLATFORM_WINDOWS
+		std::string contentBasePath = "E:/VisualStudioProjects/jarp/Sandbox/";
+#endif
 
 		m_RenderPass = new VulkanRenderPass(*m_Swapchain);
 		m_RenderPass->CreateRenderPass();
 		m_Shader = new VulkanShader();
 		m_Shader->AddDescriptorSetLayout(*m_DescriptorSetLayout);
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "Shaders/Phong.vert.spv");
-		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "Shaders/Phong.frag.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, contentBasePath + "Shaders/Phong.vert.spv");
+		m_Shader->CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, contentBasePath + "Shaders/Phong.frag.spv");
 		m_GraphicsPipeline = new VulkanGraphicsPipeline(*m_RenderPass, *m_Shader);
 		m_GraphicsPipeline->CreateGraphicsPipeline(m_Model->GetPipelineVertexInputStateCreateInfo(), m_Swapchain->GetDetails().Extent);
 
@@ -72,8 +77,8 @@ namespace jarp {
 			m_DrawCommandBuffers[i]->CreateCommandBuffer();
 		}
 
-		m_Model->Load("Content/kitten.obj");
-		m_Texture->Load(*m_TransientCommandBuffer, "Content/texture.jpg");
+		m_Model->Load(contentBasePath + "Content/kitten.obj");
+		m_Texture->Load(*m_TransientCommandBuffer, contentBasePath + "Content/texture.jpg");
 		m_VertexBuffer = new VulkanBuffer(m_Model->GetVerticesDeviceSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 		m_VertexBuffer->CreateBuffer(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		m_VertexBuffer->UploadBuffer(*m_TransientCommandBuffer, m_Model->GetVertices());
