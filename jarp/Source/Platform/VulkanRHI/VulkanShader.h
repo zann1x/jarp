@@ -5,6 +5,7 @@
 #include "VulkanDescriptorSetLayout.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 namespace jarp {

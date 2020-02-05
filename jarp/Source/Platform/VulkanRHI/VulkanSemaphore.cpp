@@ -14,7 +14,7 @@ namespace jarp {
 	{
 	}
 
-	void VulkanSemaphore::CreateSemaphore()
+	void VulkanSemaphore::Create()
 	{
 		VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

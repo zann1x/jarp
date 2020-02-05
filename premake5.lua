@@ -86,7 +86,7 @@ project "jarp"
         }
         includedirs {
             "%{prj.name}/ThirdParty/SDL2/include",
-            "C:\\VulkanSDK\\1.1.126\\Include"
+            "C:\\VulkanSDK\\1.2.131.1\\Include"
         }
         libdirs {
             sdllib
@@ -147,13 +147,16 @@ project "Sandbox"
         "%{IncludeDir.spdlog}"
     }
 
+    links {
+        "jarp"
+    }
+
     filter "system:linux or configurations:gmake2"
         defines {
             "JARP_PLATFORM_LINUX",
         }
         links {
             "dl",
-            "jarp",
             "SDL2",
             "X11-xcb",
             "X11",

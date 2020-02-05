@@ -10,7 +10,7 @@ namespace jarp {
 		VulkanSemaphore();
 		~VulkanSemaphore();
 
-		void CreateSemaphore();
+		void Create();
 		void Destroy();
 
 		inline const VkSemaphore& GetHandle() const { return m_Semaphore; }
