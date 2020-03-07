@@ -3,12 +3,21 @@
 
 #include <SDL.h>
 
+#include "log.h"
+
 int main(int argc, char** argv)
 {
+	log_trace("Tracing... %s", "asdf");
+	log_debug("Debugging...");
+	log_info("Infoing...");
+	log_warn("Warning...");
+	log_error("Erroring...");
+	log_fatal("Fataling...");
+
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 	SDL_Window* window = SDL_CreateWindow("Hello world", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
-	SDL_SetWindowResizable(window, SDL_TRUE);
+	SDL_SetWindowResizable(window, true);
 
 	uint32_t currentFPSTime = SDL_GetTicks();
 	uint32_t lastFPSTime = currentFPSTime;
