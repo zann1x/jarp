@@ -27,20 +27,11 @@ project "jarp"
 
     files {
         "%{prj.name}/Source/**.c",
-        "%{prj.name}/Source/**.h",
-        "%{prj.name}/Shaders/**.glsl",
-
-        "%{IncludeDir.stb}/stb_image_impl.c",
-        "%{IncludeDir.volk}/volk.c"
+        "%{prj.name}/Source/**.h"
     }
 
     includedirs {
-        "%{prj.name}/Source",
-        "%{IncludeDir.glm}",
-        "%{IncludeDir.spdlog}",
-        "%{IncludeDir.stb}",
-        "%{IncludeDir.tinyobjloader}",
-        "%{IncludeDir.volk}"
+        "%{prj.name}/Source"
     }
 
     defines {
