@@ -7,7 +7,7 @@
 
 static struct
 {
-    LogLevel level;
+    enum ELogLevel level;
     bool is_muted;
 } config;
 
@@ -15,18 +15,18 @@ static const char* level_names[] = {
     "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"
 };
 
-// Colors are Windows console colors according to the table here:
+// Colors are Windows console colors, see
 // https://github.com/shiena/ansicolor/blob/4593a90318c32343a5cf962281026d61e96a4e70/README.md
 static const char* level_colors[] = {
-  "\x1b[37m", // white
-  "\x1b[36m", // cyan
-  "\x1b[32m", // green
-  "\x1b[33m", // yellow
-  "\x1b[31m", // red
+  "\x1b[37m",   // white
+  "\x1b[36m",   // cyan
+  "\x1b[32m",   // green
+  "\x1b[33m",   // yellow
+  "\x1b[31m",   // red
   "\x1b[31;1m"  // bold red
 };
 
-void log_log(LogLevel level, const char* file, int line, const char* format, ...)
+void log_log(enum ELogLevel level, const char* file, int line, const char* format, ...)
 {
     if (level < config.level || config.is_muted)
         return;
@@ -52,13 +52,7 @@ void log_log(LogLevel level, const char* file, int line, const char* format, ...
     fflush(output_stream);
 }
 
-void log_init()
-{
-    config.level = LOG_LEVEL_TRACE;
-    config.is_muted = false;
-}
-
-void log_set_level(LogLevel level)
+void log_set_level(enum ELogLevel level)
 {
     config.level = level;
 }
