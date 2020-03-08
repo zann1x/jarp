@@ -13,7 +13,6 @@ targetdir ("%{prj.name}/Binaries/" .. outputdir .. "/%{prj.name}")
 objdir ("%{prj.name}/Intermediate/" .. outputdir .. "/%{prj.name}")
 
 IncludeDir = {}
-IncludeDir["glm"] = "jarp/ThirdParty/glm"
 IncludeDir["SDL"] = "jarp/ThirdParty/SDL2/include"
 IncludeDir["stb"] = "jarp/ThirdParty/stb"
 IncludeDir["volk"] = "jarp/ThirdParty/volk"
@@ -32,11 +31,6 @@ project "jarp"
 
     includedirs {
         "%{prj.name}/Source"
-    }
-
-    defines {
-        "GLM_FORCE_RADIANS",
-        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
     }
 
     filter "system:linux or configurations:gmake2"
