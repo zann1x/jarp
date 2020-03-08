@@ -4,6 +4,8 @@
 
 #include "log.h"
 
+struct Window window;
+
 struct NativeWindow
 {
 	SDL_Window* window;

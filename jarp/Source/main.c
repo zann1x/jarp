@@ -8,8 +8,42 @@
 #include "input/buttons.h"
 #include "input/input.h"
 #include "input/keys.h"
+#include "file.h"
 #include "log.h"
 #include "window.h"
+
+static bool is_running;
+
+void handle_events()
+{
+	SDL_Event event;
+	while (SDL_PollEvent(&event) != 0)
+	{
+		switch (event.type)
+		{
+			case SDL_QUIT:
+			{
+				is_running = false;
+				break;
+			}
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEMOTION:
+			case SDL_MOUSEWHEEL:
+			{
+				input_event(&event);
+				break;
+			}
+			case SDL_WINDOWEVENT:
+			{
+				window_event(&event);
+				break;
+			}
+		}
+	}
+}
 
 int main(int argc, char** argv)
 {
@@ -20,14 +54,21 @@ int main(int argc, char** argv)
 	log_error("Erroring...");
 	log_fatal("Fataling...");
 
+	char* buffer = file_read_asc("E:\\VisualStudioProjects\\jarp\\jarp\\Source\\main.c");
+	if (buffer != NULL)
+	{
+		log_info("%s", buffer);
+		free(buffer);
+	}
+
 	window_init();
 
 	uint32_t currentFPSTime = SDL_GetTicks();
 	uint32_t lastFPSTime = currentFPSTime;
 	uint32_t frames = 0;
 
-	bool isRunning = true;
-	while (isRunning)
+	is_running = true;
+	while (is_running)
 	{
 		currentFPSTime = SDL_GetTicks();
 		++frames;
@@ -38,34 +79,7 @@ int main(int argc, char** argv)
 			frames = 0;
 		}
 
-		// Handle events
-		SDL_Event event;
-		while (SDL_PollEvent(&event) != 0)
-		{
-			switch (event.type)
-			{
-				case SDL_QUIT:
-				{
-					isRunning = false;
-					break;
-				}
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
-				case SDL_MOUSEBUTTONDOWN:
-				case SDL_MOUSEBUTTONUP:
-				case SDL_MOUSEMOTION:
-				case SDL_MOUSEWHEEL:
-				{
-					input_event(&event);
-					break;
-				}
-				case SDL_WINDOWEVENT:
-				{
-					window_event(&event);
-					break;
-				}
-			}
-		}
+		handle_events();
 
 		// render and update stuff
 		input_update();
