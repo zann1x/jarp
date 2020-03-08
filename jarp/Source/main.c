@@ -8,6 +8,7 @@
 #include "file.h"
 #include "fps_counter.h"
 #include "log.h"
+#include "math.h"
 #include "window.h"
 #include "input/buttons.h"
 #include "input/input.h"
@@ -61,6 +62,10 @@ int main(int argc, char** argv)
 		log_info("%s", buffer);
 		free(buffer);
 	}
+
+	Vec2f vec1 = { 1, 1 };
+	Vec2f vec2 = { 2, 3 };
+	Vec2f res = math_vec2f_add(vec1, vec2);
 
 	window_init();
 	fps_counter_init();
