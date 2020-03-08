@@ -33,10 +33,9 @@ void log_log(enum ELogLevel level, const char* file, int line, const char* forma
 
     // Get the current local time and convert it to a human readable format
     time_t current_time = time(NULL);
-    struct tm local_time;
-    localtime_s(&local_time, &current_time);
+    struct tm* local_time = localtime(&current_time);
     char formatted_time[16];
-    formatted_time[strftime(formatted_time, sizeof(formatted_time), "%H:%M:%S", &local_time)] = '\0';
+    formatted_time[strftime(formatted_time, sizeof(formatted_time), "%H:%M:%S", local_time)] = '\0';
 
     // Log to console
     // \x1b[0m = reset attributes
