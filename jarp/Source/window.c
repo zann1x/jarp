@@ -6,26 +6,24 @@
 
 struct Window window;
 
-struct NativeWindow
-{
-	SDL_Window* window;
-	SDL_Surface* surface;
-} native_window;
-
 void window_init()
 {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-	native_window.window = SDL_CreateWindow("Hello world", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
-	SDL_SetWindowResizable(native_window.window, true);
+	window.width = 800;
+	window.height = 600;
+	window.title = "jarp";
 
-	native_window.surface = SDL_GetWindowSurface(native_window.window);
-	SDL_FillRect(native_window.surface, NULL, SDL_MapRGB(native_window.surface->format, 0xff, 0xdd, 0xaa));
-	SDL_UpdateWindowSurface(native_window.window);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+	window.handle= SDL_CreateWindow(window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window.width, window.height, SDL_WINDOW_SHOWN);
+	SDL_SetWindowResizable(window.handle, true);
+
+	window.surface = SDL_GetWindowSurface(window.handle);
+	SDL_FillRect(window.surface, NULL, SDL_MapRGB(window.surface->format, 0xff, 0xdd, 0xaa));
+	SDL_UpdateWindowSurface(window.handle);
 }
 
 void window_destroy()
 {
-	SDL_DestroyWindow(native_window.window);
+	SDL_DestroyWindow(window.handle);
 	SDL_Quit();
 }
 

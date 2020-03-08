@@ -5,12 +5,13 @@
 
 #include <SDL.h>
 
+#include "file.h"
+#include "fps_counter.h"
+#include "log.h"
+#include "window.h"
 #include "input/buttons.h"
 #include "input/input.h"
 #include "input/keys.h"
-#include "file.h"
-#include "log.h"
-#include "window.h"
 
 static bool is_running;
 
@@ -62,23 +63,12 @@ int main(int argc, char** argv)
 	}
 
 	window_init();
-
-	uint32_t current_fps_time = SDL_GetTicks();
-	uint32_t last_fps_time = current_fps_time;
-	uint32_t frames = 0;
+	fps_counter_init();
 
 	is_running = true;
 	while (is_running)
 	{
-		current_fps_time = SDL_GetTicks();
-		++frames;
-		if (current_fps_time > last_fps_time + 1000)
-		{
-			printf("fps: %d\n", frames);
-			last_fps_time = current_fps_time;
-			frames = 0;
-		}
-
+		fps_counter_update(&window);
 		handle_events();
 
 		// render and update stuff
