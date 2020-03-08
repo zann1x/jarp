@@ -1,19 +1,14 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include <SDL.h>
 
+#include "buttons.h"
+#include "input.h"
+#include "keys.h"
 #include "log.h"
-
-struct GameInput
-{
-	bool move_up;
-
-	int mouse_x;
-	int mouse_y;
-	bool mouse_left;
-	bool mouse_right;
-} input;
+#include "window.h"
 
 int main(int argc, char** argv)
 {
@@ -24,14 +19,7 @@ int main(int argc, char** argv)
 	log_error("Erroring...");
 	log_fatal("Fataling...");
 
-	// Initialize SDL
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-	SDL_Window* window = SDL_CreateWindow("Hello world", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
-	SDL_SetWindowResizable(window, true);
-
-	SDL_Surface* surface = SDL_GetWindowSurface(window);
-	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0xff, 0xdd, 0xaa));
-	SDL_UpdateWindowSurface(window);
+	window_init();
 
 	uint32_t currentFPSTime = SDL_GetTicks();
 	uint32_t lastFPSTime = currentFPSTime;
@@ -55,43 +43,34 @@ int main(int argc, char** argv)
 		{
 			switch (event.type)
 			{
-			case SDL_QUIT:
-				isRunning = false;
-				break;
-			case SDL_KEYDOWN:
-				switch (event.key.keysym.sym)
+				case SDL_QUIT:
 				{
-				case SDLK_e:
-					log_info("Pressed E");
+					isRunning = false;
 					break;
 				}
-				break;
-			case SDL_MOUSEMOTION:
-				SDL_GetMouseState(&input.mouse_x, &input.mouse_y);
-				log_info("x: %d, y: %d", input.mouse_x, input.mouse_y);
-				break;
+				case SDL_KEYDOWN:
+				case SDL_KEYUP:
+				case SDL_MOUSEBUTTONDOWN:
+				case SDL_MOUSEBUTTONUP:
+				case SDL_MOUSEMOTION:
+				case SDL_MOUSEWHEEL:
+				{
+					input_event(&event);
+					break;
+				}
+				case SDL_WINDOWEVENT:
+				{
+					window_event(&event);
+					break;
+				}
 			}
 		}
 
-		uint32_t mouse_button = SDL_GetMouseState(NULL, NULL);
-		input.mouse_left = mouse_button == SDL_BUTTON_LMASK;
-		if (mouse_button == SDL_BUTTON_RMASK)
-			input.mouse_right = mouse_button == SDL_BUTTON_RMASK;
-
-		// Handle input
-		const uint8_t* key_states = SDL_GetKeyboardState(NULL);
-		input.move_up = key_states[SDL_SCANCODE_W];
-
 		// render and update stuff
-		if (input.mouse_left)
-			log_info("left mouse button pressed");
-		if (input.mouse_right)
-			log_info("right mouse button pressed");
+		input_update();
 	}
 
-	// Quit SDL
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+	window_destroy();
 
 	return 0;
 }
