@@ -1,12 +1,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <SDL.h>
 
-#include "buttons.h"
-#include "input.h"
-#include "keys.h"
+#include "input/buttons.h"
+#include "input/input.h"
+#include "input/keys.h"
 #include "log.h"
 #include "window.h"
 
@@ -72,5 +73,5 @@ int main(int argc, char** argv)
 
 	window_destroy();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
