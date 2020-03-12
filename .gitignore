@@ -13,3 +13,8 @@ vulkan-loader-**/
 *.vcxproj.user
 **/*.spv
 **/Makefile
+
+# gtags
+GPATH
+GRTAGS
+GTAGS
