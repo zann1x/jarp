@@ -18,69 +18,69 @@ static bool is_running;
 
 void handle_events()
 {
-	SDL_Event event;
-	while (SDL_PollEvent(&event) != 0)
-	{
-		switch (event.type)
-		{
-			case SDL_QUIT:
-			{
-				is_running = false;
-				break;
-			}
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEBUTTONUP:
-			case SDL_MOUSEMOTION:
-			case SDL_MOUSEWHEEL:
-			{
-				input_event(&event);
-				break;
-			}
-			case SDL_WINDOWEVENT:
-			{
-				window_event(&event);
-				break;
-			}
-		}
-	}
+    SDL_Event event;
+    while (SDL_PollEvent(&event) != 0)
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+            {
+                is_running = false;
+                break;
+            }
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP:
+            case SDL_MOUSEMOTION:
+            case SDL_MOUSEWHEEL:
+            {
+                input_event(&event);
+                break;
+            }
+            case SDL_WINDOWEVENT:
+            {
+                window_event(&event);
+                break;
+            }
+        }
+    }
 }
 
 int main(int argc, char** argv)
 {
-	log_trace("Tracing... %s", "asdf");
-	log_debug("Debugging...");
-	log_info("Infoing...");
-	log_warn("Warning...");
-	log_error("Erroring...");
-	log_fatal("Fataling...");
+    log_trace("Tracing... %s", "asdf");
+    log_debug("Debugging...");
+    log_info("Infoing...");
+    log_warn("Warning...");
+    log_error("Erroring...");
+    log_fatal("Fataling...");
 
-	char* buffer = file_read_asc("E:\\VisualStudioProjects\\jarp\\jarp\\Source\\main.c");
-	if (buffer != NULL)
-	{
-		log_info("%s", buffer);
-		free(buffer);
-	}
+    char* buffer = file_read_asc("E:\\VisualStudioProjects\\jarp\\jarp\\Source\\main.c");
+    if (buffer != NULL)
+    {
+        log_info("%s", buffer);
+        free(buffer);
+    }
 
-	Vec2f vec1 = { 1, 1 };
-	Vec2f vec2 = { 2, 3 };
-	Vec2f res = math_vec2f_add(vec1, vec2);
+    Vec2f vec1 = { 1, 1 };
+    Vec2f vec2 = { 2, 3 };
+    Vec2f res = math_vec2f_add(vec1, vec2);
 
-	window_init();
-	fps_counter_init();
+    window_init();
+    fps_counter_init();
 
-	is_running = true;
-	while (is_running)
-	{
-		fps_counter_update(&window);
-		handle_events();
+    is_running = true;
+    while (is_running)
+    {
+        fps_counter_update(&window);
+        handle_events();
 
-		// render and update stuff
-		input_update();
-	}
+        // render and update stuff
+        input_update();
+    }
 
-	window_destroy();
+    window_destroy();
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
