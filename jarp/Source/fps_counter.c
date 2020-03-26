@@ -11,7 +11,7 @@ uint32_t current_fps_time;
 uint32_t last_fps_time;
 uint32_t frames;
 
-void fps_counter_init()
+void fps_counter_init(void)
 {
     current_fps_time = SDL_GetTicks();
     last_fps_time = current_fps_time;

@@ -16,7 +16,7 @@ struct Window
 
 extern struct Window window;
 
-void window_init();
-void window_destroy();
+void window_init(void);
+void window_destroy(void);
 
 void window_event(SDL_Event* event);

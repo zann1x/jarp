@@ -20,4 +20,4 @@ enum ELogLevel
 void log_log(enum ELogLevel level, const char* file, int line, const char* format, ...);
 
 void log_set_level(enum ELogLevel level);
-void log_toggle_mute();
+void log_toggle_mute(void);

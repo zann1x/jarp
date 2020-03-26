@@ -59,7 +59,7 @@ void input_event(SDL_Event *event)
     }
 }
 
-void input_update()
+void input_update(void)
 {
     if (SDL_GetRelativeMouseMode() == true)
         SDL_GetRelativeMouseState(&input_mouse_x, &input_mouse_y);

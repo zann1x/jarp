@@ -6,7 +6,7 @@
 
 struct Window window;
 
-void window_init()
+void window_init(void)
 {
     window.width = 800;
     window.height = 600;
@@ -21,7 +21,7 @@ void window_init()
     SDL_UpdateWindowSurface(window.handle);
 }
 
-void window_destroy()
+void window_destroy(void)
 {
     SDL_DestroyWindow(window.handle);
     SDL_Quit();

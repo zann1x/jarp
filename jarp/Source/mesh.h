@@ -9,7 +9,7 @@ struct MeshVertex
     uint8_t color[4];
 };
 
-void hello()
+void hello(void)
 {
     int val = 3;
 }

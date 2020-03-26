@@ -56,7 +56,7 @@ void log_set_level(enum ELogLevel level)
     config.level = level;
 }
 
-void log_toggle_mute()
+void log_toggle_mute(void)
 {
     config.is_muted = !config.is_muted;
 }

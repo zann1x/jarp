@@ -16,7 +16,7 @@
 
 static bool is_running;
 
-void handle_events()
+void handle_events(void)
 {
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0)
