@@ -5,8 +5,8 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 
 ## ✔️ Supported Platforms
 
-- Windows 64-bit
-- Ubuntu 18.04
+- Windows 64-bit (MSVC)
+- Ubuntu 18.04 (GCC)
 
 ## 🚀 Prerequisites
 
