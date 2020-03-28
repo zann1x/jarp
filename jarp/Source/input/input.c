@@ -1,7 +1,6 @@
 #include "input.h"
 
-#include <stdbool.h>
-
+#include "api_types.h"
 #include "log.h"
 
 int input_mouse_x = 0;

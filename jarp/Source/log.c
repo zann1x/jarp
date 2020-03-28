@@ -1,7 +1,7 @@
 #include "log.h"
 
-#include <stdarg.h>
-#include <stdbool.h>
+#include "api_types.h"
+
 #include <stdio.h>
 #include <time.h>
 

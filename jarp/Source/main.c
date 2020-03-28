@@ -1,18 +1,20 @@
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <SDL.h>
 
+#include "api_types.h"
 #include "file.h"
 #include "fps_counter.h"
 #include "log.h"
 #include "math.h"
+#include "module.h"
 #include "window.h"
 #include "input/buttons.h"
 #include "input/input.h"
 #include "input/keys.h"
+
+#include "Sandbox/sand.h"
 
 static bool is_running;
 
@@ -55,6 +57,14 @@ int main(int argc, char** argv)
     log_warn("Warning...");
     log_error("Erroring...");
     log_fatal("Fataling...");
+
+    struct module_registry* module_reg = malloc(sizeof(struct module_registry));
+    module_registry_init(module_reg);
+    load_sand(module_reg);
+
+    sand_api* sand = module_reg->get(SAND_MODULE_NAME);
+
+    log_info("Sandbox returning %d", sand->do_the_sand());
 
     char* buffer = file_read_asc("E:\\VisualStudioProjects\\jarp\\jarp\\Source\\main.c");
     if (buffer != NULL)

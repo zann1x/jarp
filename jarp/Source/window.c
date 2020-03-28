@@ -1,7 +1,5 @@
 #include "window.h"
 
-#include <stdbool.h>
-
 #include "log.h"
 
 struct Window window;
