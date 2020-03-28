@@ -95,5 +95,8 @@ int main(int argc, char** argv)
 
     window_destroy();
 
+    reg->remove(SANDBOX_MODULE_NAME);
+    free(reg);
+
     return EXIT_SUCCESS;
 }

@@ -8,5 +8,5 @@ API void load_sandbox(struct module_registry* reg);
 
 struct sandbox_api
 {
-	int (*do_the_sand)();
+	int (*do_the_sand)(void);
 };
