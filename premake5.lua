@@ -4,7 +4,7 @@ workspace "jarp"
         "Debug",
         "Release"
     }
-    startproject "Sandbox"
+    startproject "jarp"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 sdllib = "%{wks.location}/jarp/ThirdParty/SDL2/lib/x64"
