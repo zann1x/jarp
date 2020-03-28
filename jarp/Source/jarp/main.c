@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     struct sandbox_api* sand = reg->get(SANDBOX_MODULE_NAME);
     log_info("Sandbox returning %d", sand->do_the_sand());
 
-    char* buffer = file_read_asc("E:\\VisualStudioProjects\\jarp\\jarp\\Source\\main.c");
+    char* buffer = file_read_asc("E:\\VisualStudioProjects\\jarp\\jarp\\Source\\jarp\\main.c");
     if (buffer != NULL)
     {
         log_info("%s", buffer);

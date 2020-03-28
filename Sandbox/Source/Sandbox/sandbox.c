@@ -1,6 +1,6 @@
 #include "sandbox.h"
 
-#include "module.h"
+#include "jarp/module.h"
 
 #include <stdlib.h>
 

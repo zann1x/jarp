@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include "api_types.h"
 
 struct MeshVertex
 {

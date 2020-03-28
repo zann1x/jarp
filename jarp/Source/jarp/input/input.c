@@ -1,7 +1,7 @@
 #include "input.h"
 
-#include "api_types.h"
-#include "log.h"
+#include "jarp/api_types.h"
+#include "jarp/log.h"
 
 int input_mouse_x = 0;
 int input_mouse_y = 0;
