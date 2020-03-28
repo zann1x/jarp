@@ -1,11 +1,12 @@
 #include "fps_counter.h"
 
-#include <stdint.h>
 #include <stdio.h>
 
 #include <SDL.h>
 
+#include "api_types.h"
 #include "log.h"
+#include "window.h"
 
 uint32_t current_fps_time;
 uint32_t last_fps_time;

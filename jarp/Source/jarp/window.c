@@ -1,5 +1,7 @@
 #include "window.h"
 
+#include <SDL.h>
+
 #include "log.h"
 
 struct Window window;

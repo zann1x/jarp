@@ -1,5 +1,7 @@
 #include "input.h"
 
+#include <SDL.h>
+
 #include "jarp/api_types.h"
 #include "jarp/log.h"
 

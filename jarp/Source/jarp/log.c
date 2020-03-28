@@ -1,9 +1,9 @@
 #include "log.h"
 
-#include "api_types.h"
-
 #include <stdio.h>
 #include <time.h>
+
+#include "api_types.h"
 
 static struct
 {
