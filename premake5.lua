@@ -30,7 +30,13 @@ project "jarp"
     }
 
     includedirs {
-        "%{prj.name}/Source"
+        "%{prj.name}/Source",
+
+        "%{wks.location}/Sandbox/Source"
+    }
+
+    links {
+        "Sandbox"
     }
 
     filter "system:linux or configurations:gmake2"
@@ -75,6 +81,60 @@ project "jarp"
             -- Copy the SDL2 dll to the bin folder
             '{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
 	    }
+
+    filter 'files:**/Shaders/**.glsl'
+        buildmessage 'Compiling shaders'
+        buildcommands {
+            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
+        }
+        buildinputs {
+            "%{prj.name}/Shaders",
+        }
+        buildoutputs {
+            "%{prj.location}/Shaders/%{file.basename}.spv"
+        }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_LIB" }
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_LIB" }
+        runtime "Release"
+        optimize "on"
+
+project "Sandbox"
+    location "Sandbox"
+    kind "SharedLib"
+    language "C"
+    cdialect "C99"
+    staticruntime "on"
+
+    files {
+        "%{prj.name}/Source/**.c",
+        "%{prj.name}/Source/**.h"
+    }
+
+    includedirs {
+        "%{prj.name}/Source",
+        "jarp/Source"
+    }
+
+    filter "system:linux or configurations:gmake2"
+        defines {
+            "JARP_PLATFORM_LINUX"
+        }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines {
+            "JARP_PLATFORM_WINDOWS",
+            "_CRT_SECURE_NO_WARNINGS",
+            "WIN32_LEAN_AND_MEAN",
+            "NOMINMAX"
+        }
 
     filter 'files:**/Shaders/**.glsl'
         buildmessage 'Compiling shaders'
