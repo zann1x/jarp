@@ -27,6 +27,11 @@ void window_destroy(void)
     SDL_Quit();
 }
 
+void window_set_display_title(const char* title)
+{
+    SDL_SetWindowTitle(window.handle, title);
+}
+
 void window_event(SDL_Event* event)
 {
     switch (event->window.event)

@@ -16,5 +16,6 @@ extern struct Window window;
 
 void window_init(void);
 void window_destroy(void);
+void window_set_display_title(const char* title);
 
 void window_event(union SDL_Event* event);
