@@ -22,6 +22,7 @@ char* file_read_asc(const char* path)
     if (buffer == NULL)
     {
         log_error("reading buffer for file %s could not be allocated", path);
+        fclose(file);
         return NULL;
     }
 
@@ -29,10 +30,12 @@ char* file_read_asc(const char* path)
     if (ferror(file))
     {
         log_error("failed to read file %s", path);
+        free(buffer);
+        fclose(file);
         return NULL;
     }
     buffer[read_count] = '\0';
-
+    
     fclose(file);
 
     return buffer;
