@@ -35,10 +35,6 @@ project "jarp"
         "%{wks.location}/Sandbox/Source"
     }
 
-    links {
-        "Sandbox"
-    }
-
     filter "system:linux or configurations:gmake2"
         defines {
             "JARP_PLATFORM_LINUX",
@@ -60,7 +56,7 @@ project "jarp"
         systemversion "latest"
 
         defines {
-            "JARP_PLATFORM_WINDOWS",
+            "JARP_PLATFORM_WIN32",
             "VK_USE_PLATFORM_WIN32_KHR",
             "_CRT_SECURE_NO_WARNINGS",
             "WIN32_LEAN_AND_MEAN",
@@ -130,7 +126,68 @@ project "Sandbox"
         systemversion "latest"
 
         defines {
-            "JARP_PLATFORM_WINDOWS",
+            "JARP_PLATFORM_WIN32",
+            "_CRT_SECURE_NO_WARNINGS",
+            "WIN32_LEAN_AND_MEAN",
+            "NOMINMAX"
+        }
+
+    filter 'files:**/Shaders/**.glsl'
+        buildmessage 'Compiling shaders'
+        buildcommands {
+            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
+        }
+        buildinputs {
+            "%{prj.name}/Shaders",
+        }
+        buildoutputs {
+            "%{prj.location}/Shaders/%{file.basename}.spv"
+        }
+
+    filter "configurations:Debug"
+        defines { "_DEBUG", "_LIB" }
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines { "NDEBUG", "_LIB" }
+        runtime "Release"
+        optimize "on"
+
+project "Game"
+    location "Game"
+    kind "SharedLib"
+    language "C"
+    cdialect "C99"
+    staticruntime "on"
+
+    files {
+        "%{prj.name}/Source/**.c",
+        "%{prj.name}/Source/**.h"
+    }
+
+    includedirs {
+        "%{prj.name}/Source",
+        "jarp/Source"
+    }
+
+    prebuildcommands {
+        "{TOUCH} $(TargetDir)/lock.tmp"
+    }
+    postbuildcommands {
+        "{DELETE} $(TargetDir)/lock.tmp"
+    }
+
+    filter "system:linux or configurations:gmake2"
+        defines {
+            "JARP_PLATFORM_LINUX"
+        }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines {
+            "JARP_PLATFORM_WIN32",
             "_CRT_SECURE_NO_WARNINGS",
             "WIN32_LEAN_AND_MEAN",
             "NOMINMAX"
