@@ -40,7 +40,7 @@ void log_log(enum ELogLevel level, const char* file, int line, const char* forma
     // Log to console
     // \x1b[0m = reset attributes
     // \x1b[90m = light gray
-    FILE* output_stream = stdout;
+    FILE* output_stream = level < LOG_LEVEL_WARN ? stdout : stderr;
     fprintf(output_stream, "%s %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m ", formatted_time, level_colors[level], level_names[level], file, line);
 
     va_list args;
