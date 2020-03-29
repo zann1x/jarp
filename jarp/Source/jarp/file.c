@@ -5,38 +5,42 @@
 
 #include "log.h"
 
-char* file_read_asc(const char* path)
+struct FileContent file_read_asc(const char* path)
 {
+    struct FileContent file_content = { 0 };
     FILE* file = fopen(path, "r");
-    if (file == NULL)
+
+    if (file != NULL)
+    {
+        fseek(file, 0, SEEK_END);
+        long size = ftell(file);
+        rewind(file);
+
+        file_content.buffer = (char*)malloc(sizeof(char) * size + 1u);
+        if (file_content.buffer != NULL)
+        {
+            size_t read_count = fread(file_content.buffer, 1, size, file);
+            if (!ferror(file))
+            {
+                file_content.buffer[read_count] = '\0';
+            }
+            else
+            {
+                log_error("failed to read file %s", path);
+                free(file_content.buffer);
+            }
+        }
+        else
+        {
+            log_error("reading buffer for file %s could not be allocated", path);
+        }
+
+        fclose(file);
+    }
+    else
     {
         log_error("file %s could not be opened", path);
-        return NULL;
     }
 
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    rewind(file);
-
-    char* buffer = (char*)malloc(sizeof(char) * size + 1u);
-    if (buffer == NULL)
-    {
-        log_error("reading buffer for file %s could not be allocated", path);
-        fclose(file);
-        return NULL;
-    }
-
-    size_t read_count = fread(buffer, 1, size, file);
-    if (ferror(file))
-    {
-        log_error("failed to read file %s", path);
-        free(buffer);
-        fclose(file);
-        return NULL;
-    }
-    buffer[read_count] = '\0';
-    
-    fclose(file);
-
-    return buffer;
+    return file_content;
 }
