@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <Windows.h>
 
 #include <SDL.h>
@@ -109,10 +110,16 @@ PLATFORM_TEST(win32_test)
 
 int main(int argc, char** argv)
 {
-    struct Win32LoadedCode game_code;
-    game_code.full_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game.dll";
-    game_code.full_transient_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game_temp.dll";
-    game_code.full_lock_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/BuildLock.tmp";
+    char* application_path = SDL_GetBasePath();
+    //GetModuleFileNameA(0, application_path, sizeof(application_path));
+
+    struct Win32LoadedCode game_code = { 0 };
+    strcpy(game_code.full_dll_path, application_path);
+    strcat(game_code.full_dll_path, "..\\Game\\Game.dll");
+    strcpy(game_code.full_transient_dll_path, application_path);
+    strcat(game_code.full_transient_dll_path, "..\\Game\\Game_Temp.dll");
+    strcpy(game_code.full_lock_path, application_path);
+    strcat(game_code.full_lock_path, "..\\Game\\BuildLock.tmp");
     game_code.function_name = "game_update_and_render";
     load_code(&game_code);
 

@@ -9,8 +9,8 @@ workspace "jarp"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 sdllib = "%{wks.location}/jarp/ThirdParty/SDL2/lib/x64"
 
-targetdir ("%{prj.name}/Binaries/" .. outputdir)
-objdir ("%{prj.name}/Intermediate/" .. outputdir)
+targetdir ("Binaries/" .. outputdir .. "/%{prj.name}")
+objdir ("Intermediate/" .. outputdir .. "/%{prj.name}")
 
 IncludeDir = {}
 IncludeDir["SDL"] = "jarp/ThirdParty/SDL2/include"
