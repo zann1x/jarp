@@ -50,9 +50,9 @@ void handle_events(void)
     }
 }
 
-const char* full_game_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game/Game.dll";
-const char* full_game_temp_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game/Game_temp.dll";
-const char* lock_full_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game/lock.tmp";
+const char* full_game_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game.dll";
+const char* full_game_temp_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game_temp.dll";
+const char* lock_full_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/lock.tmp";
 struct GameCode
 {
     HMODULE dll;
@@ -61,8 +61,8 @@ struct GameCode
     GameUpdateAndRender* update_and_render;
 };
 
-const char* full_sandbox_dll_path = "E:/code/jarp/Sandbox/Binaries/Debug-windows-x86_64/Sandbox/Sandbox.dll";
-const char* full_sandbox_temp_dll_path = "E:/code/jarp/Sandbox/Binaries/Debug-windows-x86_64/Sandbox/Sandbox_temp.dll";
+const char* full_sandbox_dll_path = "E:/code/jarp/Sandbox/Binaries/Debug-windows-x86_64/Sandbox.dll";
+const char* full_sandbox_temp_dll_path = "E:/code/jarp/Sandbox/Binaries/Debug-windows-x86_64/Sandbox_temp.dll";
 struct SandboxCode
 {
     FILETIME last_dll_write_time;
