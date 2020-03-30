@@ -11,6 +11,7 @@
 #include "jarp/input/buttons.h"
 #include "jarp/input/input.h"
 #include "jarp/input/keys.h"
+#include "jarp/platform/win32_main.h"
 
 bool is_running;
 
@@ -45,17 +46,6 @@ void handle_events(void)
     }
 }
 
-const char* full_game_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game.dll";
-const char* full_game_temp_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game_temp.dll";
-const char* lock_full_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/BuildLock.tmp";
-struct GameCode
-{
-    HMODULE dll;
-    FILETIME last_dll_write_time;
-
-    GameUpdateAndRender* update_and_render;
-};
-
 FILETIME win32_get_last_write_time(const char* filename)
 {
     FILETIME last_write_time = { 0 };
@@ -70,49 +60,46 @@ FILETIME win32_get_last_write_time(const char* filename)
     return last_write_time;
 }
 
-void load_game_code(struct GameCode* game_code)
+void load_code(struct Win32LoadedCode* loaded_code)
 {
     WIN32_FILE_ATTRIBUTE_DATA ignored;
-    if (!GetFileAttributesExA(lock_full_path, GetFileExInfoStandard, &ignored))
+    if (!GetFileAttributesExA(loaded_code->full_lock_path, GetFileExInfoStandard, &ignored))
     {
         log_trace("Loading game code");
 
-        game_code->last_dll_write_time = win32_get_last_write_time(full_game_dll_path);
+        loaded_code->last_dll_write_time = win32_get_last_write_time(loaded_code->full_dll_path);
 
-        if (!CopyFileA(full_game_dll_path, full_game_temp_dll_path, FALSE))
-            log_error("Copying the DLL did not work: %d", GetLastError());
-        else
-            log_info("Copied DLL");
+        if (!CopyFileA(loaded_code->full_dll_path, loaded_code->full_transient_dll_path, FALSE))
+            log_error("Copying the DLL did not work. Error code %d", GetLastError());
 
-        game_code->dll = LoadLibraryA(full_game_temp_dll_path);
-        if (!game_code->dll)
-            log_error("Failed loading the DLL");
+        loaded_code->dll = LoadLibraryA(loaded_code->full_transient_dll_path);
+        if (!loaded_code->dll)
+        {
+            log_error("Failed loading the DLL. Error code %d", GetLastError());
+        }
         else
         {
-            game_code->update_and_render = (GameUpdateAndRender*)GetProcAddress(game_code->dll, "game_update_and_render");
+            loaded_code->update_and_render = (GameUpdateAndRender*)GetProcAddress(loaded_code->dll,
+                                                                                  loaded_code->function_name);
 
-            if (!game_code->update_and_render)
-                log_error("Failed loading DLL function");
+            if (!loaded_code->update_and_render)
+                log_error("Failed loading DLL function. Error code %d", GetLastError());
         }
-    }
-    else
-    {
-        log_trace("Lock file present, cannot reload game code");
     }
 }
 
-void unload_game_code(struct GameCode* game_code)
+void unload_code(struct Win32LoadedCode* loaded_code)
 {
-    if (game_code->dll)
+    if (loaded_code->dll)
     {
         log_trace("Unloading game code");
 
-        if (!FreeLibrary(game_code->dll))
-            log_error("Failed unloading the DLL: %d", GetLastError());
-        game_code->dll = 0;
-    }
+        if (!FreeLibrary(loaded_code->dll))
+            log_error("Failed unloading the DLL. Error code %d", GetLastError());
 
-    game_code->update_and_render = NULL;
+        loaded_code->dll = 0;
+        loaded_code->update_and_render = NULL;
+    }
 }
 
 PLATFORM_TEST(win32_test)
@@ -122,8 +109,12 @@ PLATFORM_TEST(win32_test)
 
 int main(int argc, char** argv)
 {
-    struct GameCode game_code;
-    load_game_code(&game_code);
+    struct Win32LoadedCode game_code;
+    game_code.full_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game.dll";
+    game_code.full_transient_dll_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/Game_temp.dll";
+    game_code.full_lock_path = "E:/code/jarp/Game/Binaries/Debug-windows-x86_64/BuildLock.tmp";
+    game_code.function_name = "game_update_and_render";
+    load_code(&game_code);
 
     struct PlatformAPI platform_api;
     platform_api.test = win32_test;
@@ -148,12 +139,13 @@ int main(int argc, char** argv)
 #if _DEBUG
         // reload game code if a change is detected
         bool game_code_reload_needed = false;
-        FILETIME new_game_dll_write_time = win32_get_last_write_time(full_game_dll_path);
-        game_code_reload_needed = CompareFileTime(&new_game_dll_write_time, &game_code.last_dll_write_time) != 0;
+        FILETIME new_game_dll_write_time = win32_get_last_write_time(game_code.full_dll_path);
+        game_code_reload_needed = CompareFileTime(&new_game_dll_write_time,
+                                                  &game_code.last_dll_write_time) != 0;
         if (game_code_reload_needed)
         {
-            unload_game_code(&game_code);
-            load_game_code(&game_code);
+            unload_code(&game_code);
+            load_code(&game_code);
         }
 #endif
 
