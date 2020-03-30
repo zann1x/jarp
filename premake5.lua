@@ -172,10 +172,10 @@ project "Game"
     }
 
     prebuildcommands {
-        "{TOUCH} $(TargetDir)/lock.tmp"
+        "{TOUCH} $(TargetDir)/BuildLock.tmp"
     }
     postbuildcommands {
-        "{DELETE} $(TargetDir)/lock.tmp"
+        "{DELETE} $(TargetDir)/BuildLock.tmp"
     }
 
     filter "system:linux or configurations:gmake2"
