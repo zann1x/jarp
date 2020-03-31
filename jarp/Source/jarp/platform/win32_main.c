@@ -4,10 +4,10 @@
 
 #include <SDL.h>
 
-#include "jarp/api_types.h"
 #include "jarp/file.h"
 #include "jarp/log.h"
 #include "jarp/platform.h"
+#include "jarp/shared.h"
 #include "jarp/window.h"
 #include "jarp/input/buttons.h"
 #include "jarp/input/input.h"
@@ -61,7 +61,22 @@ FILETIME win32_get_last_write_time(const char* filename)
     return last_write_time;
 }
 
-void load_code(struct Win32LoadedCode* loaded_code)
+void win32_unload_code(struct Win32LoadedCode* loaded_code)
+{
+    if (loaded_code->dll)
+    {
+        log_trace("Unloading game code");
+
+        if (!FreeLibrary(loaded_code->dll))
+            log_error("Failed unloading the DLL. Error code %d", GetLastError());
+
+        loaded_code->dll = 0;
+    }
+    loaded_code->is_valid = false;
+    ZERO_ARRAY(loaded_code->function_count, loaded_code->functions);
+}
+
+void win32_load_code(struct Win32LoadedCode* loaded_code)
 {
     WIN32_FILE_ATTRIBUTE_DATA ignored;
     if (!GetFileAttributesExA(loaded_code->full_lock_path, GetFileExInfoStandard, &ignored))
@@ -74,32 +89,34 @@ void load_code(struct Win32LoadedCode* loaded_code)
             log_error("Copying the DLL did not work. Error code %d", GetLastError());
 
         loaded_code->dll = LoadLibraryA(loaded_code->full_transient_dll_path);
-        if (!loaded_code->dll)
+        if (loaded_code->dll)
         {
-            log_error("Failed loading the DLL. Error code %d", GetLastError());
+            loaded_code->is_valid = true;
+            for (uint32_t i = 0; i < loaded_code->function_count; i++)
+            {
+                char* name = loaded_code->function_names[i];
+                void* function = GetProcAddress(loaded_code->dll, loaded_code->function_names[i]);
+                if (function)
+                {
+                    loaded_code->functions[i] = function;
+                }
+                else
+                {
+                    log_error("Failed loading DLL function. Error code %d", GetLastError());
+                    loaded_code->is_valid = false;
+                }
+            }
         }
         else
         {
-            loaded_code->update_and_render = (GameUpdateAndRender*)GetProcAddress(loaded_code->dll,
-                                                                                  loaded_code->function_name);
-
-            if (!loaded_code->update_and_render)
-                log_error("Failed loading DLL function. Error code %d", GetLastError());
+            log_error("Failed loading the DLL. Error code %d", GetLastError());
         }
-    }
-}
 
-void unload_code(struct Win32LoadedCode* loaded_code)
-{
-    if (loaded_code->dll)
-    {
-        log_trace("Unloading game code");
-
-        if (!FreeLibrary(loaded_code->dll))
-            log_error("Failed unloading the DLL. Error code %d", GetLastError());
-
-        loaded_code->dll = 0;
-        loaded_code->update_and_render = NULL;
+        if (!loaded_code->is_valid)
+        {
+            log_error("Loaded code is invalid. Unloading the code again.");
+            win32_unload_code(&loaded_code);
+        }
     }
 }
 
@@ -113,6 +130,7 @@ int main(int argc, char** argv)
     char* application_path = SDL_GetBasePath();
     //GetModuleFileNameA(0, application_path, sizeof(application_path));
 
+    struct Win32GameFunctionTable game = { 0 };
     struct Win32LoadedCode game_code = { 0 };
     strcpy(game_code.full_dll_path, application_path);
     strcat(game_code.full_dll_path, "..\\Game\\Game.dll");
@@ -120,8 +138,10 @@ int main(int argc, char** argv)
     strcat(game_code.full_transient_dll_path, "..\\Game\\Game_Temp.dll");
     strcpy(game_code.full_lock_path, application_path);
     strcat(game_code.full_lock_path, "..\\Game\\BuildLock.tmp");
-    game_code.function_name = "game_update_and_render";
-    load_code(&game_code);
+    game_code.function_count = ARRAY_COUNT(Win32GameFunctionTableNames);
+    game_code.function_names = Win32GameFunctionTableNames;
+    game_code.functions = (void**)&game;
+    win32_load_code(&game_code);
 
     struct PlatformAPI platform_api;
     platform_api.test = win32_test;
@@ -151,8 +171,8 @@ int main(int argc, char** argv)
                                                   &game_code.last_dll_write_time) != 0;
         if (game_code_reload_needed)
         {
-            unload_code(&game_code);
-            load_code(&game_code);
+            win32_unload_code(&game_code);
+            win32_load_code(&game_code);
         }
 #endif
 
@@ -165,7 +185,7 @@ int main(int argc, char** argv)
             sprintf(buffer, "%s - %d fps", window.title, frames);
             window_set_display_title(buffer);
 
-            game_code.update_and_render(&game_memory);
+            game.update_and_render(&game_memory);
 
             last_fps_time = current_fps_time;
             frames = 0;
