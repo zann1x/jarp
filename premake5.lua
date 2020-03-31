@@ -171,13 +171,6 @@ project "Game"
         "jarp/Source"
     }
 
-    prebuildcommands {
-        "{TOUCH} $(TargetDir)/BuildLock.tmp"
-    }
-    postbuildcommands {
-        "{DELETE} $(TargetDir)/BuildLock.tmp"
-    }
-
     filter "system:linux or configurations:gmake2"
         defines {
             "JARP_PLATFORM_LINUX"
@@ -191,6 +184,13 @@ project "Game"
             "_CRT_SECURE_NO_WARNINGS",
             "WIN32_LEAN_AND_MEAN",
             "NOMINMAX"
+        }
+        symbolspath '$(OutDir)$(TargetName)-$([System.DateTime]::Now.ToString("HHmmssfff")).pdb'
+        prebuildcommands {
+            "{TOUCH} $(TargetDir)/BuildLock.tmp"
+        }
+        postbuildcommands {
+            "{DELETE} $(TargetDir)/BuildLock.tmp"
         }
 
     filter 'files:**/Shaders/**.glsl'
