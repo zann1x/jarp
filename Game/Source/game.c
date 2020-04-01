@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-API GAME_UPDATE_AND_RENDER(game_update_and_render)
-{
+API GAME_UPDATE_AND_RENDER(game_update_and_render) {
 	printf("Updating the game... %d\n", 42);
 }

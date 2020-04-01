@@ -5,13 +5,11 @@
 #define PLATFORM_TEST(name) int name(void)
 typedef PLATFORM_TEST(PlatformTest);
 
-struct PlatformAPI
-{
+struct PlatformAPI {
     PlatformTest* test;
 };
 
-struct GameMemory
-{
+struct GameMemory {
     struct PlatformAPI platform_api;
 };
 

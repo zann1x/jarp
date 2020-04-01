@@ -2,14 +2,12 @@
 
 #include "api_types.h"
 
-struct MeshVertex
-{
+struct MeshVertex {
     float position[3];
     float uv[2];
     uint8_t color[4];
 };
 
-void hello(void)
-{
+void hello(void) {
     int val = 3;
 }

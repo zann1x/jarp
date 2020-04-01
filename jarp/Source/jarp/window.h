@@ -2,8 +2,7 @@
 
 #include "api_types.h"
 
-struct Window
-{
+struct Window {
     int32_t width;
     int32_t height;
     const char* title;

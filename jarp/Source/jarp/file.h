@@ -1,7 +1,6 @@
 #pragma once
 
-struct FileContent
-{
+struct FileContent {
 	char* buffer;
 };
 

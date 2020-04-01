@@ -5,8 +5,7 @@
 
 #include "api_types.h"
 
-static struct
-{
+static struct {
     enum ELogLevel level;
     bool is_muted;
 } config;
@@ -26,10 +25,10 @@ static const char* level_colors[] = {
   "\x1b[31;1m"  // bold red
 };
 
-void log_log(enum ELogLevel level, const char* file, int line, const char* format, ...)
-{
-    if (level < config.level || config.is_muted)
+void log_log(enum ELogLevel level, const char* file, int line, const char* format, ...) {
+    if (level < config.level || config.is_muted) {
         return;
+    }
 
     // Get the current local time and convert it to a human readable format
     time_t current_time = time(NULL);
@@ -51,12 +50,10 @@ void log_log(enum ELogLevel level, const char* file, int line, const char* forma
     fflush(output_stream);
 }
 
-void log_set_level(enum ELogLevel level)
-{
+void log_set_level(enum ELogLevel level) {
     config.level = level;
 }
 
-void log_toggle_mute(void)
-{
+void log_toggle_mute(void) {
     config.is_muted = !config.is_muted;
 }

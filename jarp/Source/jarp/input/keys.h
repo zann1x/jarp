@@ -2,8 +2,7 @@
 
 #include <SDL_scancode.h>
 
-enum EKey
-{
+enum EKey {
     KEY_UNKNOWN = SDL_SCANCODE_UNKNOWN,
 
     KEY_W = SDL_SCANCODE_W,

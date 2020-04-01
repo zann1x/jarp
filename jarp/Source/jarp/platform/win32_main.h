@@ -1,7 +1,6 @@
 #include "jarp/api_types.h"
 
-struct Win32LoadedCode
-{
+struct Win32LoadedCode {
     bool is_valid;
 
     HMODULE dll;
@@ -16,8 +15,7 @@ struct Win32LoadedCode
     void** functions;
 };
 
-struct Win32GameFunctionTable
-{
+struct Win32GameFunctionTable {
     GameUpdateAndRender* update_and_render;
 };
 static char* Win32GameFunctionTableNames[] = {

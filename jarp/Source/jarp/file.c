@@ -5,40 +5,30 @@
 
 #include "log.h"
 
-struct FileContent file_read_asc(const char* path)
-{
+struct FileContent file_read_asc(const char* path) {
     struct FileContent file_content = { 0 };
     FILE* file = fopen(path, "r");
 
-    if (file != NULL)
-    {
+    if (file != NULL) {
         fseek(file, 0, SEEK_END);
         long size = ftell(file);
         rewind(file);
 
         file_content.buffer = (char*)malloc(sizeof(char) * size + 1u);
-        if (file_content.buffer != NULL)
-        {
+        if (file_content.buffer != NULL) {
             size_t read_count = fread(file_content.buffer, 1, size, file);
-            if (!ferror(file))
-            {
+            if (!ferror(file)) {
                 file_content.buffer[read_count] = '\0';
-            }
-            else
-            {
+            } else {
                 log_error("failed to read file %s", path);
                 free(file_content.buffer);
             }
-        }
-        else
-        {
+        } else {
             log_error("reading buffer for file %s could not be allocated", path);
         }
 
         fclose(file);
-    }
-    else
-    {
+    } else {
         log_error("file %s could not be opened", path);
     }
 

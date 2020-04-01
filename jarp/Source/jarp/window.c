@@ -6,8 +6,7 @@
 
 struct Window window;
 
-void window_init(void)
-{
+void window_init(void) {
     window.width = 800;
     window.height = 600;
     window.title = "jarp";
@@ -21,31 +20,25 @@ void window_init(void)
     SDL_UpdateWindowSurface(window.handle);
 }
 
-void window_destroy(void)
-{
+void window_destroy(void) {
     SDL_DestroyWindow(window.handle);
     SDL_Quit();
 }
 
-void window_set_display_title(const char* title)
-{
+void window_set_display_title(const char* title) {
     SDL_SetWindowTitle(window.handle, title);
 }
 
-void window_event(SDL_Event* event)
-{
-    switch (event->window.event)
-    {
+void window_event(SDL_Event* event) {
+    switch (event->window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
-        case SDL_WINDOWEVENT_RESIZED:
-        {
+        case SDL_WINDOWEVENT_RESIZED: {
             window.width = event->window.data1;
             window.height = event->window.data2;
             log_trace("Window resized to (%d, %d)", event->window.data1, event->window.data2);
             break;
         }
-        default:
-        {
+        default: {
             log_warn("Unknown window event type %d", event->window.event);
             break;
         }

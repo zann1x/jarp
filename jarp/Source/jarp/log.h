@@ -1,7 +1,6 @@
 #pragma once
 
-enum ELogLevel
-{
+enum ELogLevel {
     LOG_LEVEL_TRACE,
     LOG_LEVEL_DEBUG,
     LOG_LEVEL_INFO,

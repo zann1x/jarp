@@ -2,8 +2,7 @@
 
 #include <SDL_mouse.h>
 
-enum EButton
-{
+enum EButton {
     BUTTON_LEFT = SDL_BUTTON_LEFT,
     BUTTON_MIDDLE = SDL_BUTTON_MIDDLE,
     BUTTON_RIGHT = SDL_BUTTON_RIGHT,
