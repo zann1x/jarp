@@ -17,6 +17,6 @@ enum ELogLevel {
 #define log_fatal(...)	log_log(LOG_LEVEL_FATAL, __FILE__, __LINE__, __VA_ARGS__)
 
 void log_log(enum ELogLevel level, const char* file, int line, const char* format, ...);
-
+    
 void log_set_level(enum ELogLevel level);
 void log_toggle_mute(void);

@@ -1,6 +1,7 @@
 #include "window.h"
 
 #include <SDL.h>
+#include <SDL_vulkan.h>
 
 #include "log.h"
 
@@ -12,7 +13,7 @@ void window_init(void) {
     window.title = "jarp";
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    window.handle= SDL_CreateWindow(window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window.width, window.height, SDL_WINDOW_SHOWN);
+    window.handle= SDL_CreateWindow(window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window.width, window.height, SDL_WINDOW_VULKAN);
     SDL_SetWindowResizable(window.handle, true);
 
     window.surface = SDL_GetWindowSurface(window.handle);
