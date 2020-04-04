@@ -26,13 +26,18 @@ project "jarp"
 
     files {
         "%{prj.name}/Source/**.c",
-        "%{prj.name}/Source/**.h"
+        "%{prj.name}/Source/**.h",
+
+        "%{prj.name}/Shader/**.glsl",
+
+        "%{IncludeDir.stb}/stb_image_impl.c"
     }
 
     includedirs {
         "%{prj.name}/Source",
+        "%{wks.location}/Sandbox/Source",
 
-        "%{wks.location}/Sandbox/Source"
+        "%{IncludeDir.stb}"
     }
 
     filter "system:linux or configurations:gmake2"
@@ -62,8 +67,12 @@ project "jarp"
             "WIN32_LEAN_AND_MEAN",
             "NOMINMAX"
         }
+        files {
+            "%{IncludeDir.volk}/volk.c"
+        }
         includedirs {
             "%{prj.name}/ThirdParty/SDL2/include",
+            "%{IncludeDir.volk}",
             "C:\\VulkanSDK\\1.2.131.1\\Include"
         }
         libdirs {
@@ -78,16 +87,16 @@ project "jarp"
             '{COPY} "' .. sdllib .. '/SDL2.dll" "%{cfg.targetdir}"'
 	    }
 
-    filter 'files:**/Shaders/**.glsl'
+    filter 'files:**/Shader/**.glsl'
         buildmessage 'Compiling shaders'
         buildcommands {
-            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
+            'glslangValidator "%{prj.location}/Shader/%{file.name}" -V -o "%{prj.location}/Shader/%{file.basename}.spv"'
         }
         buildinputs {
-            "%{prj.name}/Shaders",
+            "%{prj.name}/Shader",
         }
         buildoutputs {
-            "%{prj.location}/Shaders/%{file.basename}.spv"
+            "%{prj.location}/Shader/%{file.basename}.spv"
         }
 
     filter "configurations:Debug"
@@ -132,16 +141,16 @@ project "Sandbox"
             "NOMINMAX"
         }
 
-    filter 'files:**/Shaders/**.glsl'
+    filter 'files:**/Shader/**.glsl'
         buildmessage 'Compiling shaders'
         buildcommands {
-            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
+            'glslangValidator "%{prj.location}/Shader/%{file.name}" -V -o "%{prj.location}/Shader/%{file.basename}.spv"'
         }
         buildinputs {
-            "%{prj.name}/Shaders",
+            "%{prj.name}/Shader",
         }
         buildoutputs {
-            "%{prj.location}/Shaders/%{file.basename}.spv"
+            "%{prj.location}/Shader/%{file.basename}.spv"
         }
 
     filter "configurations:Debug"
@@ -163,7 +172,9 @@ project "Game"
 
     files {
         "%{prj.name}/Source/**.c",
-        "%{prj.name}/Source/**.h"
+        "%{prj.name}/Source/**.h",
+
+        "%{prj.name}/Shader/**.glsl",
     }
 
     includedirs {
@@ -193,16 +204,16 @@ project "Game"
             "{DELETE} $(TargetDir)/BuildLock.tmp"
         }
 
-    filter 'files:**/Shaders/**.glsl'
+    filter 'files:**/Shader/**.glsl'
         buildmessage 'Compiling shaders'
         buildcommands {
-            'glslangValidator "%{prj.location}/Shaders/%{file.name}" -V -o "%{prj.location}/Shaders/%{file.basename}.spv"'
+            'glslangValidator "%{prj.location}/Shader/%{file.name}" -V -o "%{prj.location}/Shader/%{file.basename}.spv"'
         }
         buildinputs {
-            "%{prj.name}/Shaders",
+            "%{prj.name}/Shader",
         }
         buildoutputs {
-            "%{prj.location}/Shaders/%{file.basename}.spv"
+            "%{prj.location}/Shader/%{file.basename}.spv"
         }
 
     filter "configurations:Debug"

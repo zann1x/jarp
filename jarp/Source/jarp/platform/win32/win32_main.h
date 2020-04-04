@@ -5,8 +5,8 @@
 #include "jarp/platform.h"
 
 struct Win32Window {
-    int32_t width;
-    int32_t height;
+    uint32_t width;
+    uint32_t height;
     const char* title;
 
     struct SDL_Window* handle;

@@ -1,5 +1,15 @@
 #pragma once
 
+#include "api_types.h"
+
+inline static uint32_t math_max(uint32_t num1, uint32_t num2) {
+    return (num1 > num2 ? num1 : num2);
+}
+
+inline static uint32_t math_min(uint32_t num1, uint32_t num2) {
+    return (num1 < num2 ? num1 : num2);
+}
+
 union Vec2f {
     struct {
         float x, y;
@@ -23,6 +33,13 @@ union Vec3f {
 
 typedef union Vec2f Vec2f;
 typedef union Vec3f Vec3f;
+
+// TODO
+struct Mat4f {
+    float tmp;
+};
+
+typedef struct Mat4f Mat4f;
 
 inline static Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
     Vec2f result;

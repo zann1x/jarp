@@ -175,10 +175,12 @@ int main(int argc, char** argv) {
     
     SDL_SysWMinfo system_info;
     SDL_VERSION(&system_info.version);
+    SDL_GetWindowWMInfo(window.handle, &system_info);
     window.hinstance = system_info.info.win.hinstance;
     window.hwnd = system_info.info.win.window;
 
-    if (!vk_renderer_init(&window)) {
+    if (!vk_renderer_init(&window, application_path)) {
+        vk_renderer_shutdown();
         return 1;
     }
 
