@@ -25,6 +25,11 @@ static const char* level_colors[] = {
   "\x1b[31;1m"  // bold red
 };
 
+/*
+====================
+log_log
+====================
+*/
 void log_log(enum ELogLevel level, const char* file, int line, const char* format, ...) {
     if (level < config.level || config.is_muted) {
         return;
@@ -50,10 +55,20 @@ void log_log(enum ELogLevel level, const char* file, int line, const char* forma
     fflush(output_stream);
 }
 
+/*
+====================
+log_set_level
+====================
+*/
 void log_set_level(enum ELogLevel level) {
     config.level = level;
 }
 
+/*
+====================
+log_toggle_mute
+====================
+*/
 void log_toggle_mute(void) {
     config.is_muted = !config.is_muted;
 }

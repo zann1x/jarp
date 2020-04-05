@@ -5,6 +5,11 @@
 
 #include "log.h"
 
+/*
+====================
+file_read_asc
+====================
+*/
 struct FileContent file_read_asc(const char* path) {
     struct FileContent file_content = { 0 };
     FILE* file = fopen(path, "r");
@@ -35,6 +40,11 @@ struct FileContent file_read_asc(const char* path) {
     return file_content;
 }
 
+/*
+====================
+file_read_bin
+====================
+*/
 struct FileContent file_read_bin(const char* path) {
     struct FileContent file_content = { 0 };
     FILE* file = fopen(path, "rb");

@@ -16,10 +16,20 @@
 #include "jarp/input/keys.h"
 #include "jarp/renderer/vulkan/vk_renderer.h"
 
+/*
+====================
+win32_test
+====================
+*/
 PLATFORM_TEST(win32_test) {
     return 1;
 }
 
+/*
+====================
+win32_get_last_write_time
+====================
+*/
 FILETIME win32_get_last_write_time(const char* filename) {
     FILETIME last_write_time = { 0 };
     WIN32_FILE_ATTRIBUTE_DATA data;
@@ -30,6 +40,11 @@ FILETIME win32_get_last_write_time(const char* filename) {
     return last_write_time;
 }
 
+/*
+====================
+win32_unload_code
+====================
+*/
 void win32_unload_code(struct Win32LoadedCode* loaded_code) {
     log_trace("Trying to unload game code");
     if (loaded_code->dll) {
@@ -44,6 +59,11 @@ void win32_unload_code(struct Win32LoadedCode* loaded_code) {
     ZERO_ARRAY(loaded_code->function_count, loaded_code->functions);
 }
 
+/*
+====================
+win32_load_code
+====================
+*/
 void win32_load_code(struct Win32LoadedCode* loaded_code) {
     WIN32_FILE_ATTRIBUTE_DATA ignored;
     if (!GetFileAttributesExA(loaded_code->full_lock_path, GetFileExInfoStandard, &ignored)) {
@@ -78,6 +98,11 @@ void win32_load_code(struct Win32LoadedCode* loaded_code) {
     }
 }
 
+/*
+====================
+win32_unload_game_code
+====================
+*/
 void win32_unload_game_code(struct Win32GameCode* loaded_code) {
     if (loaded_code->dll) {
         if (!FreeLibrary(loaded_code->dll)) {
@@ -88,6 +113,11 @@ void win32_unload_game_code(struct Win32GameCode* loaded_code) {
     loaded_code->is_valid = false;
 }
 
+/*
+====================
+win32_get_game_api
+====================
+*/
 struct GameExport* win32_get_game_api(struct Win32GameCode* loaded_code, struct GameImport* params) {
     GameGetAPI* game_get_api = NULL;
 
@@ -131,6 +161,11 @@ struct GameExport* win32_get_game_api(struct Win32GameCode* loaded_code, struct 
     }
 }
 
+/*
+====================
+main
+====================
+*/
 int main(int argc, char** argv) {
     char* application_path = SDL_GetBasePath();
     //GetModuleFileNameA(0, application_path, sizeof(application_path));

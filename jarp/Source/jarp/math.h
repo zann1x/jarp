@@ -2,10 +2,20 @@
 
 #include "api_types.h"
 
+/*
+====================
+math_max
+====================
+*/
 inline static uint32_t math_max(uint32_t num1, uint32_t num2) {
     return (num1 > num2 ? num1 : num2);
 }
 
+/*
+====================
+math_min
+====================
+*/
 inline static uint32_t math_min(uint32_t num1, uint32_t num2) {
     return (num1 < num2 ? num1 : num2);
 }
@@ -41,6 +51,11 @@ struct Mat4f {
 
 typedef struct Mat4f Mat4f;
 
+/*
+====================
+math_vec2f_add
+====================
+*/
 inline static Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
     Vec2f result;
     result.x = vec1.x + vec2.x;
@@ -49,6 +64,11 @@ inline static Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
     return result;
 }
 
+/*
+====================
+math_vec3f_add
+====================
+*/
 inline static Vec3f math_vec3f_add(Vec3f vec1, Vec3f vec2) {
     Vec3f result;
     result.x = vec1.x + vec2.x;
