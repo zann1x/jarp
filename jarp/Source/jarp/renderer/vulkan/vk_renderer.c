@@ -1318,8 +1318,8 @@ bool vk_renderer_init(void* window, char* application_path) {
         descriptor_buffer_info.range = sizeof(uniform_buffer_object);
 
         VkDescriptorImageInfo descriptor_image_info = { 0 };
-        descriptor_image_info.sampler = texture_sampler; // TODO
-        descriptor_image_info.imageView = texture_image_view; // TODO
+        descriptor_image_info.sampler = texture_sampler;
+        descriptor_image_info.imageView = texture_image_view;
         descriptor_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkWriteDescriptorSet write_descriptor_sets[2] = { 0 };
@@ -1362,13 +1362,12 @@ bool vk_renderer_init(void* window, char* application_path) {
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.pNext = NULL;
         // Create fences in a signaled state, so the wait command at the start of the draw function doesn't throw debug errors
-        fenceCreateInfo.flags = 0;
+        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         vkCreateFence(device, &fenceCreateInfo, NULL, &fences_in_flight[i]);
     }
 
     // TODO:
     // - recreate swapchain on resize
-    // - use the vulkan rendering side via the SDL window
 
     record_command_buffer();
 
@@ -1381,6 +1380,8 @@ vk_renderer_shutdown
 ====================
 */
 void vk_renderer_shutdown(void) {
+    // TODO: fix validation errors
+
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (fences_in_flight[i] != VK_NULL_HANDLE) {
             vkDestroyFence(device, fences_in_flight[i], NULL);
@@ -1539,7 +1540,7 @@ void record_command_buffer(void) {
 void vk_renderer_draw(void) {
     vkWaitForFences(device, 1, &fences_in_flight[current_frame], VK_TRUE, UINT64_MAX);
 
-    vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_available_semaphores[0], fences_in_flight[0], &active_image_index);
+    vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &active_image_index);
 
     if (images_in_flight[active_image_index] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &images_in_flight[active_image_index], VK_TRUE, UINT64_MAX);
@@ -1562,7 +1563,7 @@ void vk_renderer_draw(void) {
     submit_info.pSignalSemaphores = signal_semaphores;
 
     vkResetFences(device, 1, &fences_in_flight[current_frame]);
-    vkQueueSubmit(graphics_queue, 1, &submit_info, fences_in_flight[current_frame]);
+    vkQueueSubmit(graphics_queue, 1, &submit_info, fences_in_flight[current_frame]); // TODO: handle possible error
 
     VkSwapchainKHR swapchains[] = { swapchain };
 
