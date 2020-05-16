@@ -205,8 +205,6 @@ int main(int argc, char** argv) {
                                      window.width, window.height, SDL_WINDOW_VULKAN);
     SDL_SetWindowResizable(window.handle, true);
     window.surface = SDL_GetWindowSurface(window.handle);
-    SDL_FillRect(window.surface, NULL, SDL_MapRGB(window.surface->format, 0xff, 0xdd, 0xaa));
-    SDL_UpdateWindowSurface(window.handle);
     
     SDL_SysWMinfo system_info;
     SDL_VERSION(&system_info.version);
@@ -267,6 +265,7 @@ int main(int argc, char** argv) {
 
         // render and update stuff
         input_update();
+        vk_renderer_draw();
 
 #if _DEBUG
         // reload game code if a change is detected
