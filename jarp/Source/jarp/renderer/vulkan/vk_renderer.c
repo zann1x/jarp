@@ -1380,7 +1380,7 @@ vk_renderer_shutdown
 ====================
 */
 void vk_renderer_shutdown(void) {
-    // TODO: fix validation errors
+    vkDeviceWaitIdle(device);
 
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (fences_in_flight[i] != VK_NULL_HANDLE) {
@@ -1393,10 +1393,8 @@ void vk_renderer_shutdown(void) {
             vkDestroySemaphore(device, rendering_finished_semaphores[i], NULL);
         }
     }
-    for (uint32_t i = 0; i < swapchain_image_count; i++) {
-        if (descriptor_sets[i] != VK_NULL_HANDLE) {
-            vkFreeDescriptorSets(device, descriptor_pool, 1, &descriptor_sets[i]);
-        }
+    if (texture_sampler != VK_NULL_HANDLE) {
+        vkDestroySampler(device, texture_sampler, NULL);
     }
     if (texture_image_view != VK_NULL_HANDLE) {
         vkDestroyImageView(device, texture_image_view, NULL);
@@ -1427,8 +1425,14 @@ void vk_renderer_shutdown(void) {
     if (vertex_buffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(device, vertex_buffer, NULL);
     }
+    // Implicitly destroyed by the descriptor pool
+    //for (uint32_t i = 0; i < swapchain_image_count; i++) {
+    //    if (descriptor_sets[i] != VK_NULL_HANDLE) {
+    //        vkFreeDescriptorSets(device, descriptor_pool, 1, &descriptor_sets[i]);
+    //    }
+    //}
     if (descriptor_pool != VK_NULL_HANDLE) {
-        // Implicitly destroys the descriptor sets created from it
+        vkResetDescriptorPool(device, descriptor_pool, 0);
         vkDestroyDescriptorPool(device, descriptor_pool, NULL);
     }
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
