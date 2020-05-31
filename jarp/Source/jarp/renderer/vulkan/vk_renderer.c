@@ -13,6 +13,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 // TODO: proper handling of VkResult return values
 
@@ -255,8 +256,6 @@ bool create_buffer(VkBuffer* buffer, VkDeviceMemory* buffer_memory, VkDeviceSize
     vkAllocateMemory(device, &buffer_memory_allocate_info, NULL, buffer_memory);
     vkBindBufferMemory(device, *buffer, *buffer_memory, 0);
 
-    // TODO: Upload buffer
-
     return true;
 }
 
@@ -310,6 +309,43 @@ void end_one_time_submit_command(VkCommandBuffer* command_buffer, VkCommandPool*
     vkQueueWaitIdle(graphics_queue);
 
     vkFreeCommandBuffers(device, *command_pool, 1, command_buffer);
+}
+
+/*
+====================
+upload_buffer
+====================
+*/
+bool upload_buffer(VkBuffer buffer, VkDeviceSize buffer_size, void* data) {
+    // Create staging buffer and copy data to GPU
+    VkBuffer staging_buffer = VK_NULL_HANDLE;
+    VkDeviceMemory staging_memory = VK_NULL_HANDLE;
+    if (!create_buffer(&staging_buffer, &staging_memory, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
+        return false;
+    }
+
+    void* raw_data = NULL;
+    vkMapMemory(device, staging_memory, 0, buffer_size, 0, &raw_data);
+    memcpy(raw_data, data, (size_t)buffer_size);
+    vkUnmapMemory(device, staging_memory);
+
+    // Execute copy command
+    VkCommandBuffer command_buffer = begin_one_time_submit_command(&command_pool);
+
+    VkBufferCopy buffer_copy = { 0 };
+    buffer_copy.srcOffset = 0;
+    buffer_copy.dstOffset = 0;
+    buffer_copy.size = buffer_size;
+
+    vkCmdCopyBuffer(command_buffer, staging_buffer, buffer, 1, &buffer_copy);
+
+    end_one_time_submit_command(&command_buffer, &command_pool);
+
+    vkFreeMemory(device, staging_memory, NULL);
+    vkDestroyBuffer(device, staging_buffer, NULL);
+
+    return true;
 }
 
 /*
@@ -1181,6 +1217,8 @@ bool vk_renderer_init(void* window, char* application_path) {
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
         return false;
     }
+    upload_buffer(vertex_buffer, sizeof(model_vertices[0]) * ARRAY_COUNT(model_vertices),
+                  model_vertices);
 
     if (!create_buffer(&index_buffer, &index_buffer_memory,
         sizeof(model_indices[0]) * ARRAY_COUNT(model_indices),
@@ -1188,6 +1226,8 @@ bool vk_renderer_init(void* window, char* application_path) {
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
         return false;
     }
+    upload_buffer(index_buffer, sizeof(model_indices[0]) * ARRAY_COUNT(model_indices),
+                  model_indices);
 
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
         if (!create_buffer(&uniform_buffers[i], &uniform_buffer_memories[i],
@@ -1201,6 +1241,7 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
     // Texture
     // ===============
+    // TODO: use the texture and render it onto something
     char texture_path[MAX_PATH];
     strcpy(texture_path, application_path);
     strcat(texture_path, "..\\..\\..\\Game\\Content\\sample.png");
