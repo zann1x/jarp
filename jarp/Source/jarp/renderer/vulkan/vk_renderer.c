@@ -589,8 +589,8 @@ bool vk_renderer_init(void* window, char* application_path) {
 
         // Pick a queue
         uint32_t queue_family_count = 0;
-        VkQueueFamilyProperties queue_family_properties[8] = { 0 }; // TODO: base it on queue_family_count
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, NULL);
+        VkQueueFamilyProperties* queue_family_properties = (VkQueueFamilyProperties*)malloc(queue_family_count * sizeof(VkQueueFamilyProperties));
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties);
 
         VkDeviceQueueCreateInfo device_queue_create_infos[1];
@@ -666,6 +666,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             log_fatal("Graphics queue does not support present");
             return false;
         }
+        free(queue_family_properties);
 
         // ===============
 
