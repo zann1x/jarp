@@ -509,45 +509,47 @@ bool vk_renderer_init(void* window, char* application_path) {
         };
 
         uint32_t physical_device_count = 0;
-        VkPhysicalDevice physical_devices[4] = { 0 }; // TODO: actually base it on physical_device_count
         vkEnumeratePhysicalDevices(instance, &physical_device_count, NULL);
+        VkPhysicalDevice* physical_devices = (VkPhysicalDevice*)malloc(physical_device_count * sizeof(VkPhysicalDevice));
         vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices);
+        {
+            // TODO: properly check queue families, device extensions, device features, swapchain and surface support
+            //       and bundle it here
+            // Get info about the available physical devices and pick one for use
+            for (uint32_t i = 0; i < physical_device_count; i++) {
+                VkPhysicalDeviceProperties physical_device_properties = { 0 };
+                uint32_t queueFamilyCount;
+                vkGetPhysicalDeviceProperties(physical_devices[i], &physical_device_properties);
+                vkGetPhysicalDeviceMemoryProperties(physical_devices[i], &physical_device_memory_properties);
+                vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queueFamilyCount, NULL);
+                if (queueFamilyCount < 1)
+                    continue;
 
-        // TODO: properly check queue families, device extensions, device features, swapchain and surface support
-        //       and bundle it here
-        // Get info about the available physical devices and pick one for use
-        for (uint32_t i = 0; i < physical_device_count; i++) {
-            VkPhysicalDeviceProperties physical_device_properties = { 0 };
-            uint32_t queueFamilyCount;
-            vkGetPhysicalDeviceProperties(physical_devices[i], &physical_device_properties);
-            vkGetPhysicalDeviceMemoryProperties(physical_devices[i], &physical_device_memory_properties);
-            vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queueFamilyCount, NULL);
-            if (queueFamilyCount < 1)
-                continue;
+                uint32_t property_count = 0;
+                vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, NULL);
+                if (property_count > 0) {
+                    VkExtensionProperties extension_properties[128] = { 0 }; // TODO: base it on property_count
+                    vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, extension_properties);
 
-            uint32_t property_count = 0;
-            vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, NULL);
-            if (property_count > 0) {
-                VkExtensionProperties extension_properties[128] = { 0 }; // TODO: base it on property_count
-                vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, extension_properties);
-
-                bool extensions_supported = false;
-                for (uint32_t i = 0; i < property_count; i++) {
-                    if (strcmp(extension_properties[i].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
-                        extensions_supported = true;
-                        break;
+                    bool extensions_supported = false;
+                    for (uint32_t i = 0; i < property_count; i++) {
+                        if (strcmp(extension_properties[i].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
+                            extensions_supported = true;
+                            break;
+                        }
+                    }
+                    if (!extensions_supported) {
+                        continue;
                     }
                 }
-                if (!extensions_supported) {
-                    continue;
+
+                physical_device = physical_devices[i];
+                if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+                    break;
                 }
             }
-
-            physical_device = physical_devices[i];
-            if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-                break;
-            }
         }
+        free(physical_devices);
 
         if (physical_device == VK_NULL_HANDLE) {
             log_fatal("Could not find a suitable physical device");
