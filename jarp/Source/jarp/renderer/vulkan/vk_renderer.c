@@ -90,7 +90,7 @@ VkShaderModule shader_modules[2] = { VK_NULL_HANDLE };
 VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 VkPipeline pipeline = VK_NULL_HANDLE;
 
-VkFramebuffer framebuffers[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
+VkFramebuffer* framebuffers = NULL;
 VkCommandPool command_pool = VK_NULL_HANDLE;
 VkCommandBuffer command_buffers[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
 VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
@@ -1206,6 +1206,7 @@ bool vk_renderer_init(void* window, char* application_path) {
     // Framebuffer
     // ===============
     {
+        framebuffers = (VkFramebuffer*)malloc(swapchain_image_count * sizeof(VkFramebuffer));
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             VkImageView attachments[] = { image_views[i], depth_image_view };
 
@@ -1532,6 +1533,7 @@ void vk_renderer_shutdown(void) {
             vkDestroyFramebuffer(device, framebuffers[i], NULL);
         }
     }
+    free(framebuffers);
     if (pipeline_layout != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(device, pipeline_layout, NULL);
     }
