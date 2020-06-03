@@ -687,8 +687,8 @@ bool vk_renderer_init(void* window, char* application_path) {
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, surface_formats);
 
     uint32_t present_mode_count = 0;
-    VkPresentModeKHR present_modes[8] = { 0 }; // TODO: base on present_mode_count
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, NULL);
+    VkPresentModeKHR* present_modes = (VkPresentModeKHR*)malloc(present_mode_count * sizeof(VkPresentModeKHR));
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes);
 
     // Check image count of swapchain
@@ -737,6 +737,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             }
         }
     }
+    free(present_modes);
 
     // Prefer non rotated transforms
     VkSurfaceTransformFlagBitsKHR pre_transform = 0;
