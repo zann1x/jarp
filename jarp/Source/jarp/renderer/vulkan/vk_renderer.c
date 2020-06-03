@@ -1376,12 +1376,10 @@ bool vk_renderer_init(void* window, char* application_path) {
     // Descriptor Set
     // ===============
     {
-        VkDescriptorSetLayout _descriptor_set_layouts[4] = {
-            descriptor_set_layouts[0],
-            descriptor_set_layouts[0],
-            descriptor_set_layouts[0],
-            descriptor_set_layouts[0]
-        }; // TODO: base on swapchain_image_count
+        VkDescriptorSetLayout* _descriptor_set_layouts = (VkDescriptorSetLayout*)malloc(swapchain_image_count * sizeof(VkDescriptorSetLayout));
+        for (int32_t i = 0; i < swapchain_image_count; i++) {
+            _descriptor_set_layouts[i] = descriptor_set_layouts[0];
+        }
 
         VkDescriptorSetAllocateInfo descriptor_set_allocate_info = { 0 };
         descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
