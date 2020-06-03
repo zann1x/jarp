@@ -682,8 +682,8 @@ bool vk_renderer_init(void* window, char* application_path) {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surface_capabilities);
 
     uint32_t surface_format_count = 0;
-    VkSurfaceFormatKHR surface_formats[8] = { 0 }; // TODO: base it on surface_format_count
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, NULL);
+    VkSurfaceFormatKHR* surface_formats = (VkSurfaceFormatKHR*)malloc(surface_format_count * sizeof(VkSurfaceFormatKHR));
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, surface_formats);
 
     uint32_t present_mode_count = 0;
@@ -723,6 +723,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             }
         }
     }
+    free(surface_formats);
 
     // Choose present mode
     VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
