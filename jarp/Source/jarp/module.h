@@ -1,10 +1,18 @@
 #pragma once
 
-struct module_registry
-{
-    void (*add)(const char* name, void* interf);
-    void (*remove)(const char* name);
-    void* (*get)(const char* name);
+#define ADD(name) void name(const char* name, void* interf)
+typedef ADD(Add);
+
+#define REMOVE(name) void name(const char* name)
+typedef REMOVE(Remove);
+
+#define GET(name) void* name(const char* name)
+typedef GET(Get);
+
+struct ModuleRegistry {
+    Add* add;
+    Remove* remove;
+    Get* get;
 };
 
-void module_registry_init(struct module_registry* reg);
+void module_registry_init(struct ModuleRegistry* reg);

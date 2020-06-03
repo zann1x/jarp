@@ -4,23 +4,19 @@
 
 void* loaded_modules;
 
-void add(const char* name, void* interf)
-{
+ADD(add) {
 	loaded_modules = interf;
 }
 
-void remove(const char* name)
-{
+REMOVE(remove) {
 	loaded_modules = NULL;
 }
 
-void* get(const char* name)
-{
+GET(get) {
 	return loaded_modules;
 }
 
-void module_registry_init(struct module_registry* reg)
-{
+void module_registry_init(struct ModuleRegistry* reg) {
 	reg->add = &add;
 	reg->remove = &remove;
 	reg->get = &get;

@@ -4,16 +4,19 @@
 
 #include <stdlib.h>
 
-struct sandbox_api* sand;
+struct SandboxAPI* sand;
 
-int do_the_sand(void)
-{
-    return 42;
+DO_THE_SAND(do_the_sand) {
+    return 43;
 }
 
-void load_sandbox(struct module_registry* reg)
-{
-    sand = malloc(sizeof(struct sandbox_api));
+LOAD_SANDBOX(load_sandbox) {
+    sand = malloc(sizeof(struct SandboxAPI));
     sand->do_the_sand = &do_the_sand;
     reg->add(SANDBOX_MODULE_NAME, sand);
+}
+
+UNLOAD_SANDBOX(unload_sandbox) {
+    reg->remove(SANDBOX_MODULE_NAME);
+    free(sand);
 }
