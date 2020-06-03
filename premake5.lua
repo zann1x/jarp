@@ -40,23 +40,6 @@ project "jarp"
         "%{IncludeDir.stb}"
     }
 
-    filter "system:linux or configurations:gmake2"
-        defines {
-            "JARP_PLATFORM_LINUX",
-            -- I have X11 running, so XCB it is
-            "VK_USE_PLATFORM_XCB_KHR"
-        }
-        includedirs {
-            "/usr/include/vulkan"
-        }
-        buildoptions {
-            "`sdl2-config --cflags`"
-        }
-        linkoptions { 
-            "`sdl2-config --static-libs`",
-            "`pkg-config --libs x11-xcb`"
-        }
-
     filter "system:windows"
         systemversion "latest"
 
@@ -126,11 +109,6 @@ project "Sandbox"
         "jarp/Source"
     }
 
-    filter "system:linux or configurations:gmake2"
-        defines {
-            "JARP_PLATFORM_LINUX"
-        }
-
     filter "system:windows"
         systemversion "latest"
 
@@ -181,11 +159,6 @@ project "Game"
         "%{prj.name}/Source",
         "jarp/Source"
     }
-
-    filter "system:linux or configurations:gmake2"
-        defines {
-            "JARP_PLATFORM_LINUX"
-        }
 
     filter "system:windows"
         systemversion "latest"
