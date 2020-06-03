@@ -791,8 +791,8 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
 
     // Get images from the swapchain and create image views
-    VkImage swapchain_images[8] = { 0 }; // TODO: base on swapchain_image_count
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, NULL);
+    VkImage* swapchain_images = (VkImage*)malloc(swapchain_image_count * sizeof(VkImage));
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, swapchain_images);
 
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
@@ -815,6 +815,7 @@ bool vk_renderer_init(void* window, char* application_path) {
 
         vkCreateImageView(device, &image_view_create_info, NULL, &image_views[i]);
     }
+    free(swapchain_images);
 
     // ===============
     // Render pass
