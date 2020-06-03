@@ -528,7 +528,7 @@ bool vk_renderer_init(void* window, char* application_path) {
                 uint32_t property_count = 0;
                 vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, NULL);
                 if (property_count > 0) {
-                    VkExtensionProperties extension_properties[128] = { 0 }; // TODO: base it on property_count
+                    VkExtensionProperties* extension_properties = (VkExtensionProperties*)malloc(property_count * sizeof(VkExtensionProperties));
                     vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, extension_properties);
 
                     bool extensions_supported = false;
@@ -538,6 +538,7 @@ bool vk_renderer_init(void* window, char* application_path) {
                             break;
                         }
                     }
+                    free(extension_properties);
                     if (!extensions_supported) {
                         continue;
                     }
