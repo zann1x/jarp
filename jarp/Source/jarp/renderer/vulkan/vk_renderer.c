@@ -80,7 +80,7 @@ VkDevice device = VK_NULL_HANDLE;
 VkQueue graphics_queue = VK_NULL_HANDLE;
 VkQueue present_queue = VK_NULL_HANDLE;
 VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-VkImageView image_views[3] = { VK_NULL_HANDLE }; // TODO: base on amount of available images
+VkImageView* image_views = NULL;
 VkImage depth_image = VK_NULL_HANDLE;
 VkDeviceMemory depth_image_device_memory = VK_NULL_HANDLE;
 VkImageView depth_image_view = VK_NULL_HANDLE;
@@ -794,6 +794,8 @@ bool vk_renderer_init(void* window, char* application_path) {
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, NULL);
     VkImage* swapchain_images = (VkImage*)malloc(swapchain_image_count * sizeof(VkImage));
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, swapchain_images);
+
+    image_views = (VkImageView*)malloc(swapchain_image_count * sizeof(VkImage));
 
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
         VkImageViewCreateInfo image_view_create_info = { 0 };
@@ -1563,6 +1565,7 @@ void vk_renderer_shutdown(void) {
             vkDestroyImageView(device, image_views[i], NULL);
         }
     }
+    free(image_views);
     if (swapchain != VK_NULL_HANDLE) {
         vkDestroySwapchainKHR(device, swapchain, NULL);
     }
