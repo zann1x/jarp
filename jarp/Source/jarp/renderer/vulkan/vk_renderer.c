@@ -101,7 +101,7 @@ VkBuffer index_buffer = VK_NULL_HANDLE;
 VkDeviceMemory index_buffer_memory = VK_NULL_HANDLE;
 VkBuffer uniform_buffers[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
 VkDeviceMemory uniform_buffer_memories[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
-VkDescriptorSet descriptor_sets[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
+VkDescriptorSet* descriptor_sets = NULL;
 VkSemaphore rendering_finished_semaphores[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
 VkSemaphore image_available_semaphores[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
 VkFence fences_in_flight[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
@@ -1391,6 +1391,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         descriptor_set_allocate_info.descriptorSetCount = swapchain_image_count; // ARRAY_COUNT on the pointer does not work here
         descriptor_set_allocate_info.pSetLayouts = _descriptor_set_layouts;
 
+        descriptor_sets = (VkDescriptorSet*)malloc(swapchain_image_count * sizeof(VkDescriptorSet));
         vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
 
         for (size_t i = 0; i < swapchain_image_count; i++) {
@@ -1510,12 +1511,14 @@ void vk_renderer_shutdown(void) {
     if (vertex_buffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(device, vertex_buffer, NULL);
     }
-    // Implicitly destroyed by the descriptor pool
+    // We don't touch individual descriptor sets after creating them,
+    // so they can just be implicitly destroyed by their descriptor pool
     //for (uint32_t i = 0; i < swapchain_image_count; i++) {
     //    if (descriptor_sets[i] != VK_NULL_HANDLE) {
     //        vkFreeDescriptorSets(device, descriptor_pool, 1, &descriptor_sets[i]);
     //    }
     //}
+    free(descriptor_sets);
     if (descriptor_pool != VK_NULL_HANDLE) {
         vkResetDescriptorPool(device, descriptor_pool, 0);
         vkDestroyDescriptorPool(device, descriptor_pool, NULL);
