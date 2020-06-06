@@ -92,7 +92,7 @@ VkPipeline pipeline = VK_NULL_HANDLE;
 
 VkFramebuffer* framebuffers = NULL;
 VkCommandPool command_pool = VK_NULL_HANDLE;
-VkCommandBuffer command_buffers[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
+VkCommandBuffer* command_buffers = NULL;
 VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 
 VkBuffer vertex_buffer = VK_NULL_HANDLE;
@@ -1179,6 +1179,7 @@ bool vk_renderer_init(void* window, char* application_path) {
 
         vkCreateCommandPool(device, &command_pool_create_info, NULL, &command_pool);
 
+        command_buffers = (VkCommandBuffer)malloc(swapchain_image_count * sizeof(VkCommandBuffer));
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
             command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1528,6 +1529,7 @@ void vk_renderer_shutdown(void) {
             vkFreeCommandBuffers(device, command_pool, 1, &command_buffers[i]);
         }
     }
+    free(command_buffers);
     if (command_pool != VK_NULL_HANDLE) {
         vkDestroyCommandPool(device, command_pool, NULL);
     }
