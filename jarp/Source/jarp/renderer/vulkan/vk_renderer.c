@@ -32,6 +32,7 @@ struct UniformBufferObject {
     Vec3f LightPosition;
 };
 
+#if 0
 struct Vertex model_vertices[] = {
     {{ -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},     // 0
     {{  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }},     // 1
@@ -47,6 +48,16 @@ uint32_t model_indices[] = {
     0, 1, 2, 2, 3, 0,
     4, 5, 6, 6, 7, 4
 };
+#else
+struct Vertex model_vertices[] = {
+    {{  0.0f,  0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }},     // 0
+    {{ -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }},     // 1
+    {{  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }},     // 2
+};
+uint32_t model_indices[] = {
+    0, 1, 2
+};
+#endif
 
 struct UniformBufferObject uniform_buffer_object = { 0 };
 
@@ -71,6 +82,9 @@ uint32_t current_frame = 0;
 #define MAX_FRAMES_IN_FLIGHT 2
 
 // ===============
+
+// TODO: all object handles that are based on swapchain_image_count can probably not be checked
+//       against VK_NULL_HANDLE at destruction
 
 VkDebugUtilsMessengerEXT debug_utils = VK_NULL_HANDLE;
 VkInstance instance = VK_NULL_HANDLE;
