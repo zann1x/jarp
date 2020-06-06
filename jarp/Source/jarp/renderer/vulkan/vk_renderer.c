@@ -439,7 +439,8 @@ bool vk_renderer_init(void* window, char* application_path) {
         };
 
         const char* instance_layers[] = {
-            "VK_LAYER_KHRONOS_validation"
+            "VK_LAYER_KHRONOS_validation",
+            //"VK_LAYER_LUANRG_standard_validation" // TODO: which of those two?
         };
 
         VkApplicationInfo application_info = { 0 };
@@ -595,7 +596,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties);
 
         VkDeviceQueueCreateInfo device_queue_create_infos[1];
-        //uint32_t number_of_queue_priorities = 0;
+        uint32_t number_of_queue_priorities = 0;
 
         for (uint32_t i = 0; i < queue_family_count; i++) {
             bool is_valid_queue = false;
@@ -623,15 +624,14 @@ bool vk_renderer_init(void* window, char* application_path) {
                 continue;
             }
             else {
-                //number_of_queue_priorities += queue_family_properties[i].queueCount;
-                float queue_priorities[16] = { 1.0f }; // TODO: base it on number_of_queue_prioritues
+                float queue_priority = 1.0f;
 
                 device_queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                 device_queue_create_infos[i].pNext = NULL;
                 device_queue_create_infos[i].flags = 0;
                 device_queue_create_infos[i].queueFamilyIndex = i;
-                device_queue_create_infos[i].queueCount = queue_family_properties[i].queueCount;
-                device_queue_create_infos[i].pQueuePriorities = queue_priorities;
+                device_queue_create_infos[i].queueCount = 1;
+                device_queue_create_infos[i].pQueuePriorities = &queue_priority;
 
                 break;
             }
@@ -661,6 +661,8 @@ bool vk_renderer_init(void* window, char* application_path) {
         }
         volkLoadDevice(device);
 
+        // ===============
+        
         VkBool32 is_present_supported;
         vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, graphics_family_index, surface, &is_present_supported);
         if (!(queue_family_properties[graphics_family_index].queueCount > 0 && is_present_supported)) {
@@ -668,8 +670,6 @@ bool vk_renderer_init(void* window, char* application_path) {
             return false;
         }
         free(queue_family_properties);
-
-        // ===============
 
         vkGetDeviceQueue(device, graphics_family_index, 0, &graphics_queue);
         vkGetDeviceQueue(device, graphics_family_index, 0, &present_queue);
@@ -1132,7 +1132,6 @@ bool vk_renderer_init(void* window, char* application_path) {
         pipeline_dynamic_state_create_info.dynamicStateCount = 0;
         pipeline_dynamic_state_create_info.pDynamicStates = NULL;
 
-
         VkPipelineLayoutCreateInfo pipeline_layout_create_info = { 0 };
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.pNext = NULL;
@@ -1301,7 +1300,7 @@ bool vk_renderer_init(void* window, char* application_path) {
                     return false;
                 }
 
-                VkDeviceSize image_size = (uint64_t)texture_width * texture_height * 4;
+                VkDeviceSize image_size = (VkDeviceSize)texture_width * texture_height * 4;
                 create_buffer(&staging_buffer, &staging_buffer_memory, image_size,
                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -1324,8 +1323,6 @@ bool vk_renderer_init(void* window, char* application_path) {
 
             transition_image_layout(&command_pool, &texture_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-            VkCommandBuffer transient_command_buffer = VK_NULL_HANDLE;
-            transient_command_buffer = begin_one_time_submit_command(&command_pool);
 
             VkBufferImageCopy buffer_image_copy = { 0 };
             buffer_image_copy.bufferOffset = 0;
@@ -1342,9 +1339,12 @@ bool vk_renderer_init(void* window, char* application_path) {
             buffer_image_copy.imageExtent.height = texture_height;
             buffer_image_copy.imageExtent.depth = 1;
 
-            vkCmdCopyBufferToImage(transient_command_buffer, staging_buffer, texture_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
-
-            end_one_time_submit_command(&transient_command_buffer, &command_pool);
+            {
+                VkCommandBuffer transient_command_buffer = VK_NULL_HANDLE;
+                transient_command_buffer = begin_one_time_submit_command(&command_pool);
+                vkCmdCopyBufferToImage(transient_command_buffer, staging_buffer, texture_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
+                end_one_time_submit_command(&transient_command_buffer, &command_pool);
+            }
 
             transition_image_layout(&command_pool, &texture_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -1388,7 +1388,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         descriptor_set_allocate_info.pNext = NULL;
         descriptor_set_allocate_info.descriptorPool = descriptor_pool;
-        descriptor_set_allocate_info.descriptorSetCount = swapchain_image_count;
+        descriptor_set_allocate_info.descriptorSetCount = swapchain_image_count; // ARRAY_COUNT on the pointer does not work here
         descriptor_set_allocate_info.pSetLayouts = _descriptor_set_layouts;
 
         vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
@@ -1446,7 +1446,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceCreateInfo.pNext = NULL;
             // Create fences in a signaled state, so the wait command at the start of the draw function doesn't throw debug errors
-            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // TODO: is this really a must?
             vkCreateFence(device, &fenceCreateInfo, NULL, &fences_in_flight[i]);
         }
     }
@@ -1596,7 +1596,7 @@ void record_command_buffer(void) {
         vkBeginCommandBuffer(command_buffers[i], &command_buffer_begin_info);
 
         VkClearValue clear_values[2] = {
-            { 48.0f / 255.0f, 10.0f / 255.0f, 36.0f / 255.0f, 1.0f },
+            { 0.2f, 0.2f, 0.3f, 1.0f },
             { 1.0f, 0.0f } // Initial value should be the furthest possible depth (= 1.0)
         };
 
@@ -1611,16 +1611,17 @@ void record_command_buffer(void) {
         render_pass_begin_info.clearValueCount = ARRAY_COUNT(clear_values);
         render_pass_begin_info.pClearValues = clear_values;
 
-        VkBuffer vertex_buffers[] = { vertex_buffer };
+        //VkBuffer vertex_buffers[] = { vertex_buffer };
         VkDeviceSize offsets[] = { 0 };
 
         vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
         {
             vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-            vkCmdBindVertexBuffers(command_buffers[i], 0, 1, vertex_buffers, offsets);
+            vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer, offsets);
             vkCmdBindIndexBuffer(command_buffers[i], index_buffer, 0, VK_INDEX_TYPE_UINT32);
             vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1, &descriptor_sets[i], 0, NULL);
 
+            int tmp = ARRAY_COUNT(model_indices);
             vkCmdDrawIndexed(command_buffers[i], ARRAY_COUNT(model_indices), 1, 0, 0, 0);
         }
         vkCmdEndRenderPass(command_buffers[i]);
@@ -1629,6 +1630,8 @@ void record_command_buffer(void) {
 }
 
 void vk_renderer_draw(void) {
+    // TODO: set and update MVP matrix
+    
     vkWaitForFences(device, 1, &fences_in_flight[current_frame], VK_TRUE, UINT64_MAX);
 
     vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &active_image_index);
