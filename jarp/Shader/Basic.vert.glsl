@@ -19,7 +19,8 @@ out gl_PerVertex {
 
 void main()
 {
-	gl_Position = ubo.mvp * vec4(position, 1.0);
+	//gl_Position = ubo.mvp * vec4(position, 1.0);
+    gl_Position = vec4(position, 1.0);
 	v_frag_color = color;
 	v_frag_texture_coordinate = texture_coordinate;
 }
