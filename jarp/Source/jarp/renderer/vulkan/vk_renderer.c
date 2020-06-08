@@ -5,8 +5,11 @@
 
 #include "jarp/file.h"
 #include "jarp/log.h"
-#include "jarp/math.h"
 #include "jarp/shared.h"
+#include "jarp/math/mat4.h"
+#include "jarp/math/math.h"
+#include "jarp/math/vec2.h"
+#include "jarp/math/vec3.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 #include "jarp/platform/win32/win32_main.h"
