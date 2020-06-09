@@ -56,7 +56,7 @@ project "jarp"
         includedirs {
             "%{prj.name}/ThirdParty/SDL2/include",
             "%{IncludeDir.volk}",
-            "C:\\VulkanSDK\\1.2.131.1\\Include"
+            "C:\\VulkanSDK\\1.2.131\\Include"
         }
         libdirs {
             sdllib

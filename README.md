@@ -17,7 +17,7 @@ The whole purpose of it is to understand vulkan, rendering and all that beautifu
 
 ### Windows
 
-- Install the [Vulkan SDK 1.2.131](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.1/windows/VulkanSDK-1.2.131.1-Installer.exe) under `C:\VulkanSDK`.
+- Install the [Vulkan SDK 1.2.131](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.131.2/windows/VulkanSDK-1.2.131.2-Installer.exe) under `C:\VulkanSDK\1.2.131\`.
 - Execute `GenerateProjectFiles.bat`.
 
 ## 🔗 Dependencies
