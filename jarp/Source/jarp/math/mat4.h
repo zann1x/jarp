@@ -36,7 +36,7 @@ math_mat4f_identity
 ====================
 */
 inline static Mat4f math_mat4f_identity(void) {
-    Mat4f result;
+    Mat4f result = { 0.0f };
     result.elements[0 + 0 * 4] = 1.0f;
     result.elements[1 + 1 * 4] = 1.0f;
     result.elements[2 + 2 * 4] = 1.0f;
