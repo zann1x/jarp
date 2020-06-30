@@ -19,6 +19,7 @@
 #include <string.h>
 
 // TODO: proper handling of VkResult return values
+// TODO: add check whether malloc returns NULL
 
 void record_command_buffer(void);
 
@@ -1050,7 +1051,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         pipeline_depth_stencil_create_info.flags = 0;
         pipeline_depth_stencil_create_info.depthTestEnable = VK_TRUE;
         pipeline_depth_stencil_create_info.depthWriteEnable = VK_TRUE;
-        pipeline_depth_stencil_create_info.depthCompareOp = VK_COMPARE_OP_LESS;
+        pipeline_depth_stencil_create_info.depthCompareOp = VK_COMPARE_OP_LESS; // TODO: VK_COMPARE_OP_LESS_OR_EQUAL?
         pipeline_depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
         pipeline_depth_stencil_create_info.stencilTestEnable = VK_FALSE;
         pipeline_depth_stencil_create_info.front.failOp = 0;
@@ -1637,10 +1638,10 @@ void record_command_buffer(void) {
         render_pass_begin_info.clearValueCount = ARRAY_COUNT(clear_values);
         render_pass_begin_info.pClearValues = clear_values;
 
-        //VkBuffer vertex_buffers[] = { vertex_buffer };
         VkDeviceSize offsets[] = { 0 };
 
-        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE); // We only have primary command buffers, so an inline subpass suffices
+        // We only have primary command buffers, so an inline subpass suffices
+        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
         {
             vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
             vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer, offsets);
@@ -1682,8 +1683,6 @@ vk_renderer_draw
 ====================
 */
 void vk_renderer_draw(void) {
-    // TODO: set and update MVP matrix
-    
     vkWaitForFences(device, 1, &fences_in_flight[current_frame], VK_TRUE, UINT64_MAX);
 
     vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &active_image_index);
