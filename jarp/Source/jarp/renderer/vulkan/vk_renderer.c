@@ -1607,6 +1607,11 @@ void vk_renderer_shutdown(void) {
     }
 }
 
+/*
+====================
+record command_buffer
+====================
+*/
 void record_command_buffer(void) {
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
         VkCommandBufferBeginInfo command_buffer_begin_info = { 0 };
@@ -1651,6 +1656,11 @@ void record_command_buffer(void) {
     }
 }
 
+/*
+====================
+vk_renderer_draw
+====================
+*/
 void vk_renderer_draw(void) {
     // TODO: set and update MVP matrix
     
