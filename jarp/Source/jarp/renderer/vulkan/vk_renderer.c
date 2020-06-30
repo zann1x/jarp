@@ -117,7 +117,7 @@ VkDeviceMemory vertex_buffer_memory = VK_NULL_HANDLE;
 VkBuffer index_buffer = VK_NULL_HANDLE;
 VkDeviceMemory index_buffer_memory = VK_NULL_HANDLE;
 VkBuffer* uniform_buffers = NULL;
-VkDeviceMemory uniform_buffer_memories[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
+VkDeviceMemory* uniform_buffer_memories = NULL;
 VkDescriptorSet* descriptor_sets = NULL;
 VkSemaphore rendering_finished_semaphores[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
 VkSemaphore image_available_semaphores[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
@@ -1286,6 +1286,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             model_indices);
 
         uniform_buffers = (VkBuffer*)malloc(swapchain_image_count * sizeof(VkBuffer));
+        uniform_buffer_memories = (VkDeviceMemory*)malloc(swapchain_image_count * sizeof(VkDeviceMemory));
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             if (!create_buffer(&uniform_buffers[i], &uniform_buffer_memories[i],
                 sizeof(uniform_buffer_object),
@@ -1518,6 +1519,7 @@ void vk_renderer_shutdown(void) {
             vkDestroyBuffer(device, uniform_buffers[i], NULL);
         }
     }
+    free(uniform_buffer_memories);
     free(uniform_buffers);
     if (index_buffer_memory != VK_NULL_HANDLE) {
         vkFreeMemory(device, index_buffer_memory, NULL);
