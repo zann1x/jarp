@@ -250,14 +250,14 @@ int main(int argc, char** argv) {
                             break;
                         }
                         default: {
-                            log_warn("Unknown window event type %d", event.window.event);
+                            log_warn("Unhandled window event type %d", event.window.event);
                             break;
                         }
                     }
                     break;
                 }
                 default: {
-                    log_warn("Unknown event type %d", event.type);
+                    log_warn("Unhandled event type %d", event.type);
                     break;
                 }
             }
