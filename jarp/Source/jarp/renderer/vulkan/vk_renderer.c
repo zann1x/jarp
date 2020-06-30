@@ -1196,7 +1196,7 @@ bool vk_renderer_init(void* window, char* application_path) {
 
         vkCreateCommandPool(device, &command_pool_create_info, NULL, &command_pool);
 
-        command_buffers = (VkCommandBuffer)malloc(swapchain_image_count * sizeof(VkCommandBuffer));
+        command_buffers = (VkCommandBuffer*)malloc(swapchain_image_count * sizeof(VkCommandBuffer));
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
             command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
