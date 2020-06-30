@@ -29,20 +29,19 @@ struct Vertex {
     Vec2f texture_coordinate;
 };
 struct UniformBufferObject {
-    Mat4f Model;
-    Mat4f View;
-    Mat4f Projection;
-    Vec3f LightPosition;
+    Mat4f projection_view;
+    Mat4f model;
+    Vec3f light_position;
 };
 
-#if 0
+#if 1
 struct Vertex model_vertices[] = {
     {{ -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},     // 0
     {{  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }},     // 1
     {{  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }},     // 2
     {{ -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f }},     // 3
 
-    {{ -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }},    // 4
+    {{ -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }},    // 4
     {{  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f }},    // 5
     {{  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }},    // 6
     {{ -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }}     // 7
@@ -1654,6 +1653,27 @@ void record_command_buffer(void) {
         vkCmdEndRenderPass(command_buffers[i]);
         vkEndCommandBuffer(command_buffers[i]);
     }
+}
+
+/*
+====================
+vk_renderer_update
+====================
+*/
+void vk_renderer_update(void) {
+    Mat4f projection = math_mat4f_orthographic(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+    Vec3f eye = { 1.0f, 2.0f, -3.0f };
+    Vec3f target = { 0.0f, 0.0f, 0.0f };
+    Vec3f up = { 0.0f, -1.0f, 0.0f }; // -1 so the objects aren't flipped on the y-axis
+    Mat4f view = math_mat4f_look_at(eye, target, up);
+    uniform_buffer_object.projection_view = math_mat4f_clip(math_mat4f_multiply(projection, view));
+    uniform_buffer_object.model = math_mat4f_identity();
+    uniform_buffer_object.light_position = math_vec3f(1.0f);
+
+    static void* raw_data;
+    vkMapMemory(device, uniform_buffer_memories[active_image_index], 0, sizeof(uniform_buffer_object), 0, &raw_data);
+    memcpy(raw_data, &uniform_buffer_object, sizeof(uniform_buffer_object));
+    vkUnmapMemory(device, uniform_buffer_memories[active_image_index]);
 }
 
 /*
