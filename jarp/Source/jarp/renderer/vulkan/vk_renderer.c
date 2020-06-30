@@ -122,7 +122,7 @@ VkDescriptorSet* descriptor_sets = NULL;
 VkSemaphore rendering_finished_semaphores[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
 VkSemaphore image_available_semaphores[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
 VkFence fences_in_flight[MAX_FRAMES_IN_FLIGHT] = { VK_NULL_HANDLE };
-VkFence images_in_flight[4] = { VK_NULL_HANDLE }; // TODO: base on swapchain_image_count
+VkFence* images_in_flight = NULL;
 
 VkSampler texture_sampler = VK_NULL_HANDLE;
 VkImage texture_image = VK_NULL_HANDLE;
@@ -1470,6 +1470,8 @@ bool vk_renderer_init(void* window, char* application_path) {
             fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // TODO: is this really a must?
             vkCreateFence(device, &fenceCreateInfo, NULL, &fences_in_flight[i]);
         }
+        images_in_flight = (VkFence*)malloc(swapchain_image_count * sizeof(VkFence));
+        memset(images_in_flight, VK_NULL_HANDLE, swapchain_image_count * sizeof(VkFence));
     }
 
     // TODO:
@@ -1499,6 +1501,7 @@ void vk_renderer_shutdown(void) {
             vkDestroySemaphore(device, rendering_finished_semaphores[i], NULL);
         }
     }
+    free(images_in_flight);
     if (texture_sampler != VK_NULL_HANDLE) {
         vkDestroySampler(device, texture_sampler, NULL);
     }
