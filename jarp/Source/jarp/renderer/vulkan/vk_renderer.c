@@ -19,7 +19,6 @@
 #include <string.h>
 
 // TODO: proper handling of VkResult return values
-// TODO: add check whether malloc returns NULL
 
 void record_command_buffer(void);
 
@@ -529,6 +528,10 @@ bool vk_renderer_init(void* window, char* application_path) {
         uint32_t physical_device_count = 0;
         vkEnumeratePhysicalDevices(instance, &physical_device_count, NULL);
         VkPhysicalDevice* physical_devices = (VkPhysicalDevice*)malloc(physical_device_count * sizeof(VkPhysicalDevice));
+        if (physical_devices == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices);
         {
             // TODO: properly check queue families, device extensions, device features, swapchain and surface support
@@ -547,6 +550,10 @@ bool vk_renderer_init(void* window, char* application_path) {
                 vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, NULL);
                 if (property_count > 0) {
                     VkExtensionProperties* extension_properties = (VkExtensionProperties*)malloc(property_count * sizeof(VkExtensionProperties));
+                    if (extension_properties == NULL) {
+                        log_fatal("malloc returned NULL");
+                        return false;
+                    }
                     vkEnumerateDeviceExtensionProperties(physical_devices[i], NULL, &property_count, extension_properties);
 
                     bool extensions_supported = false;
@@ -610,6 +617,10 @@ bool vk_renderer_init(void* window, char* application_path) {
         uint32_t queue_family_count = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, NULL);
         VkQueueFamilyProperties* queue_family_properties = (VkQueueFamilyProperties*)malloc(queue_family_count * sizeof(VkQueueFamilyProperties));
+        if (queue_family_properties == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties);
 
         VkDeviceQueueCreateInfo device_queue_create_infos[1];
@@ -707,6 +718,10 @@ bool vk_renderer_init(void* window, char* application_path) {
     uint32_t present_mode_count = 0;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, NULL);
     VkPresentModeKHR* present_modes = (VkPresentModeKHR*)malloc(present_mode_count * sizeof(VkPresentModeKHR));
+    if (present_modes == NULL) {
+        log_fatal("malloc returned NULL");
+        return false;
+    }
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes);
 
     // Check image count of swapchain
@@ -813,6 +828,10 @@ bool vk_renderer_init(void* window, char* application_path) {
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, swapchain_images);
 
     image_views = (VkImageView*)malloc(swapchain_image_count * sizeof(VkImage));
+    if (image_views == NULL) {
+        log_fatal("malloc returned NULL");
+        return false;
+    }
 
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
         VkImageViewCreateInfo image_view_create_info = { 0 };
@@ -1197,6 +1216,10 @@ bool vk_renderer_init(void* window, char* application_path) {
         vkCreateCommandPool(device, &command_pool_create_info, NULL, &command_pool);
 
         command_buffers = (VkCommandBuffer*)malloc(swapchain_image_count * sizeof(VkCommandBuffer));
+        if (command_buffers == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
             command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1224,6 +1247,10 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
     {
         framebuffers = (VkFramebuffer*)malloc(swapchain_image_count * sizeof(VkFramebuffer));
+        if (framebuffers == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             VkImageView attachments[] = { image_views[i], depth_image_view };
 
@@ -1286,7 +1313,15 @@ bool vk_renderer_init(void* window, char* application_path) {
             model_indices);
 
         uniform_buffers = (VkBuffer*)malloc(swapchain_image_count * sizeof(VkBuffer));
+        if (uniform_buffers == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         uniform_buffer_memories = (VkDeviceMemory*)malloc(swapchain_image_count * sizeof(VkDeviceMemory));
+        if (uniform_buffer_memories == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             if (!create_buffer(&uniform_buffers[i], &uniform_buffer_memories[i],
                 sizeof(uniform_buffer_object),
@@ -1400,6 +1435,10 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
     {
         VkDescriptorSetLayout* _descriptor_set_layouts = (VkDescriptorSetLayout*)malloc(swapchain_image_count * sizeof(VkDescriptorSetLayout));
+        if (_descriptor_set_layouts == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         for (uint32_t i = 0; i < swapchain_image_count; i++) {
             _descriptor_set_layouts[i] = descriptor_set_layouts[0];
         }
@@ -1412,6 +1451,10 @@ bool vk_renderer_init(void* window, char* application_path) {
         descriptor_set_allocate_info.pSetLayouts = _descriptor_set_layouts;
 
         descriptor_sets = (VkDescriptorSet*)malloc(swapchain_image_count * sizeof(VkDescriptorSet));
+        if (descriptor_sets == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
 
         for (size_t i = 0; i < swapchain_image_count; i++) {
@@ -1471,6 +1514,10 @@ bool vk_renderer_init(void* window, char* application_path) {
             vkCreateFence(device, &fenceCreateInfo, NULL, &fences_in_flight[i]);
         }
         images_in_flight = (VkFence*)malloc(swapchain_image_count * sizeof(VkFence));
+        if (images_in_flight == NULL) {
+            log_fatal("malloc returned NULL");
+            return false;
+        }
         memset(images_in_flight, VK_NULL_HANDLE, swapchain_image_count * sizeof(VkFence));
     }
 
