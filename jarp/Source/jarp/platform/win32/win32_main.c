@@ -265,6 +265,7 @@ int main(int argc, char** argv) {
 
         // render and update stuff
         input_update();
+        vk_renderer_update();
         vk_renderer_draw();
 
 #if _DEBUG
