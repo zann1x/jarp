@@ -564,6 +564,7 @@ bool vk_renderer_init(void* window, char* application_path) {
                         }
                     }
                     free(extension_properties);
+                    extension_properties = NULL;
                     if (!extensions_supported) {
                         continue;
                     }
@@ -576,6 +577,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             }
         }
         free(physical_devices);
+        physical_devices = NULL;
 
         if (physical_device == VK_NULL_HANDLE) {
             log_fatal("Could not find a suitable physical device");
@@ -698,6 +700,7 @@ bool vk_renderer_init(void* window, char* application_path) {
             return false;
         }
         free(queue_family_properties);
+        queue_family_properties = NULL;
 
         vkGetDeviceQueue(device, graphics_family_index, 0, &graphics_queue);
         vkGetDeviceQueue(device, graphics_family_index, 0, &present_queue);
@@ -757,6 +760,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         }
     }
     free(surface_formats);
+    surface_formats = NULL;
 
     // Choose present mode
     VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -772,6 +776,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         }
     }
     free(present_modes);
+    present_modes = NULL;
 
     // Prefer non rotated transforms
     VkSurfaceTransformFlagBitsKHR pre_transform = 0;
@@ -854,6 +859,7 @@ bool vk_renderer_init(void* window, char* application_path) {
         vkCreateImageView(device, &image_view_create_info, NULL, &image_views[i]);
     }
     free(swapchain_images);
+    swapchain_images = NULL;
 
     // ===============
     // Render pass
@@ -1017,6 +1023,8 @@ bool vk_renderer_init(void* window, char* application_path) {
 
         free(vertex_shader_code.buffer);
         free(fragment_shader_code.buffer);
+        vertex_shader_code.buffer = NULL;
+        fragment_shader_code.buffer = NULL;
     }
 
     // ===============
@@ -1549,6 +1557,7 @@ void vk_renderer_shutdown(void) {
         }
     }
     free(images_in_flight);
+    images_in_flight = NULL;
     if (texture_sampler != VK_NULL_HANDLE) {
         vkDestroySampler(device, texture_sampler, NULL);
     }
@@ -1571,6 +1580,8 @@ void vk_renderer_shutdown(void) {
     }
     free(uniform_buffer_memories);
     free(uniform_buffers);
+    uniform_buffer_memories = NULL;
+    uniform_buffers = NULL;
     if (index_buffer_memory != VK_NULL_HANDLE) {
         vkFreeMemory(device, index_buffer_memory, NULL);
     }
@@ -1591,6 +1602,7 @@ void vk_renderer_shutdown(void) {
     //    }
     //}
     free(descriptor_sets);
+    descriptor_sets = NULL;
     if (descriptor_pool != VK_NULL_HANDLE) {
         vkResetDescriptorPool(device, descriptor_pool, 0);
         vkDestroyDescriptorPool(device, descriptor_pool, NULL);
@@ -1601,6 +1613,7 @@ void vk_renderer_shutdown(void) {
         }
     }
     free(command_buffers);
+    command_buffers = NULL;
     if (command_pool != VK_NULL_HANDLE) {
         vkDestroyCommandPool(device, command_pool, NULL);
     }
@@ -1610,6 +1623,7 @@ void vk_renderer_shutdown(void) {
         }
     }
     free(framebuffers);
+    framebuffers = NULL;
     if (pipeline_layout != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(device, pipeline_layout, NULL);
     }
@@ -1644,6 +1658,7 @@ void vk_renderer_shutdown(void) {
         }
     }
     free(image_views);
+    image_views = NULL;
     if (swapchain != VK_NULL_HANDLE) {
         vkDestroySwapchainKHR(device, swapchain, NULL);
     }
