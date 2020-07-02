@@ -20,7 +20,7 @@
 
 // TODO: proper handling of VkResult return values
 
-void record_command_buffer(void);
+void vk_record_command_buffer(void);
 
 struct Vertex {
     Vec3f position;
@@ -1524,7 +1524,7 @@ bool vk_renderer_init(void* window, char* application_path) {
     // TODO:
     // - recreate swapchain on resize
 
-    record_command_buffer();
+    vk_record_command_buffer();
 
     return true;
 }
@@ -1663,10 +1663,10 @@ void vk_renderer_shutdown(void) {
 
 /*
 ====================
-record command_buffer
+vk_record command_buffer
 ====================
 */
-void record_command_buffer(void) {
+void vk_record_command_buffer(void) {
     for (uint32_t i = 0; i < swapchain_image_count; i++) {
         VkCommandBufferBeginInfo command_buffer_begin_info = { 0 };
         command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
