@@ -510,6 +510,89 @@ bool vk_create_swapchain(void) {
 
 /*
 ====================
+vk_create_render_pass
+====================
+*/
+bool vk_create_render_pass(void) {
+    VkAttachmentDescription attachment_descriptions[2] = { 0 };
+
+    // Color attachment
+    attachment_descriptions[0].flags = 0;
+    attachment_descriptions[0].format = swapchain_info.surface_format.format;
+    attachment_descriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment_descriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment_descriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment_descriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment_descriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    // VK_IMAGE_LAYOUT_UNDEFINED => The image will be transitioned automatically from
+    //                              UNDEFINED to COLOR_ATTACHMENT_OPTIMAL for rendering,
+    //                              then out to PRESENT_SRC_KHR at the end
+    attachment_descriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment_descriptions[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    // Depth attachment
+    attachment_descriptions[1].flags = 0;
+    attachment_descriptions[1].format = depth_format;
+    attachment_descriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment_descriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment_descriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment_descriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment_descriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment_descriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment_descriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference color_attachment_reference = { 0 };
+    color_attachment_reference.attachment = 0;
+    color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference depth_attachment_reference = { 0 };
+    depth_attachment_reference.attachment = 1;
+    depth_attachment_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass_description = { 0 };
+    subpass_description.flags = 0;
+    subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_description.inputAttachmentCount = 0;
+    subpass_description.pInputAttachments = NULL;
+    subpass_description.colorAttachmentCount = 1;
+    subpass_description.pColorAttachments = &color_attachment_reference;
+    subpass_description.pResolveAttachments = NULL;
+    subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
+    subpass_description.preserveAttachmentCount = 0;
+    subpass_description.pPreserveAttachments = NULL;
+
+    VkSubpassDependency subpass_dependency = { 0 };
+    subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpass_dependency.dstSubpass = 0; // Refers to our one and only subpass
+    subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Needs to be pWaitDstStageMask in the WSI semaphore
+    subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpass_dependency.srcAccessMask = 0;
+    subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    subpass_dependency.dependencyFlags = 0;
+
+    /*
+      Normally, we would need an external dependency at the end as well since we are changing layout in finalLayout,
+      but since we are signaling a semaphore, we can rely on Vulkan's default behavior,
+      which injects an external dependency here with
+      dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+      dstAccessMask = 0
+    */
+
+    VkRenderPassCreateInfo render_pass_create_info = { 0 };
+    render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    render_pass_create_info.pNext = NULL;
+    render_pass_create_info.flags = 0;
+    render_pass_create_info.attachmentCount = ARRAY_COUNT(attachment_descriptions);
+    render_pass_create_info.pAttachments = attachment_descriptions;
+    render_pass_create_info.subpassCount = 1;
+    render_pass_create_info.pSubpasses = &subpass_description;
+    render_pass_create_info.dependencyCount = 1;
+    render_pass_create_info.pDependencies = &subpass_dependency;
+
+    vkCreateRenderPass(device, &render_pass_create_info, NULL, &render_pass);
+
+    return true;
+}
+/*
+====================
 vk_renderer_init
 ====================
 */
@@ -881,86 +964,11 @@ bool vk_renderer_init(void* window, char* application_path) {
     }
 
     vk_create_swapchain();
-    
+
     // ===============
     // Render pass
     // ===============
-    {
-        VkAttachmentDescription attachment_descriptions[2] = { 0 };
-
-        // Color attachment
-        attachment_descriptions[0].flags = 0;
-        attachment_descriptions[0].format = swapchain_info.surface_format.format;
-        attachment_descriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
-        attachment_descriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attachment_descriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachment_descriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachment_descriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        // VK_IMAGE_LAYOUT_UNDEFINED => The image will be transitioned automatically from
-        //                              UNDEFINED to COLOR_ATTACHMENT_OPTIMAL for rendering,
-        //                              then out to PRESENT_SRC_KHR at the end
-        attachment_descriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachment_descriptions[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        // Depth attachment
-        attachment_descriptions[1].flags = 0;
-        attachment_descriptions[1].format = depth_format;
-        attachment_descriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
-        attachment_descriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attachment_descriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachment_descriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachment_descriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachment_descriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachment_descriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkAttachmentReference color_attachment_reference = { 0 };
-        color_attachment_reference.attachment = 0;
-        color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        VkAttachmentReference depth_attachment_reference = { 0 };
-        depth_attachment_reference.attachment = 1;
-        depth_attachment_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription subpass_description = { 0 };
-        subpass_description.flags = 0;
-        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass_description.inputAttachmentCount = 0;
-        subpass_description.pInputAttachments = NULL;
-        subpass_description.colorAttachmentCount = 1;
-        subpass_description.pColorAttachments = &color_attachment_reference;
-        subpass_description.pResolveAttachments = NULL;
-        subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
-        subpass_description.preserveAttachmentCount = 0;
-        subpass_description.pPreserveAttachments = NULL;
-
-        VkSubpassDependency subpass_dependency = { 0 };
-        subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        subpass_dependency.dstSubpass = 0; // Refers to our one and only subpass
-        subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Needs to be pWaitDstStageMask in the WSI semaphore
-        subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        subpass_dependency.srcAccessMask = 0;
-        subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        subpass_dependency.dependencyFlags = 0;
-
-        /*
-        Normally, we would need an external dependency at the end as well since we are changing layout in finalLayout,
-        but since we are signaling a semaphore, we can rely on Vulkan's default behavior,
-        which injects an external dependency here with
-            dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-            dstAccessMask = 0
-        */
-
-        VkRenderPassCreateInfo render_pass_create_info = { 0 };
-        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        render_pass_create_info.pNext = NULL;
-        render_pass_create_info.flags = 0;
-        render_pass_create_info.attachmentCount = ARRAY_COUNT(attachment_descriptions);
-        render_pass_create_info.pAttachments = attachment_descriptions;
-        render_pass_create_info.subpassCount = 1;
-        render_pass_create_info.pSubpasses = &subpass_description;
-        render_pass_create_info.dependencyCount = 1;
-        render_pass_create_info.pDependencies = &subpass_dependency;
-
-        vkCreateRenderPass(device, &render_pass_create_info, NULL, &render_pass);
-    }
+    vk_create_render_pass();
 
     // ===============
     // Descriptor Set Layout
