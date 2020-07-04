@@ -99,8 +99,7 @@ uint32_t current_frame = 0;
 
 // ===============
 
-// TODO: all object handles that are based on swapchain_image_count can probably not be checked
-//       against VK_NULL_HANDLE at destruction
+// TODO: watch out for those premature exits and memory that has not been freed
 
 VkDebugUtilsMessengerEXT debug_utils = VK_NULL_HANDLE;
 VkInstance instance = VK_NULL_HANDLE;
@@ -584,6 +583,7 @@ bool vk_create_swapchain(void) {
         log_fatal("malloc returned NULL");
         return false;
     }
+    memset(image_views, VK_NULL_HANDLE, swapchain_info.swapchain_image_count * sizeof(VkImage));
 
     for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
         VkImageViewCreateInfo image_view_create_info = { 0 };
@@ -1342,6 +1342,7 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
             log_fatal("malloc returned NULL");
             return false;
         }
+        memset(command_buffers, VK_NULL_HANDLE, swapchain_info.swapchain_image_count * sizeof(VkCommandBuffer));
         if (!vk_create_command_buffers()) {
             return false;
         }
@@ -1360,6 +1361,7 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
         log_fatal("malloc returned NULL");
         return false;
     }
+    memset(framebuffers, VK_NULL_HANDLE, swapchain_info.swapchain_image_count * sizeof(VkFramebuffer));
     if (!vk_create_framebuffer()) {
         return false;
     }
@@ -1412,11 +1414,13 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
             log_fatal("malloc returned NULL");
             return false;
         }
+        memset(uniform_buffers, VK_NULL_HANDLE, swapchain_info.swapchain_image_count * sizeof(VkBuffer));
         uniform_buffer_memories = (VkDeviceMemory*)malloc(swapchain_info.swapchain_image_count * sizeof(VkDeviceMemory));
         if (uniform_buffer_memories == NULL) {
             log_fatal("malloc returned NULL");
             return false;
         }
+        memset(uniform_buffer_memories, VK_NULL_HANDLE, swapchain_info.swapchain_image_count * sizeof(VkDeviceMemory));
         for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
             if (!create_buffer(&uniform_buffers[i], &uniform_buffer_memories[i],
                 sizeof(uniform_buffer_object),
