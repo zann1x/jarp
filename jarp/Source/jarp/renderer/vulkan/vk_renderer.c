@@ -1748,12 +1748,12 @@ void vk_renderer_shutdown(void) {
         vkDestroyPipelineLayout(device, pipeline_layout, NULL);
     }
     vk_cleanup_swapchain();
-    free(image_views);
-    image_views = NULL;
     free(command_buffers);
     command_buffers = NULL;
     free(framebuffers);
     framebuffers = NULL;
+    free(image_views);
+    image_views = NULL;
 
     if (command_pool != VK_NULL_HANDLE) {
         // Also implicitly destroys all command buffers allocated from the pool
@@ -1846,13 +1846,49 @@ void vk_renderer_update(void) {
 
 /*
 ====================
+vk_renderer_recreate_swapchain
+====================
+*/
+void vk_renderer_recreate_swapchain(void) {
+    struct Win32Window* win32_window = (struct Win32Window*)window;
+    if (win32_window->width == 0 || win32_window->height == 0 || win32_window->is_minimized) {
+        return;
+    }
+
+    // Delete all objects when as soon as all work as finished
+    vkDeviceWaitIdle(device);
+    vk_cleanup_swapchain();
+
+    // Recreate all objects
+    vk_create_swapchain();
+    vk_create_render_pass();
+    vk_create_graphics_pipeline();
+    vk_create_depth_image_and_view();
+    vk_create_framebuffer();
+    vk_create_command_buffers();
+
+    vk_record_command_buffer();
+}
+
+/*
+====================
 vk_renderer_draw
 ====================
 */
 void vk_renderer_draw(void) {
     vkWaitForFences(device, 1, &fences_in_flight[current_frame], VK_TRUE, UINT64_MAX);
 
-    vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &active_image_index);
+    {
+        VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &active_image_index);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            vk_renderer_recreate_swapchain();
+            return;
+        } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            // TODO: this is a runtime error
+            log_fatal("Failed to acquire swapchain image");
+            return;
+        }
+    }
 
     if (images_in_flight[active_image_index] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &images_in_flight[active_image_index], VK_TRUE, UINT64_MAX);
@@ -1889,7 +1925,16 @@ void vk_renderer_draw(void) {
     present_info.pImageIndices = &active_image_index;
     present_info.pResults = NULL; // Not necessary if using a single swapchain
 
-    vkQueuePresentKHR(graphics_queue, &present_info);
+    {
+        VkResult result = vkQueuePresentKHR(graphics_queue, &present_info);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || ((struct Win32Window*)window)->is_framebuffer_resized) {
+            ((struct Win32Window*)window)->is_framebuffer_resized = false;
+            vk_renderer_recreate_swapchain();
+        } else if (result != VK_SUCCESS) {
+            // TODO: this is a runtime error
+            log_fatal("Failed to present swapchain image");
+        }
+    }
 
     current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
