@@ -448,6 +448,98 @@ vk_create_swapchain
 ====================
 */
 bool vk_create_swapchain(void) {
+    // Query swapchain support structures
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &swapchain_info.surface_capabilities);
+
+    uint32_t surface_format_count = 0;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, NULL);
+    VkSurfaceFormatKHR* surface_formats = (VkSurfaceFormatKHR*)malloc(surface_format_count * sizeof(VkSurfaceFormatKHR));
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, surface_formats);
+
+    uint32_t present_mode_count = 0;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, NULL);
+    VkPresentModeKHR* present_modes = (VkPresentModeKHR*)malloc(present_mode_count * sizeof(VkPresentModeKHR));
+    if (present_modes == NULL) {
+        log_fatal("malloc returned NULL");
+        return false;
+    }
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes);
+
+    // Check image count of swapchain
+    // If max image count is 0 then there are no limits besides memory requirements
+    swapchain_info.min_image_count = swapchain_info.surface_capabilities.minImageCount + 1;
+    if (swapchain_info.surface_capabilities.maxImageCount > 0 && swapchain_info.min_image_count > swapchain_info.surface_capabilities.maxImageCount) {
+        swapchain_info.min_image_count = swapchain_info.surface_capabilities.maxImageCount;
+    }
+
+    // Choose extent
+    if (swapchain_info.surface_capabilities.currentExtent.width != UINT32_MAX) {
+        swapchain_info.swapchain_extent = swapchain_info.surface_capabilities.currentExtent;
+    }
+    else {
+        uint32_t min_width = min(swapchain_info.surface_capabilities.maxImageExtent.width, ((struct Win32Window*)window)->width);
+        uint32_t min_height = min(swapchain_info.surface_capabilities.maxImageExtent.height, ((struct Win32Window*)window)->height);
+        swapchain_info.swapchain_extent.width = max(swapchain_info.surface_capabilities.minImageExtent.width, min_width);
+        swapchain_info.swapchain_extent.height = max(swapchain_info.surface_capabilities.minImageExtent.height, min_height);
+    }
+    swapchain_info.swapchain_extent = swapchain_info.swapchain_extent;
+
+    // Choose surface format
+    swapchain_info.surface_format = surface_formats[0];
+    if (surface_format_count == 1 && surface_formats[0].format == VK_FORMAT_UNDEFINED) {
+        swapchain_info.surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
+        swapchain_info.surface_format.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    }
+    else {
+        for (uint32_t i = 0; i < surface_format_count; i++) {
+            if (surface_formats[i].format == VK_FORMAT_B8G8R8A8_UNORM && surface_formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                swapchain_info.surface_format = surface_formats[i];
+                break;
+            }
+        }
+    }
+    free(surface_formats);
+    surface_formats = NULL;
+
+    // Choose present mode
+    swapchain_info.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    if (!use_vsync) {
+        for (uint32_t i = 0; i < present_mode_count; i++) {
+            if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+                swapchain_info.present_mode = present_modes[i];
+                break;
+            }
+            else if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+                swapchain_info.present_mode = present_modes[i];
+            }
+        }
+    }
+    free(present_modes);
+    present_modes = NULL;
+
+    // Prefer non rotated transforms
+    if (swapchain_info.surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+        swapchain_info.pre_transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    }
+    else {
+        swapchain_info.pre_transform = swapchain_info.surface_capabilities.currentTransform;
+    }
+
+    // Find a composite alpha to use as not all devices support alpha opaque
+    swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    }
+    else if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+    }
+    else if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+    }
+    else if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    }
+
     VkSwapchainCreateInfoKHR swapchain_create_info = { 0 };
     swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchain_create_info.pNext = NULL;
@@ -466,6 +558,7 @@ bool vk_create_swapchain(void) {
     swapchain_create_info.compositeAlpha = swapchain_info.composite_alpha;
     swapchain_create_info.presentMode = swapchain_info.present_mode;
     swapchain_create_info.clipped = VK_TRUE;
+    // Passing the old swapchain here would allow us to not having to stop all rendering for recreation
     swapchain_create_info.oldSwapchain = VK_NULL_HANDLE;
 
     vkCreateSwapchainKHR(device, &swapchain_create_info, NULL, &swapchain);
@@ -1112,98 +1205,6 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
     // ===============
     // Swapchain
     // ===============
-    // Query swapchain support structures
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &swapchain_info.surface_capabilities);
-
-    uint32_t surface_format_count = 0;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, NULL);
-    VkSurfaceFormatKHR* surface_formats = (VkSurfaceFormatKHR*)malloc(surface_format_count * sizeof(VkSurfaceFormatKHR));
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, surface_formats);
-
-    uint32_t present_mode_count = 0;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, NULL);
-    VkPresentModeKHR* present_modes = (VkPresentModeKHR*)malloc(present_mode_count * sizeof(VkPresentModeKHR));
-    if (present_modes == NULL) {
-        log_fatal("malloc returned NULL");
-        return false;
-    }
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes);
-
-    // Check image count of swapchain
-    // If max image count is 0 then there are no limits besides memory requirements
-    swapchain_info.min_image_count = swapchain_info.surface_capabilities.minImageCount + 1;
-    if (swapchain_info.surface_capabilities.maxImageCount > 0 && swapchain_info.min_image_count > swapchain_info.surface_capabilities.maxImageCount) {
-        swapchain_info.min_image_count = swapchain_info.surface_capabilities.maxImageCount;
-    }
-
-    // Choose extent
-    if (swapchain_info.surface_capabilities.currentExtent.width != UINT32_MAX) {
-        swapchain_info.swapchain_extent = swapchain_info.surface_capabilities.currentExtent;
-    }
-    else {
-        uint32_t min_width = min(swapchain_info.surface_capabilities.maxImageExtent.width, ((struct Win32Window*)window)->width);
-        uint32_t min_height = min(swapchain_info.surface_capabilities.maxImageExtent.height, ((struct Win32Window*)window)->height);
-        swapchain_info.swapchain_extent.width = max(swapchain_info.surface_capabilities.minImageExtent.width, min_width);
-        swapchain_info.swapchain_extent.height = max(swapchain_info.surface_capabilities.minImageExtent.height, min_height);
-    }
-    swapchain_info.swapchain_extent = swapchain_info.swapchain_extent;
-
-    // Choose surface format
-    swapchain_info.surface_format = surface_formats[0];
-    if (surface_format_count == 1 && surface_formats[0].format == VK_FORMAT_UNDEFINED) {
-        swapchain_info.surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
-        swapchain_info.surface_format.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    }
-    else {
-        for (uint32_t i = 0; i < surface_format_count; i++) {
-            if (surface_formats[i].format == VK_FORMAT_B8G8R8A8_UNORM && surface_formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                swapchain_info.surface_format = surface_formats[i];
-                break;
-            }
-        }
-    }
-    free(surface_formats);
-    surface_formats = NULL;
-
-    // Choose present mode
-    swapchain_info.present_mode = VK_PRESENT_MODE_FIFO_KHR;
-    if (!use_vsync) {
-        for (uint32_t i = 0; i < present_mode_count; i++) {
-            if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-                swapchain_info.present_mode = present_modes[i];
-                break;
-            }
-            else if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-                swapchain_info.present_mode = present_modes[i];
-            }
-        }
-    }
-    free(present_modes);
-    present_modes = NULL;
-
-    // Prefer non rotated transforms
-    if (swapchain_info.surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
-        swapchain_info.pre_transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-    }
-    else {
-        swapchain_info.pre_transform = swapchain_info.surface_capabilities.currentTransform;
-    }
-
-    // Find a composite alpha to use as not all devices support alpha opaque
-    swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
-        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    }
-    else if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
-        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
-    }
-    else if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
-        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
-    }
-    else if (swapchain_info.surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
-        swapchain_info.composite_alpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
-    }
-
     vk_create_swapchain();
 
     // ===============
