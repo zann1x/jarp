@@ -1617,6 +1617,58 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
 
 /*
 ====================
+vk_cleanup_swapchain
+====================
+*/
+void vk_cleanup_swapchain(void) {
+    // Command buffers
+    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
+        if (command_buffers[i] != VK_NULL_HANDLE) {
+            vkFreeCommandBuffers(device, command_pool, 1, &command_buffers[i]);
+        }
+    }
+
+    // Framebuffers
+    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
+        if (framebuffers[i] != VK_NULL_HANDLE) {
+            vkDestroyFramebuffer(device, framebuffers[i], NULL);
+        }
+    }
+
+    // Images and image views
+    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
+        if (image_views[i] != VK_NULL_HANDLE) {
+            vkDestroyImageView(device, image_views[i], NULL);
+        }
+    }
+    if (depth_image_device_memory != VK_NULL_HANDLE) {
+        vkFreeMemory(device, depth_image_device_memory, NULL);
+    }
+    if (depth_image != VK_NULL_HANDLE) {
+        vkDestroyImage(device, depth_image, NULL);
+    }
+    if (depth_image_view != VK_NULL_HANDLE) {
+        vkDestroyImageView(device, depth_image_view, NULL);
+    }
+
+    // Pipeline
+    if (pipeline != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device, pipeline, NULL);
+    }
+
+    // Render pass
+    if (render_pass != VK_NULL_HANDLE) {
+        vkDestroyRenderPass(device, render_pass, NULL);
+    }
+
+    // Swapchain
+    if (swapchain != VK_NULL_HANDLE) {
+        vkDestroySwapchainKHR(device, swapchain, NULL);
+    }
+}
+
+/*
+====================
 vk_renderer_shutdown
 ====================
 */
@@ -1685,29 +1737,7 @@ void vk_renderer_shutdown(void) {
         vkResetDescriptorPool(device, descriptor_pool, 0);
         vkDestroyDescriptorPool(device, descriptor_pool, NULL);
     }
-    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-        if (command_buffers[i] != VK_NULL_HANDLE) {
-            vkFreeCommandBuffers(device, command_pool, 1, &command_buffers[i]);
-        }
-    }
-    free(command_buffers);
-    command_buffers = NULL;
-    if (command_pool != VK_NULL_HANDLE) {
-        vkDestroyCommandPool(device, command_pool, NULL);
-    }
-    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-        if (framebuffers[i] != VK_NULL_HANDLE) {
-            vkDestroyFramebuffer(device, framebuffers[i], NULL);
-        }
-    }
-    free(framebuffers);
-    framebuffers = NULL;
-    if (pipeline_layout != VK_NULL_HANDLE) {
-        vkDestroyPipelineLayout(device, pipeline_layout, NULL);
-    }
-    if (pipeline != VK_NULL_HANDLE) {
-        vkDestroyPipeline(device, pipeline, NULL);
-    }
+
     for (uint32_t i = 0; i < ARRAY_COUNT(shader_modules); i++) {
         if (shader_modules[i] != VK_NULL_HANDLE) {
             vkDestroyShaderModule(device, shader_modules[i], NULL);
@@ -1718,28 +1748,23 @@ void vk_renderer_shutdown(void) {
             vkDestroyDescriptorSetLayout(device, descriptor_set_layouts[i], NULL);
         }
     }
-    if (render_pass != VK_NULL_HANDLE) {
-        vkDestroyRenderPass(device, render_pass, NULL);
+
+    if (pipeline_layout != VK_NULL_HANDLE) {
+        vkDestroyPipelineLayout(device, pipeline_layout, NULL);
     }
-    if (depth_image_device_memory != VK_NULL_HANDLE) {
-        vkFreeMemory(device, depth_image_device_memory, NULL);
-    }
-    if (depth_image != VK_NULL_HANDLE) {
-        vkDestroyImage(device, depth_image, NULL);
-    }
-    if (depth_image_view != VK_NULL_HANDLE) {
-        vkDestroyImageView(device, depth_image_view, NULL);
-    }
-    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-        if (image_views[i] != VK_NULL_HANDLE) {
-            vkDestroyImageView(device, image_views[i], NULL);
-        }
-    }
+    vk_cleanup_swapchain();
     free(image_views);
     image_views = NULL;
-    if (swapchain != VK_NULL_HANDLE) {
-        vkDestroySwapchainKHR(device, swapchain, NULL);
+    free(command_buffers);
+    command_buffers = NULL;
+    free(framebuffers);
+    framebuffers = NULL;
+
+    if (command_pool != VK_NULL_HANDLE) {
+        // Also implicitly destroys all command buffers allocated from the pool
+        vkDestroyCommandPool(device, command_pool, NULL);
     }
+
     if (device != VK_NULL_HANDLE) {
         vkDestroyDevice(device, NULL);
     }
