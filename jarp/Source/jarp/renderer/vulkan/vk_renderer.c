@@ -1726,11 +1726,6 @@ void vk_renderer_shutdown(void) {
     }
     // We don't touch individual descriptor sets after creating them,
     // so they can just be implicitly destroyed by their descriptor pool
-    //for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-    //    if (descriptor_sets[i] != VK_NULL_HANDLE) {
-    //        vkFreeDescriptorSets(device, descriptor_pool, 1, &descriptor_sets[i]);
-    //    }
-    //}
     free(descriptor_sets);
     descriptor_sets = NULL;
     if (descriptor_pool != VK_NULL_HANDLE) {
