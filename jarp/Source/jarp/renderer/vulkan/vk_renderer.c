@@ -78,6 +78,7 @@ struct UniformBufferObject uniform_buffer_object = { 0 };
 struct SwapchainInfo swapchain_info = { 0 };
 
 bool use_vsync = false;
+void* window = NULL;
 
 // ===============
 
@@ -835,11 +836,12 @@ bool vk_create_command_buffers(void) {
 vk_renderer_init
 ====================
 */
-bool vk_renderer_init(void* window, char* application_path) {
+bool vk_renderer_init(void* platform_window, char* application_path) {
     if (volkInitialize() != VK_SUCCESS) {
         log_fatal("Failed initializing volk");
         return false;
     }
+    window = platform_window;
 
     // ===============
     // Instance
