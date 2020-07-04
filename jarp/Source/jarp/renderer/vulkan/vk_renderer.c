@@ -820,6 +820,27 @@ bool vk_create_framebuffer(void) {
     
     return true;
 }
+
+/*
+====================
+vk_create_command_buffers
+====================
+*/
+bool vk_create_command_buffers(void) {
+    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
+        VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
+        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        command_buffer_allocate_info.pNext = NULL;
+        command_buffer_allocate_info.commandPool = command_pool;
+        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        command_buffer_allocate_info.commandBufferCount = 1;
+
+        vkAllocateCommandBuffers(device, &command_buffer_allocate_info, &command_buffers[i]);
+    }
+    
+    return true;
+}
+
 /*
 ====================
 vk_renderer_init
@@ -1309,15 +1330,8 @@ bool vk_renderer_init(void* window, char* application_path) {
             log_fatal("malloc returned NULL");
             return false;
         }
-        for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-            VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
-            command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            command_buffer_allocate_info.pNext = NULL;
-            command_buffer_allocate_info.commandPool = command_pool;
-            command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            command_buffer_allocate_info.commandBufferCount = 1;
-
-            vkAllocateCommandBuffers(device, &command_buffer_allocate_info, &command_buffers[i]);
+        if (!vk_create_command_buffers()) {
+            return false;
         }
     }
 
