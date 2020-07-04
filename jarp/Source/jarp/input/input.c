@@ -45,7 +45,7 @@ void input_event(SDL_Event *event) {
             break;
         }
         default: {
-            log_warn("Unknown input event type %d", event->type);
+            log_warn("Unhandled input event type %d", event->type);
             break;
         }
     }
