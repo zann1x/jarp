@@ -455,6 +455,10 @@ bool vk_create_swapchain(void) {
     uint32_t surface_format_count = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, NULL);
     VkSurfaceFormatKHR* surface_formats = (VkSurfaceFormatKHR*)malloc(surface_format_count * sizeof(VkSurfaceFormatKHR));
+    if (surface_formats == NULL) {
+        log_fatal("malloc returned NULL");
+        return false;
+    }
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surface_format_count, surface_formats);
 
     uint32_t present_mode_count = 0;
@@ -569,6 +573,10 @@ bool vk_create_swapchain(void) {
     // Get images from the swapchain and create image views
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_info.swapchain_image_count, NULL);
     VkImage* swapchain_images = (VkImage*)malloc(swapchain_info.swapchain_image_count * sizeof(VkImage));
+    if (swapchain_images == NULL) {
+        log_fatal("malloc returned NULL");
+        return false;
+    }
     vkGetSwapchainImagesKHR(device, swapchain, &swapchain_info.swapchain_image_count, swapchain_images);
 
     image_views = (VkImageView*)malloc(swapchain_info.swapchain_image_count * sizeof(VkImage));
