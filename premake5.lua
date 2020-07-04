@@ -40,6 +40,11 @@ project "jarp"
         "%{IncludeDir.stb}"
     }
 
+    defines {
+        "LEFT_HAND_COORDINATES",
+        "ZERO_TO_ONE_COORDINATES"
+    }
+
     filter "system:windows"
         systemversion "latest"
 

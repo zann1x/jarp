@@ -103,11 +103,27 @@ inline static Mat4f math_mat4f_orthographic(float left, float right, float botto
 
     result.elements[1 + 1 * 4] = 2.0f / (top - bottom);
 
+#if LEFT_HAND_COORDINATES
+# if ZERO_TO_ONE_COORDINATES
     result.elements[2 + 2 * 4] = 1.0f / (far - near);
+# else
+    result.elements[2 + 2 * 4] = 2.0f / (far - near);
+# endif
+#else
+# if ZERO_TO_ONE_COORDINATES
+    result.elements[2 + 2 * 4] = -1.0f / (far - near);
+# else
+    result.elements[2 + 2 * 4] = -2.0f / (far - near);
+# endif
+#endif
 
     result.elements[0 + 3 * 4] = -(right + left) / (right - left);
     result.elements[1 + 3 * 4] = -(top + bottom) / (top - bottom);
+#if ZERO_TO_ONE_COORDINATES
     result.elements[2 + 3 * 4] = -(near) / (far - near);
+#else
+    result.elements[2 + 3 * 4] = -(far + near) / (far - near);
+#endif
 
     return result;
 }
@@ -123,8 +139,13 @@ inline static Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, cons
     Mat4f result = math_mat4f_identity();
 
     Vec3f f = math_vec3f_normalize(math_vec3f_substract(target, eye)); // forward
+#if LEFT_HAND_COORDINATES
     Vec3f s = math_vec3f_normalize(math_vec3f_cross(up, f)); // right
     Vec3f u = math_vec3f_cross(f, s); // up
+#else
+    Vec3f s = math_vec3f_normalize(math_vec3f_cross(f, up)); // right
+    Vec3f u = math_vec3f_cross(s, f); // up
+#endif
 
     result.elements[0 + 0 * 4] = s.x;
     result.elements[0 + 1 * 4] = s.y;
@@ -134,13 +155,23 @@ inline static Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, cons
     result.elements[1 + 1 * 4] = u.y;
     result.elements[1 + 2 * 4] = u.z;
 
+#if LEFT_HAND_COORDINATES
     result.elements[2 + 0 * 4] = f.x;
     result.elements[2 + 1 * 4] = f.y;
     result.elements[2 + 2 * 4] = f.z;
+#else
+    result.elements[2 + 0 * 4] = -f.x;
+    result.elements[2 + 1 * 4] = -f.y;
+    result.elements[2 + 2 * 4] = -f.z;
+#endif
 
     result.elements[3 + 0 * 4] = -math_vec3f_dot(s, eye);
     result.elements[3 + 1 * 4] = -math_vec3f_dot(u, eye);
+#if LEFT_HAND_COORDINATES
     result.elements[3 + 2 * 4] = -math_vec3f_dot(f, eye);
+#else
+    result.elements[3 + 2 * 4] = math_vec3f_dot(f, eye);
+#endif
 
     return result;
 }
