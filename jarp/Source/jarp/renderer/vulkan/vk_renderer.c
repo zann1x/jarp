@@ -719,17 +719,6 @@ bool vk_create_graphics_pipeline(void) {
     pipeline_dynamic_state_create_info.dynamicStateCount = 0;
     pipeline_dynamic_state_create_info.pDynamicStates = NULL;
 
-    VkPipelineLayoutCreateInfo pipeline_layout_create_info = { 0 };
-    pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.pNext = NULL;
-    pipeline_layout_create_info.flags = 0;
-    pipeline_layout_create_info.setLayoutCount = ARRAY_COUNT(descriptor_set_layouts);
-    pipeline_layout_create_info.pSetLayouts = descriptor_set_layouts;
-    pipeline_layout_create_info.pushConstantRangeCount = 0;
-    pipeline_layout_create_info.pPushConstantRanges = NULL;
-
-    vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL, &pipeline_layout);
-    
     VkViewport viewport = { 0.0f };
     viewport.x = 0.0f;
     viewport.y = (float)swapchain_info.swapchain_extent.height;
@@ -1309,6 +1298,17 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
     // Graphics pipeline
     // ===============
+    VkPipelineLayoutCreateInfo pipeline_layout_create_info = { 0 };
+    pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_create_info.pNext = NULL;
+    pipeline_layout_create_info.flags = 0;
+    pipeline_layout_create_info.setLayoutCount = ARRAY_COUNT(descriptor_set_layouts);
+    pipeline_layout_create_info.pSetLayouts = descriptor_set_layouts;
+    pipeline_layout_create_info.pushConstantRangeCount = 0;
+    pipeline_layout_create_info.pPushConstantRanges = NULL;
+
+    vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL, &pipeline_layout);
+
     if (!vk_create_graphics_pipeline()) {
         return false;
     }
