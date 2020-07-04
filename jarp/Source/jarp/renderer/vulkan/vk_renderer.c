@@ -780,6 +780,23 @@ bool vk_create_graphics_pipeline(void) {
 
 /*
 ====================
+vk_create_depth_image_and_view
+====================
+*/
+bool vk_create_depth_image_and_view(void) {
+    bool success = create_2d_image_with_view(&depth_image, &depth_image_device_memory,
+        &depth_image_view, depth_format, swapchain_info.swapchain_extent,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+    if (!success) {
+        return false;
+    }
+    transition_image_layout(&command_pool, &depth_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+    return true;
+}
+
+/*
+====================
 vk_create_framebuffer
 ====================
 */
@@ -1307,13 +1324,8 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
 
     // Create image and image view for depth
-    if (!create_2d_image_with_view(&depth_image, &depth_image_device_memory, &depth_image_view,
-        depth_format, swapchain_info.swapchain_extent, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT)) {
-        return false;
-    }
-
-    transition_image_layout(&command_pool, &depth_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
+    vk_create_depth_image_and_view();
+    
     // ===============
     // Framebuffer
     // ===============
