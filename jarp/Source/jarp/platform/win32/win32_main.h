@@ -9,6 +9,9 @@ struct Win32Window {
     uint32_t height;
     const char* title;
 
+    bool is_framebuffer_resized;
+    bool is_minimized;
+
     struct SDL_Window* handle;
     struct SDL_Surface* surface;
 

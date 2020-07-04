@@ -200,6 +200,9 @@ int main(int argc, char** argv) {
     window.height = 600;
     window.title = "jarp";
 
+    window.is_framebuffer_resized = false;
+    window.is_minimized = false;
+
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
     window.handle = SDL_CreateWindow(window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                      window.width, window.height, SDL_WINDOW_VULKAN);
@@ -248,7 +251,18 @@ int main(int argc, char** argv) {
                         case SDL_WINDOWEVENT_RESIZED: {
                             window.width = event.window.data1;
                             window.height = event.window.data2;
+                            window.is_framebuffer_resized = true;
                             log_trace("Window resized to (%d, %d)", event.window.data1, event.window.data2);
+                            break;
+                        }
+                        case SDL_WINDOWEVENT_MINIMIZED: {
+                            window.is_minimized = true;
+                            log_trace("Window was minimized");
+                            break;
+                        }
+                        case SDL_WINDOWEVENT_RESTORED: {
+                            window.is_minimized = false;
+                            log_trace("Window was restored");
                             break;
                         }
                         default: {
