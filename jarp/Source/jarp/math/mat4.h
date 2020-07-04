@@ -175,18 +175,3 @@ inline static Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, cons
 
     return result;
 }
-
-/*
-====================
-math_mat4f_clip
-
-See https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
-====================
-*/
-//inline static Mat4f math_mat4f_clip(const Mat4f mat) {
-//    Mat4f clip = math_mat4f_identity();
-//    clip.elements[1 + 1 * 4] = -1.0f;
-//    clip.elements[2 + 2 * 4] = 0.5f;
-//    clip.elements[2 + 3 * 4] = 0.5f;
-//    return math_mat4f_multiply(clip, mat);
-//}
