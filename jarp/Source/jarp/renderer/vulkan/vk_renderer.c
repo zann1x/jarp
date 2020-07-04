@@ -1608,8 +1608,8 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
         memset(images_in_flight, VK_NULL_HANDLE, swapchain_info.swapchain_image_count * sizeof(VkFence));
     }
 
-    // TODO:
-    // - recreate swapchain on resize
+    // ===============
+    // ===============
 
     vk_record_command_buffer();
 
