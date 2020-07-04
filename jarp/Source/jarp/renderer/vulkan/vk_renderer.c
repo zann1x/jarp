@@ -21,8 +21,6 @@
 
 // TODO: proper handling of VkResult return values
 
-void vk_record_command_buffer(void);
-
 struct Vertex {
     Vec3f position;
     Vec3f normal;
@@ -935,6 +933,55 @@ bool vk_create_command_buffers(void) {
 
 /*
 ====================
+vk_record command_buffer
+====================
+*/
+void vk_record_command_buffer(void) {
+    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
+        VkCommandBufferBeginInfo command_buffer_begin_info = { 0 };
+        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        command_buffer_begin_info.pNext = NULL;
+        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+        command_buffer_begin_info.pInheritanceInfo = NULL; // The buffers used here are primary command buffers, so the value can be ignored
+
+        vkBeginCommandBuffer(command_buffers[i], &command_buffer_begin_info);
+
+        VkClearValue clear_values[2] = {
+            { 0.2f, 0.2f, 0.3f, 1.0f },
+            { 1.0f, 0.0f } // Initial value should be the furthest possible depth (= 1.0)
+        };
+
+        VkRenderPassBeginInfo render_pass_begin_info = { 0 };
+        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_begin_info.pNext = NULL;
+        render_pass_begin_info.renderPass = render_pass;
+        render_pass_begin_info.framebuffer = framebuffers[i];
+        render_pass_begin_info.renderArea.extent = swapchain_info.swapchain_extent;
+        render_pass_begin_info.renderArea.offset.x = 0;
+        render_pass_begin_info.renderArea.offset.y = 0;
+        render_pass_begin_info.clearValueCount = ARRAY_COUNT(clear_values);
+        render_pass_begin_info.pClearValues = clear_values;
+
+        VkDeviceSize offsets[] = { 0 };
+
+        // We only have primary command buffers, so an inline subpass suffices
+        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+            vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer, offsets);
+            vkCmdBindIndexBuffer(command_buffers[i], index_buffer, 0, VK_INDEX_TYPE_UINT32);
+            vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1, &descriptor_sets[i], 0, NULL);
+
+            int tmp = ARRAY_COUNT(model_indices);
+            vkCmdDrawIndexed(command_buffers[i], ARRAY_COUNT(model_indices), 1, 0, 0, 0);
+        }
+        vkCmdEndRenderPass(command_buffers[i]);
+        vkEndCommandBuffer(command_buffers[i]);
+    }
+}
+
+/*
+====================
 vk_renderer_init
 ====================
 */
@@ -1786,55 +1833,6 @@ void vk_renderer_shutdown(void) {
     }
     if (instance != VK_NULL_HANDLE) {
         vkDestroyInstance(instance, NULL);
-    }
-}
-
-/*
-====================
-vk_record command_buffer
-====================
-*/
-void vk_record_command_buffer(void) {
-    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-        VkCommandBufferBeginInfo command_buffer_begin_info = { 0 };
-        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        command_buffer_begin_info.pNext = NULL;
-        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-        command_buffer_begin_info.pInheritanceInfo = NULL; // The buffers used here are primary command buffers, so the value can be ignored
-
-        vkBeginCommandBuffer(command_buffers[i], &command_buffer_begin_info);
-
-        VkClearValue clear_values[2] = {
-            { 0.2f, 0.2f, 0.3f, 1.0f },
-            { 1.0f, 0.0f } // Initial value should be the furthest possible depth (= 1.0)
-        };
-
-        VkRenderPassBeginInfo render_pass_begin_info = { 0 };
-        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_begin_info.pNext = NULL;
-        render_pass_begin_info.renderPass = render_pass;
-        render_pass_begin_info.framebuffer = framebuffers[i];
-        render_pass_begin_info.renderArea.extent = swapchain_info.swapchain_extent;
-        render_pass_begin_info.renderArea.offset.x = 0;
-        render_pass_begin_info.renderArea.offset.y = 0;
-        render_pass_begin_info.clearValueCount = ARRAY_COUNT(clear_values);
-        render_pass_begin_info.pClearValues = clear_values;
-
-        VkDeviceSize offsets[] = { 0 };
-
-        // We only have primary command buffers, so an inline subpass suffices
-        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-        {
-            vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-            vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer, offsets);
-            vkCmdBindIndexBuffer(command_buffers[i], index_buffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1, &descriptor_sets[i], 0, NULL);
-
-            int tmp = ARRAY_COUNT(model_indices);
-            vkCmdDrawIndexed(command_buffers[i], ARRAY_COUNT(model_indices), 1, 0, 0, 0);
-        }
-        vkCmdEndRenderPass(command_buffers[i]);
-        vkEndCommandBuffer(command_buffers[i]);
     }
 }
 
