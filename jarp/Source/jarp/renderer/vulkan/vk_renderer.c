@@ -777,6 +777,32 @@ bool vk_create_graphics_pipeline(void) {
 
     return true;
 }
+
+/*
+====================
+vk_create_framebuffer
+====================
+*/
+bool vk_create_framebuffer(void) {
+    for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
+        VkImageView attachments[] = { image_views[i], depth_image_view };
+
+        VkFramebufferCreateInfo framebuffer_create_info = { 0 };
+        framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_create_info.pNext = NULL;
+        framebuffer_create_info.flags = 0;
+        framebuffer_create_info.renderPass = render_pass;
+        framebuffer_create_info.attachmentCount = ARRAY_COUNT(attachments);
+        framebuffer_create_info.pAttachments = attachments;
+        framebuffer_create_info.width = swapchain_info.swapchain_extent.width;
+        framebuffer_create_info.height = swapchain_info.swapchain_extent.height;
+        framebuffer_create_info.layers = 1;
+
+        vkCreateFramebuffer(device, &framebuffer_create_info, NULL, &framebuffers[i]);
+    }
+    
+    return true;
+}
 /*
 ====================
 vk_renderer_init
@@ -1291,28 +1317,13 @@ bool vk_renderer_init(void* window, char* application_path) {
     // ===============
     // Framebuffer
     // ===============
-    {
-        framebuffers = (VkFramebuffer*)malloc(swapchain_info.swapchain_image_count * sizeof(VkFramebuffer));
-        if (framebuffers == NULL) {
-            log_fatal("malloc returned NULL");
-            return false;
-        }
-        for (uint32_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
-            VkImageView attachments[] = { image_views[i], depth_image_view };
-
-            VkFramebufferCreateInfo framebuffer_create_info = { 0 };
-            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebuffer_create_info.pNext = NULL;
-            framebuffer_create_info.flags = 0;
-            framebuffer_create_info.renderPass = render_pass;
-            framebuffer_create_info.attachmentCount = ARRAY_COUNT(attachments);
-            framebuffer_create_info.pAttachments = attachments;
-            framebuffer_create_info.width = swapchain_info.swapchain_extent.width;
-            framebuffer_create_info.height = swapchain_info.swapchain_extent.height;
-            framebuffer_create_info.layers = 1;
-
-            vkCreateFramebuffer(device, &framebuffer_create_info, NULL, &framebuffers[i]);
-        }
+    framebuffers = (VkFramebuffer*)malloc(swapchain_info.swapchain_image_count * sizeof(VkFramebuffer));
+    if (framebuffers == NULL) {
+        log_fatal("malloc returned NULL");
+        return false;
+    }
+    if (!vk_create_framebuffer()) {
+        return false;
     }
 
     // ===============
