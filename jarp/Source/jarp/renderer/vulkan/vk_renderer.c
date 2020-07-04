@@ -1551,6 +1551,8 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
             return false;
         }
         vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
+        free(_descriptor_set_layouts);
+        _descriptor_set_layouts = NULL;
 
         for (size_t i = 0; i < swapchain_info.swapchain_image_count; i++) {
             VkDescriptorBufferInfo descriptor_buffer_info = { 0 };
