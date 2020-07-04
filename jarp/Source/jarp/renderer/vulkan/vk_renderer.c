@@ -4,6 +4,7 @@
 #include <volk.h>
 
 #include "jarp/file.h"
+#include "jarp/input/input.h"
 #include "jarp/log.h"
 #include "jarp/shared.h"
 #include "jarp/math/mat4.h"
@@ -36,15 +37,15 @@ struct UniformBufferObject {
 
 #if 1
 struct Vertex model_vertices[] = {
-    {{ -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},     // 0
-    {{  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }},     // 1
-    {{  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }},     // 2
-    {{ -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f }},     // 3
+    {{ -0.3f, -0.3f, -0.01f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},     // 0
+    {{  0.3f, -0.3f, -0.01f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }},     // 1
+    {{  0.3f,  0.3f, -0.01f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }},     // 2
+    {{ -0.3f,  0.3f, -0.01f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f }},     // 3
 
-    {{ -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }},    // 4
-    {{  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f }},    // 5
-    {{  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }},    // 6
-    {{ -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }}     // 7
+    {{ -0.5f, -0.5f, 0.05f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }},    // 4
+    {{  0.5f, -0.5f, 0.05f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f }},    // 5
+    {{  0.5f,  0.5f, 0.05f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }},    // 6
+    {{ -0.5f,  0.5f, 0.05f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }}     // 7
 };
 uint32_t model_indices[] = {
     0, 1, 2, 2, 3, 0,
@@ -1830,11 +1831,11 @@ vk_renderer_update
 */
 void vk_renderer_update(void) {
     Mat4f projection = math_mat4f_orthographic(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
-    Vec3f eye = { 1.0f, 2.0f, -3.0f };
+    Vec3f eye = { 1.0f, 3.0f, -3.0f };
     Vec3f target = { 0.0f, 0.0f, 0.0f };
-    Vec3f up = { 0.0f, -1.0f, 0.0f }; // -1 so the objects aren't flipped on the y-axis
+    Vec3f up = { 0.0f, 1.0f, 0.0f };
     Mat4f view = math_mat4f_look_at(eye, target, up);
-    uniform_buffer_object.projection_view = math_mat4f_clip(math_mat4f_multiply(projection, view));
+    uniform_buffer_object.projection_view = math_mat4f_multiply(projection, view);
     uniform_buffer_object.model = math_mat4f_identity();
     uniform_buffer_object.light_position = math_vec3f(1.0f);
 

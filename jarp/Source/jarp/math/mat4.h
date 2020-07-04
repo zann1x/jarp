@@ -4,6 +4,14 @@
 #include "jarp/math/math.h"
 #include "jarp/math/vec3.h"
 
+/*
+- Left Hand Coordinate System
+- Depth zero to one
+- Row major matrix: (a1, a2, a3, a4,
+                     b1, b2, b3, b4,
+                     c1, c2, c3, c4,
+                     d1, d2, d3, d4)
+  */
 struct Mat4f {
     float elements[16];
 };
@@ -95,11 +103,11 @@ inline static Mat4f math_mat4f_orthographic(float left, float right, float botto
 
     result.elements[1 + 1 * 4] = 2.0f / (top - bottom);
 
-    result.elements[2 + 2 * 4] = -2.0f / (far - near);
+    result.elements[2 + 2 * 4] = 1.0f / (far - near);
 
-    result.elements[0 + 3 * 4] = -((right + left) / (right - left));
-    result.elements[1 + 3 * 4] = -((top + bottom) / (top - bottom));
-    result.elements[2 + 3 * 4] = -((far + near) / (far - near));
+    result.elements[0 + 3 * 4] = -(right + left) / (right - left);
+    result.elements[1 + 3 * 4] = -(top + bottom) / (top - bottom);
+    result.elements[2 + 3 * 4] = -(near) / (far - near);
 
     return result;
 }
@@ -114,30 +122,25 @@ See https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graph
 inline static Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, const Vec3f up) {
     Mat4f result = math_mat4f_identity();
 
-    Vec3f zaxis = math_vec3f_normalize(math_vec3f_substract(eye, target)); // forward
-    //Vec3f xaxis = math_vec3f_normalize(math_vec3f_cross(up, zaxis)); // right
-    Vec3f xaxis = math_vec3f_cross(math_vec3f_normalize(up), zaxis); // right
-    //Vec3f yaxis = math_vec3f_normalize(math_vec3f_cross(zaxis, xaxis)); // up
-    Vec3f yaxis = math_vec3f_cross(zaxis, xaxis); // up
+    Vec3f f = math_vec3f_normalize(math_vec3f_substract(target, eye)); // forward
+    Vec3f s = math_vec3f_normalize(math_vec3f_cross(up, f)); // right
+    Vec3f u = math_vec3f_cross(f, s); // up
 
-    result.elements[0 + 0 * 4] = xaxis.x;
-    result.elements[0 + 1 * 4] = xaxis.y;
-    result.elements[0 + 2 * 4] = xaxis.z;
-    //result.elements[0 + 3 * 4] = math_vec3f_dot(math_vec3f_negate(xaxis), eye);
+    result.elements[0 + 0 * 4] = s.x;
+    result.elements[0 + 1 * 4] = s.y;
+    result.elements[0 + 2 * 4] = s.z;
 
-    result.elements[1 + 0 * 4] = yaxis.x;
-    result.elements[1 + 1 * 4] = yaxis.y;
-    result.elements[1 + 2 * 4] = yaxis.z;
-    //result.elements[1 + 3 * 4] = math_vec3f_dot(math_vec3f_negate(yaxis), eye);
+    result.elements[1 + 0 * 4] = u.x;
+    result.elements[1 + 1 * 4] = u.y;
+    result.elements[1 + 2 * 4] = u.z;
 
-    result.elements[2 + 0 * 4] = zaxis.x;
-    result.elements[2 + 1 * 4] = zaxis.y;
-    result.elements[2 + 2 * 4] = zaxis.z;
-    //result.elements[2 + 3 * 4] = math_vec3f_dot(math_vec3f_negate(zaxis), eye);
+    result.elements[2 + 0 * 4] = f.x;
+    result.elements[2 + 1 * 4] = f.y;
+    result.elements[2 + 2 * 4] = f.z;
 
-    result.elements[3 + 0 * 4] = target.x;
-    result.elements[3 + 1 * 4] = target.y;
-    result.elements[3 + 2 * 4] = target.z;
+    result.elements[3 + 0 * 4] = -math_vec3f_dot(s, eye);
+    result.elements[3 + 1 * 4] = -math_vec3f_dot(u, eye);
+    result.elements[3 + 2 * 4] = -math_vec3f_dot(f, eye);
 
     return result;
 }
@@ -149,10 +152,10 @@ math_mat4f_clip
 See https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
 ====================
 */
-inline static Mat4f math_mat4f_clip(const Mat4f mat) {
-    Mat4f clip = math_mat4f_identity();
-    clip.elements[1 + 1 * 4] = -1.0f;
-    clip.elements[2 + 2 * 4] = 0.5f;
-    clip.elements[2 + 3 * 4] = 0.5f;
-    return math_mat4f_multiply(clip, mat);
-}
+//inline static Mat4f math_mat4f_clip(const Mat4f mat) {
+//    Mat4f clip = math_mat4f_identity();
+//    clip.elements[1 + 1 * 4] = -1.0f;
+//    clip.elements[2 + 2 * 4] = 0.5f;
+//    clip.elements[2 + 3 * 4] = 0.5f;
+//    return math_mat4f_multiply(clip, mat);
+//}
