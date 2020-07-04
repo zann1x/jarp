@@ -233,6 +233,8 @@ int main(int argc, char** argv) {
                 }
                 case SDL_KEYDOWN:
                 case SDL_KEYUP:
+                case SDL_TEXTEDITING:
+                case SDL_TEXTINPUT:
                 case SDL_MOUSEBUTTONDOWN:
                 case SDL_MOUSEBUTTONUP:
                 case SDL_MOUSEMOTION:
