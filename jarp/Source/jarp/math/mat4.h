@@ -175,3 +175,141 @@ inline static Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, cons
 
     return result;
 }
+
+/*
+====================
+math_mat4f_inverse
+
+See https://stackoverflow.com/a/1148405/8313359
+====================
+*/
+inline static Mat4f math_mat4f_inverse(const Mat4f mat) {
+    float inverse[16];
+
+    inverse[0] = (mat.elements[5] * mat.elements[10] * mat.elements[15]) -
+        (mat.elements[5] * mat.elements[11] * mat.elements[14]) -
+        (mat.elements[9] * mat.elements[6] * mat.elements[15]) +
+        (mat.elements[9] * mat.elements[7] * mat.elements[14]) +
+        (mat.elements[13] * mat.elements[6] * mat.elements[11]) -
+        (mat.elements[13] * mat.elements[7] * mat.elements[10]);
+
+    inverse[4] = (-mat.elements[4] * mat.elements[10] * mat.elements[15]) +
+        (mat.elements[4] * mat.elements[11] * mat.elements[14]) +
+        (mat.elements[8] * mat.elements[6] * mat.elements[15]) -
+        (mat.elements[8] * mat.elements[7] * mat.elements[14]) -
+        (mat.elements[12] * mat.elements[6] * mat.elements[11]) +
+        (mat.elements[12] * mat.elements[7] * mat.elements[10]);
+
+    inverse[8] = (mat.elements[4] * mat.elements[9] * mat.elements[15]) -
+        (mat.elements[4] * mat.elements[11] * mat.elements[13]) -
+        (mat.elements[8] * mat.elements[5] * mat.elements[15]) +
+        (mat.elements[8] * mat.elements[7] * mat.elements[13]) +
+        (mat.elements[12] * mat.elements[5] * mat.elements[11]) -
+        (mat.elements[12] * mat.elements[7] * mat.elements[9]);
+
+    inverse[12] = (-mat.elements[4] * mat.elements[9] * mat.elements[14]) +
+        (mat.elements[4] * mat.elements[10] * mat.elements[13]) +
+        (mat.elements[8] * mat.elements[5] * mat.elements[14]) -
+        (mat.elements[8] * mat.elements[6] * mat.elements[13]) -
+        (mat.elements[12] * mat.elements[5] * mat.elements[10]) +
+        (mat.elements[12] * mat.elements[6] * mat.elements[9]);
+
+    inverse[1] = (-mat.elements[1] * mat.elements[10] * mat.elements[15]) +
+        (mat.elements[1] * mat.elements[11] * mat.elements[14]) +
+        (mat.elements[9] * mat.elements[2] * mat.elements[15]) -
+        (mat.elements[9] * mat.elements[3] * mat.elements[14]) -
+        (mat.elements[13] * mat.elements[2] * mat.elements[11]) +
+        (mat.elements[13] * mat.elements[3] * mat.elements[10]);
+
+    inverse[5] = (mat.elements[0] * mat.elements[10] * mat.elements[15]) -
+        (mat.elements[0] * mat.elements[11] * mat.elements[14]) -
+        (mat.elements[8] * mat.elements[2] * mat.elements[15]) +
+        (mat.elements[8] * mat.elements[3] * mat.elements[14]) +
+        (mat.elements[12] * mat.elements[2] * mat.elements[11]) -
+        (mat.elements[12] * mat.elements[3] * mat.elements[10]);
+
+    inverse[9] = (-mat.elements[0] * mat.elements[9] * mat.elements[15]) +
+        (mat.elements[0] * mat.elements[11] * mat.elements[13]) +
+        (mat.elements[8] * mat.elements[1] * mat.elements[15]) -
+        (mat.elements[8] * mat.elements[3] * mat.elements[13]) -
+        (mat.elements[12] * mat.elements[1] * mat.elements[11]) +
+        (mat.elements[12] * mat.elements[3] * mat.elements[9]);
+
+    inverse[13] = (mat.elements[0] * mat.elements[9] * mat.elements[14]) -
+        (mat.elements[0] * mat.elements[10] * mat.elements[13]) -
+        (mat.elements[8] * mat.elements[1] * mat.elements[14]) +
+        (mat.elements[8] * mat.elements[2] * mat.elements[13]) +
+        (mat.elements[12] * mat.elements[1] * mat.elements[10]) -
+        (mat.elements[12] * mat.elements[2] * mat.elements[9]);
+
+    inverse[2] = (mat.elements[1] * mat.elements[6] * mat.elements[15]) -
+        (mat.elements[1] * mat.elements[7] * mat.elements[14]) -
+        (mat.elements[5] * mat.elements[2] * mat.elements[15]) +
+        (mat.elements[5] * mat.elements[3] * mat.elements[14]) +
+        (mat.elements[13] * mat.elements[2] * mat.elements[7]) -
+        (mat.elements[13] * mat.elements[3] * mat.elements[6]);
+
+    inverse[6] = (-mat.elements[0] * mat.elements[6] * mat.elements[15]) +
+        (mat.elements[0] * mat.elements[7] * mat.elements[14]) +
+        (mat.elements[4] * mat.elements[2] * mat.elements[15]) -
+        (mat.elements[4] * mat.elements[3] * mat.elements[14]) -
+        (mat.elements[12] * mat.elements[2] * mat.elements[7]) +
+        (mat.elements[12] * mat.elements[3] * mat.elements[6]);
+
+    inverse[10] = (mat.elements[0] * mat.elements[5] * mat.elements[15]) -
+        (mat.elements[0] * mat.elements[7] * mat.elements[13]) -
+        (mat.elements[4] * mat.elements[1] * mat.elements[15]) +
+        (mat.elements[4] * mat.elements[3] * mat.elements[13]) +
+        (mat.elements[12] * mat.elements[1] * mat.elements[7]) -
+        (mat.elements[12] * mat.elements[3] * mat.elements[5]);
+
+    inverse[14] = (-mat.elements[0] * mat.elements[5] * mat.elements[14]) +
+        (mat.elements[0] * mat.elements[6] * mat.elements[13]) +
+        (mat.elements[4] * mat.elements[1] * mat.elements[14]) -
+        (mat.elements[4] * mat.elements[2] * mat.elements[13]) -
+        (mat.elements[12] * mat.elements[1] * mat.elements[6]) +
+        (mat.elements[12] * mat.elements[2] * mat.elements[5]);
+
+    inverse[3] = (-mat.elements[1] * mat.elements[6] * mat.elements[11]) +
+        (mat.elements[1] * mat.elements[7] * mat.elements[10]) +
+        (mat.elements[5] * mat.elements[2] * mat.elements[11]) -
+        (mat.elements[5] * mat.elements[3] * mat.elements[10]) -
+        (mat.elements[9] * mat.elements[2] * mat.elements[7]) +
+        (mat.elements[9] * mat.elements[3] * mat.elements[6]);
+
+    inverse[7] = (mat.elements[0] * mat.elements[6] * mat.elements[11]) -
+        (mat.elements[0] * mat.elements[7] * mat.elements[10]) -
+        (mat.elements[4] * mat.elements[2] * mat.elements[11]) +
+        (mat.elements[4] * mat.elements[3] * mat.elements[10]) +
+        (mat.elements[8] * mat.elements[2] * mat.elements[7]) -
+        (mat.elements[8] * mat.elements[3] * mat.elements[6]);
+
+    inverse[11] = (-mat.elements[0] * mat.elements[5] * mat.elements[11]) +
+        (mat.elements[0] * mat.elements[7] * mat.elements[9]) +
+        (mat.elements[4] * mat.elements[1] * mat.elements[11]) -
+        (mat.elements[4] * mat.elements[3] * mat.elements[9]) -
+        (mat.elements[8] * mat.elements[1] * mat.elements[7]) +
+        (mat.elements[8] * mat.elements[3] * mat.elements[5]);
+
+    inverse[15] = (mat.elements[0] * mat.elements[5] * mat.elements[10]) -
+        (mat.elements[0] * mat.elements[6] * mat.elements[9]) -
+        (mat.elements[4] * mat.elements[1] * mat.elements[10]) +
+        (mat.elements[4] * mat.elements[2] * mat.elements[9]) +
+        (mat.elements[8] * mat.elements[1] * mat.elements[6]) -
+        (mat.elements[8] * mat.elements[2] * mat.elements[5]);
+
+    float determinant = mat.elements[0] * inverse[0] +
+        mat.elements[1] * inverse[4] +
+        mat.elements[2] * inverse[8] +
+        mat.elements[3] * inverse[12];
+
+    Mat4f result = { 0.0f };
+    if (determinant != 0) {
+        determinant = 1.0f / determinant;
+
+        for (uint32_t i = 0; i < 16; i++) {
+            result.elements[i] = inverse[i] * determinant;
+        }
+    }
+    return result;
+}
