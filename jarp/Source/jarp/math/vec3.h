@@ -30,7 +30,7 @@ inline static Vec3f math_vec3f(float value) {
 math_vec3f_add
 ====================
 */
-inline static Vec3f math_vec3f_add(Vec3f vec1, Vec3f vec2) {
+inline static Vec3f math_vec3f_add(const Vec3f vec1, const Vec3f vec2) {
     Vec3f result;
     result.x = vec1.x + vec2.x;
     result.y = vec1.y + vec2.y;
