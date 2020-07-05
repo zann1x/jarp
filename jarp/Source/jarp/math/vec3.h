@@ -55,6 +55,21 @@ inline static Vec3f math_vec3f_substract(const Vec3f vec1, const Vec3f vec2) {
 
 /*
 ====================
+math_vec3f_multiply
+====================
+*/
+// TODO: why the fuck can't i pass it by const reference here?
+inline static Vec3f math_vec3f_multiply(const Vec3f vec, const float val) {
+    Vec3f result = {
+        .x = vec.x * val,
+        .y = vec.y * val,
+        .z = vec.z * val
+    };
+    return result;
+}
+
+/*
+====================
 math_vec3f_normalize
 ====================
 */
