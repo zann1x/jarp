@@ -16,11 +16,30 @@ union Vec3f {
 };
 typedef union Vec3f Vec3f;
 
-inline static Vec3f math_vec3f(float value) {
+/*
+====================
+math_vec3fv
+====================
+*/
+inline static Vec3f math_vec3fv(float value) {
     Vec3f result = {
         .x = value,
         .y = value,
         .z = value
+    };
+    return result;
+}
+
+/*
+====================
+math_vec3fx
+====================
+*/
+inline static Vec3f math_vec3fx(float val1, float val2, float val3) {
+    Vec3f result = {
+        .x = val1,
+        .y = val2,
+        .z = val3
     };
     return result;
 }

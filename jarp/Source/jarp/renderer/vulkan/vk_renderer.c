@@ -1867,7 +1867,7 @@ void vk_renderer_update(void) {
 
     uniform_buffer_object.projection_view = math_mat4f_multiply(projection, view);
     uniform_buffer_object.model = math_mat4f_identity();
-    uniform_buffer_object.light_position = math_vec3f(1.0f);
+    uniform_buffer_object.light_position = math_vec3fv(1.0f);
 
     static void* raw_data;
     vkMapMemory(device, uniform_buffer_memories[active_image_index], 0, sizeof(uniform_buffer_object), 0, &raw_data);
