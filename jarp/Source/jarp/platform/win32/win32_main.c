@@ -14,6 +14,7 @@
 #include "jarp/input/buttons.h"
 #include "jarp/input/input.h"
 #include "jarp/input/keys.h"
+#include "jarp/renderer/camera.h"
 #include "jarp/renderer/vulkan/vk_renderer.h"
 
 /*
@@ -215,6 +216,7 @@ int main(int argc, char** argv) {
     window.hinstance = system_info.info.win.hinstance;
     window.hwnd = system_info.info.win.window;
 
+    camera_init();
     if (!vk_renderer_init(&window, application_path)) {
         vk_renderer_shutdown();
         return 1;
@@ -281,6 +283,7 @@ int main(int argc, char** argv) {
 
         // render and update stuff
         input_update();
+        camera_update();
         vk_renderer_update();
         vk_renderer_draw();
 

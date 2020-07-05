@@ -8,9 +8,9 @@
 #include "jarp/log.h"
 #include "jarp/shared.h"
 #include "jarp/math/mat4.h"
-#include "jarp/math/math.h"
 #include "jarp/math/vec2.h"
 #include "jarp/math/vec3.h"
+#include "jarp/renderer/camera.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 #include "jarp/platform/win32/win32_main.h"
@@ -78,7 +78,6 @@ struct SwapchainInfo swapchain_info = { 0 };
 
 bool use_vsync = false;
 void* window = NULL;
-Vec3f camera_position = { 0.0f, 0.0f, -3.0f };
 
 // ===============
 
@@ -1843,29 +1842,7 @@ vk_renderer_update
 ====================
 */
 void vk_renderer_update(void) {
-    const Mat4f projection = math_mat4f_orthographic(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 100.0f);
-
-    const Vec3f front = { 0.0f, 0.0f, 1.0f };
-    const Vec3f up = { 0.0f, 1.0f, 0.0f };
-    const Vec3f right = math_vec3f_normalize(math_vec3f_cross(up, front));
-    const float cam_speed = 0.0005f;
-    if (input_key_down[KEY_W]) {
-        camera_position = math_vec3f_add(camera_position, math_vec3f_multiply(up, cam_speed));
-    } else if (input_key_down[KEY_S]) {
-        camera_position = math_vec3f_substract(camera_position, math_vec3f_multiply(up, cam_speed));
-    }
-    if (input_key_down[KEY_D]) {
-        camera_position = math_vec3f_add(camera_position, math_vec3f_multiply(right, cam_speed));
-    }
-    else if (input_key_down[KEY_A]) {
-        camera_position = math_vec3f_substract(camera_position, math_vec3f_multiply(right, cam_speed));
-    }
-    //Vec3f target = math_vec3f_add(eye, front);
-    //Mat4f view = math_mat4f_look_at(eye, target, up);
-    // Invert the matrix as the objects in the world need to be moved in the opposite direction of the camera
-    const Mat4f view = math_mat4f_inverse(math_mat4f_translation(camera_position));
-
-    uniform_buffer_object.projection_view = math_mat4f_multiply(projection, view);
+    uniform_buffer_object.projection_view = camera_get_projection_view_matrix();
     uniform_buffer_object.model = math_mat4f_identity();
     uniform_buffer_object.light_position = math_vec3fv(1.0f);
 
