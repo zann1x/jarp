@@ -1,4 +1,5 @@
-#pragma once
+#ifndef KEYS_H
+#define KEYS_H
 
 #include <SDL_scancode.h>
 
@@ -16,3 +17,5 @@ enum EKey {
 
     KEY_COUNT = SDL_NUM_SCANCODES
 };
+
+#endif

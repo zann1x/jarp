@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VEC3_H
+#define VEC3_H
 
 #include "jarp/api_types.h"
 #include "jarp/math/math.h"
@@ -138,3 +139,5 @@ inline static Vec3f math_vec3f_negate(const Vec3f vec) {
     };
     return result;
 }
+
+#endif

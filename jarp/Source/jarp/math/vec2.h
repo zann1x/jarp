@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VEC2_H
+#define VEC2_H
 
 #include "jarp/api_types.h"
 #include "jarp/math/math.h"
@@ -25,3 +26,5 @@ inline static Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
     result.y = vec1.y + vec2.y;
     return result;
 }
+
+#endif

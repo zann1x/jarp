@@ -1,3 +1,6 @@
+#ifndef WIN32_MAIN_H
+#define WIN32_MAIN_H
+
 #include "jarp/api_types.h"
 
 #include <Windows.h>
@@ -51,3 +54,5 @@ struct Win32GameFunctionTable {
 static char* Win32GameFunctionTableNames[] = {
     "game_update_and_render"
 };
+
+#endif

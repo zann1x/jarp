@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MAT4_H
+#define MAT4_H
 
 #include "jarp/api_types.h"
 #include "jarp/math/math.h"
@@ -313,3 +314,5 @@ inline static Mat4f math_mat4f_inverse(const Mat4f mat) {
     }
     return result;
 }
+
+#endif

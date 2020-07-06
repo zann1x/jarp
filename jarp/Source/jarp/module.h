@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MODULE_H
+#define MODULE_H
 
 #define ADD(name) void name(const char* name, void* interf)
 typedef ADD(Add);
@@ -16,3 +17,5 @@ struct ModuleRegistry {
 };
 
 void module_registry_init(struct ModuleRegistry* reg);
+
+#endif

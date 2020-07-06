@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATH_H
+#define MATH_H
 
 #include "jarp/api_types.h"
 
@@ -22,3 +23,4 @@ math_min
 inline static uint32_t math_min(uint32_t num1, uint32_t num2) {
     return (num1 < num2 ? num1 : num2);
 }
+#endif

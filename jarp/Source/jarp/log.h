@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOG_H
+#define LOG_H
 
 enum ELogLevel {
     LOG_LEVEL_TRACE,
@@ -20,3 +21,5 @@ void log_log(enum ELogLevel level, const char* file, int line, const char* forma
     
 void log_set_level(enum ELogLevel level);
 void log_toggle_mute(void);
+
+#endif

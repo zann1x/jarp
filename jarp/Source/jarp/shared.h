@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SHARED_H
+#define SHARED_H
 
 #include "api_types.h"
 
@@ -17,3 +18,5 @@ static void zero_size(uint32_t size, void* ptr) {
         *byte++ = 0;
     }
 }
+
+#endif

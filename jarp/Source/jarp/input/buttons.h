@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUTTONS_H
+#define BUTTONS_H
 
 #include <SDL_mouse.h>
 
@@ -9,3 +10,5 @@ enum EButton {
     BUTTON_BACK = SDL_BUTTON_X1,
     BUTTON_FORWARD = SDL_BUTTON_X2
 };
+
+#endif

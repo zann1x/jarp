@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 #include "api_types.h"
 
@@ -25,3 +26,5 @@ struct GameExport {
 
 #define GAME_GET_API(name) struct GameExport* name(struct GameImport* game_import)
 typedef GAME_GET_API(GameGetAPI);
+
+#endif

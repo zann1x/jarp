@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUT_H
+#define INPUT_H
 
 #include "keys.h"
 
@@ -9,3 +10,5 @@ extern uint8_t input_button_down[16];
 
 void input_event(union SDL_Event* event);
 void input_update();
+
+#endif

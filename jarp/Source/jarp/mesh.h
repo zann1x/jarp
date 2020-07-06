@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MESH_H
+#define MESH_H
 
 #include "api_types.h"
 
@@ -11,3 +12,5 @@ struct MeshVertex {
 void hello(void) {
     int val = 3;
 }
+
+#endif

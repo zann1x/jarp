@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VK_RENDERER_H
+#define VK_RENDERER_H
 
 #include "jarp/api_types.h"
 
@@ -7,3 +8,5 @@ void vk_renderer_shutdown(void);
 
 void vk_renderer_update(void);
 void vk_renderer_draw(void);
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SANDBOX_H
+#define SANDBOX_H
 
 #include "jarp/api_types.h"
 
@@ -18,3 +19,5 @@ typedef DO_THE_SAND(DoTheSand);
 struct SandboxAPI {
     DoTheSand* do_the_sand;
 };
+
+#endif
