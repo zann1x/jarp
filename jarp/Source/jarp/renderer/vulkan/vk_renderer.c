@@ -7,9 +7,7 @@
 #include "jarp/input/input.h"
 #include "jarp/log.h"
 #include "jarp/shared.h"
-#include "jarp/math/mat4.h"
-#include "jarp/math/vec2.h"
-#include "jarp/math/vec3.h"
+#include "jarp/math/math.h"
 #include "jarp/renderer/camera.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR

@@ -1,8 +1,7 @@
 #include "camera.h"
 
 #include "jarp/input/input.h"
-#include "jarp/math/vec3.h"
-#include "jarp/math/mat4.h"
+#include "jarp/math/math.h"
 
 #define CAMERA_SPEED 0.0005f
 

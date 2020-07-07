@@ -1,6 +1,9 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include <SDL_mouse.h>
+#include <SDL_scancode.h>
+
 enum EButton {
     BUTTON_LEFT = SDL_BUTTON_LEFT,
     BUTTON_MIDDLE = SDL_BUTTON_MIDDLE,

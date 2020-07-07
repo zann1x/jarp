@@ -11,9 +11,7 @@
 #include "jarp/log.h"
 #include "jarp/platform.h"
 #include "jarp/shared.h"
-#include "jarp/input/buttons.h"
 #include "jarp/input/input.h"
-#include "jarp/input/keys.h"
 #include "jarp/renderer/camera.h"
 #include "jarp/renderer/vulkan/vk_renderer.h"
 
