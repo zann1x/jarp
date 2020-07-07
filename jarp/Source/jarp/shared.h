@@ -3,9 +3,13 @@
 
 #include "api_types.h"
 
-#define ARRAY_COUNT(array) (sizeof(array) / sizeof(array[0]))
-#define ZERO_ARRAY(count, array_ptr) zero_size(count * sizeof(array_ptr[0]), array_ptr)
-#define ZERO_STRUCT(instance) zero_size(sizeof(instance), &instance)
+#define ARRAY_COUNT(array)              (sizeof(array) / sizeof(array[0]))
+#define ZERO_ARRAY(count, array_ptr)    zero_size(count * sizeof(array_ptr[0]), array_ptr)
+#define ZERO_STRUCT(instance)           zero_size(sizeof(instance), &instance)
+
+#define internal        static
+#define local_persist   static
+#define global          static
 
 /*
 ====================
