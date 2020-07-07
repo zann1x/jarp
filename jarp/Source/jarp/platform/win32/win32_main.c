@@ -15,6 +15,11 @@
 #include "jarp/renderer/camera.h"
 #include "jarp/renderer/vulkan/vk_renderer.h"
 
+int win32_input_mouse_x = 0;
+int win32_input_mouse_y = 0;
+uint16_t win32_input_key_down[JARP_KEY_COUNT];
+uint8_t win32_input_button_down[JARP_BUTTON_COUNT];
+
 /*
 ====================
 win32_test
@@ -160,6 +165,37 @@ struct GameExport* win32_get_game_api(struct Win32GameCode* loaded_code, struct 
     }
 }
 
+enum EKey win32_input_remap_key(SDL_Scancode scancode) {
+    switch (scancode) {
+        case SDL_SCANCODE_UNKNOWN:  return JARP_KEY_UNKNOWN;
+        case SDL_SCANCODE_A:        return JARP_KEY_A;
+        case SDL_SCANCODE_D:        return JARP_KEY_D;
+        case SDL_SCANCODE_S:        return JARP_KEY_S;
+        case SDL_SCANCODE_W:        return JARP_KEY_W;
+        case SDL_SCANCODE_SPACE:    return JARP_KEY_SPACE;
+        default:                    return JARP_KEY_UNKNOWN;
+    }
+}
+
+enum EButton win32_input_remap_button(int32_t button) {
+    switch (button) {
+        case SDL_BUTTON_LEFT:   return JARP_BUTTON_LEFT;
+        case SDL_BUTTON_MIDDLE: return JARP_BUTTON_MIDDLE;
+        case SDL_BUTTON_RIGHT:  return JARP_BUTTON_RIGHT;
+        case SDL_BUTTON_X1:     return JARP_BUTTON_BACK;
+        case SDL_BUTTON_X2:     return JARP_BUTTON_FORWARD;
+        default:                return JARP_BUTTON_UNKNOWN;
+    }
+}
+
+void win32_input_update(void) {
+    if (SDL_GetRelativeMouseMode() == true) {
+        SDL_GetRelativeMouseState(&win32_input_mouse_x, &win32_input_mouse_y);
+    } else {
+        SDL_GetMouseState(&win32_input_mouse_x, &win32_input_mouse_y);
+    }
+}
+
 /*
 ====================
 main
@@ -234,15 +270,38 @@ int main(int argc, char** argv) {
                     is_running = false;
                     break;
                 }
-                case SDL_KEYDOWN:
-                case SDL_KEYUP:
-                case SDL_TEXTEDITING:
-                case SDL_TEXTINPUT:
-                case SDL_MOUSEBUTTONDOWN:
-                case SDL_MOUSEBUTTONUP:
-                case SDL_MOUSEMOTION:
+                case SDL_KEYDOWN: {
+                    if (event.key.repeat == 0) {
+                        log_trace("Key was pressed");
+                    } else {
+                        log_trace("Key was pressed repeatedly");
+                    }
+                    enum EKey key = win32_input_remap_key(event.key.keysym.scancode);
+                    win32_input_key_down[key] = true;
+                    break;
+                }
+                case SDL_KEYUP: {
+                    log_trace("Key was released");
+                    enum EKey key = win32_input_remap_key(event.key.keysym.scancode);
+                    win32_input_key_down[key] = false;
+                    break;
+                }
+                case SDL_MOUSEBUTTONDOWN: {
+                    log_trace("Mouse button was pressed");
+                    win32_input_button_down[event.button.button] = true;
+                    break;
+                }
+                case SDL_MOUSEBUTTONUP: {
+                    log_trace("Mouse button was released");
+                    win32_input_button_down[event.button.button] = false;
+                    break;
+                }
+                case SDL_MOUSEMOTION: {
+                    log_trace("Mouse moved (%d, %d) and is now at (%d, %d)", event.motion.xrel, event.motion.yrel, win32_input_mouse_x, win32_input_mouse_x);
+                    break;
+                }
                 case SDL_MOUSEWHEEL: {
-                    input_event(&event);
+                    log_trace("Mouse wheel moved (%d, %d)", event.wheel.x, event.wheel.y);
                     break;
                 }
                 case SDL_WINDOWEVENT: {
@@ -280,8 +339,8 @@ int main(int argc, char** argv) {
         }
 
         // render and update stuff
-        input_update();
-        camera_update();
+        win32_input_update();
+        camera_update(win32_input_key_down);
         vk_renderer_update();
         vk_renderer_draw();
 

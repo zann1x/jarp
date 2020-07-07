@@ -1,38 +1,29 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <SDL_mouse.h>
-#include <SDL_scancode.h>
-
 enum EButton {
-    BUTTON_LEFT = SDL_BUTTON_LEFT,
-    BUTTON_MIDDLE = SDL_BUTTON_MIDDLE,
-    BUTTON_RIGHT = SDL_BUTTON_RIGHT,
-    BUTTON_BACK = SDL_BUTTON_X1,
-    BUTTON_FORWARD = SDL_BUTTON_X2
+    JARP_BUTTON_UNKNOWN = 0,
+    JARP_BUTTON_LEFT,
+    JARP_BUTTON_MIDDLE,
+    JARP_BUTTON_RIGHT,
+    JARP_BUTTON_BACK,
+    JARP_BUTTON_FORWARD,
+
+    JARP_BUTTON_COUNT = 16
 };
 
 enum EKey {
-    KEY_UNKNOWN = SDL_SCANCODE_UNKNOWN,
+    JARP_KEY_UNKNOWN = 0,
 
-    KEY_W = SDL_SCANCODE_W,
-    KEY_A = SDL_SCANCODE_A,
-    KEY_S = SDL_SCANCODE_S,
-    KEY_D = SDL_SCANCODE_D,
-    KEY_SPACE = SDL_SCANCODE_SPACE,
+    JARP_KEY_A,
+    JARP_KEY_D,
+    JARP_KEY_S,
+    JARP_KEY_W,
+    JARP_KEY_SPACE,
+    JARP_KEY_LEFT,
+    JARP_KEY_RIGHT,
 
-    KEY_LEFT = SDL_SCANCODE_LEFT,
-    KEY_RIGHT = SDL_SCANCODE_RIGHT,
-
-    KEY_COUNT = SDL_NUM_SCANCODES
+    JARP_KEY_COUNT = 512
 };
-
-extern int input_mouse_x;
-extern int input_mouse_y;
-extern uint16_t input_key_down[KEY_COUNT];
-extern uint8_t input_button_down[16];
-
-void input_event(union SDL_Event* event);
-void input_update();
 
 #endif

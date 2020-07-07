@@ -4,7 +4,6 @@
 #include <volk.h>
 
 #include "jarp/file.h"
-#include "jarp/input/input.h"
 #include "jarp/log.h"
 #include "jarp/shared.h"
 #include "jarp/math/math.h"

@@ -28,19 +28,19 @@ void camera_init(void) {
 camera_update
 ====================
 */
-void camera_update(void) {
+void camera_update(uint16_t* input_key_down) {
     const Vec3f right = math_vec3f_normalize(math_vec3f_cross(camera_up, camera_front));
     
-    if (input_key_down[KEY_W]) {
+    if (input_key_down[JARP_KEY_W]) {
         camera_position = math_vec3f_add(camera_position, math_vec3f_multiply(camera_up, CAMERA_SPEED));
     }
-    else if (input_key_down[KEY_S]) {
+    else if (input_key_down[JARP_KEY_S]) {
         camera_position = math_vec3f_substract(camera_position, math_vec3f_multiply(camera_up, CAMERA_SPEED));
     }
-    if (input_key_down[KEY_D]) {
+    if (input_key_down[JARP_KEY_D]) {
         camera_position = math_vec3f_add(camera_position, math_vec3f_multiply(right, CAMERA_SPEED));
     }
-    else if (input_key_down[KEY_A]) {
+    else if (input_key_down[JARP_KEY_A]) {
         camera_position = math_vec3f_substract(camera_position, math_vec3f_multiply(right, CAMERA_SPEED));
     }
 }
