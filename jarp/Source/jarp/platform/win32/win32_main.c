@@ -199,20 +199,6 @@ main
 */
 int main(int argc, char** argv) {
     char* application_path = SDL_GetBasePath();
-    //GetModuleFileNameA(0, application_path, sizeof(application_path));
-
-    //struct Win32GameFunctionTable game = { 0 };
-    //struct Win32LoadedCode game_code = { 0 };
-    //strcpy(game_code.full_dll_path, application_path);
-    //strcat(game_code.full_dll_path, "..\\Game\\Game.dll");
-    //strcpy(game_code.full_transient_dll_path, application_path);
-    //strcat(game_code.full_transient_dll_path, "..\\Game\\GameTemp.dll");
-    //strcpy(game_code.full_lock_path, application_path);
-    //strcat(game_code.full_lock_path, "..\\Game\\BuildLock.tmp");
-    //game_code.function_count = ARRAY_COUNT(Win32GameFunctionTableNames);
-    //game_code.function_names = Win32GameFunctionTableNames;
-    //game_code.functions = (void**)&game;
-    //win32_load_code(&game_code);
 
     struct Win32GameCode game_code = { 0 };
     strcpy(game_code.full_dll_path, application_path);
