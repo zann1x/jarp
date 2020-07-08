@@ -3,6 +3,7 @@
 .vscode/
 **/Binaries/
 **/Intermediate/
+**/out/
 !ThirdParty/*
 vulkan-loader-**/
 
