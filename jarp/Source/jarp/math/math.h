@@ -41,7 +41,7 @@ typedef union Vec2f Vec2f;
 math_vec2f_add
 ====================
 */
-inline Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
+inline Vec2f math_vec2f_add(const Vec2f vec1, const Vec2f vec2) {
     Vec2f result;
     result.x = vec1.x + vec2.x;
     result.y = vec1.y + vec2.y;
