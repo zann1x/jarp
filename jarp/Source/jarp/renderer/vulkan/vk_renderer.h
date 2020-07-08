@@ -4,7 +4,7 @@
 bool vk_renderer_init(void* window, char* application_path);
 void vk_renderer_shutdown(void);
 
-void vk_renderer_update(void);
+void vk_renderer_update(struct Camera* camera);
 void vk_renderer_draw(void);
 
 #endif

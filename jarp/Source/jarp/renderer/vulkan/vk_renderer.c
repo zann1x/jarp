@@ -1814,8 +1814,8 @@ void vk_renderer_shutdown(void) {
 vk_renderer_update
 ====================
 */
-void vk_renderer_update(void) {
-    uniform_buffer_object.projection_view = camera_get_projection_view_matrix();
+void vk_renderer_update(struct Camera* camera) {
+    uniform_buffer_object.projection_view = camera->projection_view_matrix;
     uniform_buffer_object.model = math_mat4f_identity();
     uniform_buffer_object.light_position = math_vec3fv(1.0f);
 

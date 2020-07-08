@@ -232,7 +232,8 @@ int main(int argc, char** argv) {
     window.hinstance = system_info.info.win.hinstance;
     window.hwnd = system_info.info.win.window;
 
-    camera_init();
+    struct Camera camera;
+    camera_init(&camera);
     if (!vk_renderer_init(&window, application_path)) {
         vk_renderer_shutdown();
         return 1;
@@ -322,8 +323,8 @@ int main(int argc, char** argv) {
 
         // render and update stuff
         win32_input_update();
-        camera_update(win32_input_key_down);
-        vk_renderer_update();
+        camera_update(&camera, win32_input_key_down);
+        vk_renderer_update(&camera);
         vk_renderer_draw();
 
 #if _DEBUG
