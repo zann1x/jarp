@@ -113,7 +113,6 @@ inline Vec3f math_vec3f_add(const Vec3f vec1, const Vec3f vec2) {
 math_vec3f_substract
 ====================
 */
-// TODO: why the fuck can't i pass it by const reference here?
 inline Vec3f math_vec3f_substract(const Vec3f vec1, const Vec3f vec2) {
     Vec3f result = {
         .x = vec1.x - vec2.x,
@@ -128,7 +127,6 @@ inline Vec3f math_vec3f_substract(const Vec3f vec1, const Vec3f vec2) {
 math_vec3f_multiply
 ====================
 */
-// TODO: why the fuck can't i pass it by const reference here?
 inline Vec3f math_vec3f_multiply(const Vec3f vec, const float val) {
     Vec3f result = {
         .x = vec.x * val,
