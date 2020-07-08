@@ -242,6 +242,8 @@ int main(int argc, char** argv) {
     uint32_t current_fps_time = SDL_GetTicks();
     uint32_t last_fps_time = current_fps_time;
     uint32_t frames = 0;
+    uint32_t delta_ms = 0;
+    double delta_sec = 0.0;
 
     bool is_running = true;
     while (is_running) {
@@ -324,6 +326,7 @@ int main(int argc, char** argv) {
         // render and update stuff
         win32_input_update();
         camera_update(&camera, win32_input_key_down);
+        ge.update_and_render();
         vk_renderer_update(&camera);
         vk_renderer_draw();
 
@@ -344,13 +347,13 @@ int main(int argc, char** argv) {
 
         // frame time
         current_fps_time = SDL_GetTicks();
+        delta_ms = current_fps_time - last_fps_time;
+        delta_sec = (double)delta_ms / 1000.0;
         ++frames;
-        if (current_fps_time > last_fps_time + 1000) {
+        if (delta_ms > 1000) {
             char buffer[32];
             sprintf(buffer, "%s - %d fps", window.title, frames);
             SDL_SetWindowTitle(window.handle, buffer);
-
-            ge.update_and_render();
 
             last_fps_time = current_fps_time;
             frames = 0;
