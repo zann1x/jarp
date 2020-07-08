@@ -286,7 +286,7 @@ math_mat4f_orthographic
 See https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
 ====================
 */
-inline Mat4f math_mat4f_orthographic(float left, float right, float bottom, float top, float here, float there) {
+inline Mat4f math_mat4f_orthographic(float left, float right, float bottom, float top, float z_near, float z_far) {
     Mat4f result = math_mat4f_identity();
 
     result.elements[0 + 0 * 4] = 2.0f / (right - left);
@@ -295,24 +295,24 @@ inline Mat4f math_mat4f_orthographic(float left, float right, float bottom, floa
 
 #ifdef LEFT_HAND_COORDINATES
 # ifdef ZERO_TO_ONE_COORDINATES
-    result.elements[2 + 2 * 4] = 1.0f / (there - here);
+    result.elements[2 + 2 * 4] = 1.0f / (z_far - z_near);
 # else
-    result.elements[2 + 2 * 4] = 2.0f / (there - here);
+    result.elements[2 + 2 * 4] = 2.0f / (z_far - z_near);
 # endif
 #else
 # ifdef ZERO_TO_ONE_COORDINATES
-    result.elements[2 + 2 * 4] = -1.0f / (there - here);
+    result.elements[2 + 2 * 4] = -1.0f / (z_far - z_near);
 # else
-    result.elements[2 + 2 * 4] = -2.0f / (there - here);
+    result.elements[2 + 2 * 4] = -2.0f / (z_far - z_near);
 # endif
 #endif
 
     result.elements[0 + 3 * 4] = -(right + left) / (right - left);
     result.elements[1 + 3 * 4] = -(top + bottom) / (top - bottom);
 #ifdef ZERO_TO_ONE_COORDINATES
-    result.elements[2 + 3 * 4] = -(here) / (there - here);
+    result.elements[2 + 3 * 4] = -(z_near) / (z_far - z_near);
 #else
-    result.elements[2 + 3 * 4] = -(there + here) / (there - here);
+    result.elements[2 + 3 * 4] = -(z_far + z_near) / (z_far - z_near);
 #endif
 
     return result;
