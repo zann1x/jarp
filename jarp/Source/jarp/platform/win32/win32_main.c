@@ -5,7 +5,7 @@
 
 #include "jarp/log.c"
 #include "jarp/file.c"
-//#include "jarp/module.c"
+#include "jarp/module.c"
 #include "jarp/renderer/camera.c"
 #include "jarp/renderer/texture.c"
 #include "jarp/renderer/vulkan/vk_renderer.c"

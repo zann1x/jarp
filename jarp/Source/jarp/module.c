@@ -1,19 +1,19 @@
-void* loaded_modules;
+static void* loaded_modules;
 
-ADD(add) {
+ADD(module_add) {
 	loaded_modules = interf;
 }
 
-REMOVE(remove) {
+REMOVE(module_remove) {
 	loaded_modules = NULL;
 }
 
-GET(get) {
+GET(module_get) {
 	return loaded_modules;
 }
 
 void module_registry_init(struct ModuleRegistry* reg) {
-	reg->add = &add;
-	reg->remove = &remove;
-	reg->get = &get;
+	reg->add = &module_add;
+	reg->remove = &module_remove;
+	reg->get = &module_get;
 }
