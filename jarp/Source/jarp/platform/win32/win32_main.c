@@ -216,11 +216,11 @@ int main(int argc, char** argv) {
 
     struct Win32GameCode game_code = { 0 };
     strcpy(game_code.full_dll_path, application_path);
-    strcat(game_code.full_dll_path, "..\\Game\\Game.dll");
+    strcat(game_code.full_dll_path, "Game.dll");
     strcpy(game_code.full_transient_dll_path, application_path);
-    strcat(game_code.full_transient_dll_path, "..\\Game\\GameTemp.dll");
+    strcat(game_code.full_transient_dll_path, "GameTemp.dll");
     strcpy(game_code.full_lock_path, application_path);
-    strcat(game_code.full_lock_path, "..\\Game\\BuildLock.tmp");
+    strcat(game_code.full_lock_path, "BuildLock.tmp");
     struct GameExport ge = { 0 };
     struct GameImport gi = { 0 };
     gi.test = win32_test;

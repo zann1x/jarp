@@ -1280,10 +1280,10 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
         // TODO: replace with non-platform specific code
         char vertex_shader_path[MAX_PATH];
         strcpy(vertex_shader_path, application_path);
-        strcat(vertex_shader_path, "..\\..\\..\\..\\jarp\\Shader\\Basic.vert.spv");
+        strcat(vertex_shader_path, "..\\jarp\\Shader\\Basic.vert.spv");
         char fragment_shader_path[MAX_PATH];
         strcpy(fragment_shader_path, application_path);
-        strcat(fragment_shader_path, "..\\..\\..\\..\\jarp\\Shader\\Basic.frag.spv");
+        strcat(fragment_shader_path, "..\\jarp\\Shader\\Basic.frag.spv");
 
         struct FileContent vertex_shader_code = file_read_bin(vertex_shader_path);
         struct FileContent fragment_shader_code = file_read_bin(fragment_shader_path);
@@ -1464,7 +1464,7 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
         // TODO: use the texture and render it onto something
         char texture_path[MAX_PATH];
         strcpy(texture_path, application_path);
-        strcat(texture_path, "..\\..\\..\\..\\Game\\Content\\sample.png");
+        strcat(texture_path, "..\\Game\\Content\\sample.png");
 
         {
             VkBuffer staging_buffer = VK_NULL_HANDLE;
