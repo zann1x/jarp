@@ -1,11 +1,8 @@
 # Directories
 .vs/
 .vscode/
-**/Binaries/
-**/Intermediate/
-**/out/
-!ThirdParty/*
-vulkan-loader-**/
+**/Build/
+**/BuildCache/
 
 # Files
 *.sln
@@ -14,8 +11,3 @@ vulkan-loader-**/
 *.vcxproj.user
 **/*.spv
 **/Makefile
-
-# gtags
-GPATH
-GRTAGS
-GTAGS
