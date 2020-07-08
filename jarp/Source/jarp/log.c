@@ -1,10 +1,3 @@
-#include "log.h"
-
-#include <stdio.h>
-#include <time.h>
-
-#include "api_types.h"
-
 static struct {
     enum ELogLevel level;
     bool is_muted;

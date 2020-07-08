@@ -1,11 +1,40 @@
 #ifndef WIN32_MAIN_H
 #define WIN32_MAIN_H
 
-#include "jarp/api_types.h"
+// Generally useful standard headers for more types compliant with C99
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 
+// Standard library stuff
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <Windows.h>
 
+// Our own included libraries
+#include <SDL.h>
+#include <SDL_syswm.h>
+#include <SDL_vulkan.h>
+#include <stb_image.h>
+#include <volk.h>
+
+// Our own code
+#include "jarp/api_types.h"
+#include "jarp/shared.h"
 #include "jarp/platform.h"
+#include "jarp/input/input.h"
+#include "jarp/log.h"
+#include "jarp/file.h"
+#include "jarp/math/math.h"
+//#include "jarp/mesh.h"
+//#include "jarp/module.h"
+#include "jarp/renderer/camera.h"
+#include "jarp/renderer/texture.h"
+#include "jarp/renderer/vulkan/vk_renderer.h"
 
 struct Win32Window {
     uint32_t width;

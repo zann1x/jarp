@@ -1,12 +1,7 @@
 #ifndef API_TYPES_H
 #define API_TYPES_H
 
-// Include generally useful standard headers for more types compliant with C99
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-
-#if JARP_PLATFORM_WIN32
+#ifdef JARP_PLATFORM_WIN32
 	#ifdef __cplusplus
 		#define API extern "C"
 	#else

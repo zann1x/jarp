@@ -1,8 +1,6 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "api_types.h"
-
 #define PLATFORM_TEST(name) int name(void)
 typedef PLATFORM_TEST(PlatformTest);
 

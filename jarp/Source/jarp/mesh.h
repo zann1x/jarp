@@ -1,8 +1,6 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "api_types.h"
-
 struct MeshVertex {
     float position[3];
     float uv[2];

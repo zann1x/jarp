@@ -1,10 +1,7 @@
-#include "jarp/api_types.h"
-#include "jarp/platform.h"
+#include "game.h"
 
-#include <stdio.h>
-
-struct GameExport globals;
-struct GameImport gi;
+static struct GameExport globals;
+static struct GameImport gi;
 
 /*
 ====================

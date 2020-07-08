@@ -1,17 +1,12 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "jarp/api_types.h"
-
-#define _USE_MATH_DEFINES
-#include <math.h>
-
 /*
 ====================
 math_max
 ====================
 */
-inline static uint32_t math_max(uint32_t num1, uint32_t num2) {
+inline uint32_t math_max(uint32_t num1, uint32_t num2) {
     return (num1 > num2 ? num1 : num2);
 }
 
@@ -20,7 +15,7 @@ inline static uint32_t math_max(uint32_t num1, uint32_t num2) {
 math_min
 ====================
 */
-inline static uint32_t math_min(uint32_t num1, uint32_t num2) {
+inline uint32_t math_min(uint32_t num1, uint32_t num2) {
     return (num1 < num2 ? num1 : num2);
 }
 
@@ -46,7 +41,7 @@ typedef union Vec2f Vec2f;
 math_vec2f_add
 ====================
 */
-inline static Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
+inline Vec2f math_vec2f_add(Vec2f vec1, Vec2f vec2) {
     Vec2f result;
     result.x = vec1.x + vec2.x;
     result.y = vec1.y + vec2.y;
@@ -77,7 +72,7 @@ typedef union Vec3f Vec3f;
 math_vec3fv
 ====================
 */
-inline static Vec3f math_vec3fv(float value) {
+inline Vec3f math_vec3fv(float value) {
     Vec3f result = {
         .x = value,
         .y = value,
@@ -91,7 +86,7 @@ inline static Vec3f math_vec3fv(float value) {
 math_vec3fx
 ====================
 */
-inline static Vec3f math_vec3fx(float val1, float val2, float val3) {
+inline Vec3f math_vec3fx(float val1, float val2, float val3) {
     Vec3f result = {
         .x = val1,
         .y = val2,
@@ -105,7 +100,7 @@ inline static Vec3f math_vec3fx(float val1, float val2, float val3) {
 math_vec3f_add
 ====================
 */
-inline static Vec3f math_vec3f_add(const Vec3f vec1, const Vec3f vec2) {
+inline Vec3f math_vec3f_add(const Vec3f vec1, const Vec3f vec2) {
     Vec3f result;
     result.x = vec1.x + vec2.x;
     result.y = vec1.y + vec2.y;
@@ -119,7 +114,7 @@ math_vec3f_substract
 ====================
 */
 // TODO: why the fuck can't i pass it by const reference here?
-inline static Vec3f math_vec3f_substract(const Vec3f vec1, const Vec3f vec2) {
+inline Vec3f math_vec3f_substract(const Vec3f vec1, const Vec3f vec2) {
     Vec3f result = {
         .x = vec1.x - vec2.x,
         .y = vec1.y - vec2.y,
@@ -134,7 +129,7 @@ math_vec3f_multiply
 ====================
 */
 // TODO: why the fuck can't i pass it by const reference here?
-inline static Vec3f math_vec3f_multiply(const Vec3f vec, const float val) {
+inline Vec3f math_vec3f_multiply(const Vec3f vec, const float val) {
     Vec3f result = {
         .x = vec.x * val,
         .y = vec.y * val,
@@ -148,7 +143,7 @@ inline static Vec3f math_vec3f_multiply(const Vec3f vec, const float val) {
 math_vec3f_normalize
 ====================
 */
-inline static Vec3f math_vec3f_normalize(const Vec3f vec) {
+inline Vec3f math_vec3f_normalize(const Vec3f vec) {
     const float length = sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
     Vec3f result = {
         .x = vec.x / length,
@@ -163,7 +158,7 @@ inline static Vec3f math_vec3f_normalize(const Vec3f vec) {
 math_vec3f_cross
 ====================
 */
-inline static Vec3f math_vec3f_cross(const Vec3f vec1, const Vec3f vec2) {
+inline Vec3f math_vec3f_cross(const Vec3f vec1, const Vec3f vec2) {
     Vec3f result = {
         .x = vec1.y * vec2.z - vec1.z * vec2.y,
         .y = vec1.z * vec2.x - vec1.x * vec2.z,
@@ -177,7 +172,7 @@ inline static Vec3f math_vec3f_cross(const Vec3f vec1, const Vec3f vec2) {
 math_vec3f_dot
 ====================
 */
-inline static float math_vec3f_dot(const Vec3f vec1, const Vec3f vec2) {
+inline float math_vec3f_dot(const Vec3f vec1, const Vec3f vec2) {
     return (vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z);
 }
 
@@ -186,7 +181,7 @@ inline static float math_vec3f_dot(const Vec3f vec1, const Vec3f vec2) {
 math_vec3f_negate
 ====================
 */
-inline static Vec3f math_vec3f_negate(const Vec3f vec) {
+inline Vec3f math_vec3f_negate(const Vec3f vec) {
     Vec3f result = {
         .x = -vec.x,
         .y = -vec.y,
@@ -219,7 +214,7 @@ typedef struct Mat4f Mat4f;
 math_mat4f_multiply
 ====================
 */
-inline static Mat4f math_mat4f_multiply(const Mat4f mat1, const Mat4f mat2) {
+inline Mat4f math_mat4f_multiply(const Mat4f mat1, const Mat4f mat2) {
     Mat4f result = { 0.0f };
 
     for (int y = 0; y < 4; y++) {
@@ -240,7 +235,7 @@ inline static Mat4f math_mat4f_multiply(const Mat4f mat1, const Mat4f mat2) {
 math_mat4f_identity
 ====================
 */
-inline static Mat4f math_mat4f_identity(void) {
+inline Mat4f math_mat4f_identity(void) {
     Mat4f result = { 0.0f };
     result.elements[0 + 0 * 4] = 1.0f;
     result.elements[1 + 1 * 4] = 1.0f;
@@ -255,7 +250,7 @@ inline static Mat4f math_mat4f_identity(void) {
 math_mat4f_translation
 ====================
 */
-inline static Mat4f math_mat4f_translation(const Vec3f vec) {
+inline Mat4f math_mat4f_translation(const Vec3f vec) {
     Mat4f result = math_mat4f_identity();
 
     result.elements[0 + 3 * 4] = vec.x;
@@ -270,7 +265,7 @@ inline static Mat4f math_mat4f_translation(const Vec3f vec) {
 math_mat4f_rotation
 ====================
 */
-inline static Mat4f math_mat4f_rotation(float angle) {
+inline Mat4f math_mat4f_rotation(float angle) {
     Mat4f result = math_mat4f_identity();
 
     float rotation = (float)((angle * M_PI) / 180.0f);
@@ -293,7 +288,7 @@ math_mat4f_orthographic
 See https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
 ====================
 */
-inline static Mat4f math_mat4f_orthographic(float left, float right, float bottom, float top, float near, float far) {
+inline Mat4f math_mat4f_orthographic(float left, float right, float bottom, float top, float here, float there) {
     Mat4f result = math_mat4f_identity();
 
     result.elements[0 + 0 * 4] = 2.0f / (right - left);
@@ -302,24 +297,24 @@ inline static Mat4f math_mat4f_orthographic(float left, float right, float botto
 
 #ifdef LEFT_HAND_COORDINATES
 # ifdef ZERO_TO_ONE_COORDINATES
-    result.elements[2 + 2 * 4] = 1.0f / (far - near);
+    result.elements[2 + 2 * 4] = 1.0f / (there - here);
 # else
-    result.elements[2 + 2 * 4] = 2.0f / (far - near);
+    result.elements[2 + 2 * 4] = 2.0f / (there - here);
 # endif
 #else
 # ifdef ZERO_TO_ONE_COORDINATES
-    result.elements[2 + 2 * 4] = -1.0f / (far - near);
+    result.elements[2 + 2 * 4] = -1.0f / (there - here);
 # else
-    result.elements[2 + 2 * 4] = -2.0f / (far - near);
+    result.elements[2 + 2 * 4] = -2.0f / (there - here);
 # endif
 #endif
 
     result.elements[0 + 3 * 4] = -(right + left) / (right - left);
     result.elements[1 + 3 * 4] = -(top + bottom) / (top - bottom);
 #ifdef ZERO_TO_ONE_COORDINATES
-    result.elements[2 + 3 * 4] = -(near) / (far - near);
+    result.elements[2 + 3 * 4] = -(here) / (there - here);
 #else
-    result.elements[2 + 3 * 4] = -(far + near) / (far - near);
+    result.elements[2 + 3 * 4] = -(there + here) / (there - here);
 #endif
 
     return result;
@@ -332,7 +327,7 @@ math_mat4f_look_at
 See https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/lookat-function
 ====================
 */
-inline static Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, const Vec3f up) {
+inline Mat4f math_mat4f_look_at(const Vec3f eye, const Vec3f target, const Vec3f up) {
     Mat4f result = math_mat4f_identity();
 
     Vec3f f = math_vec3f_normalize(math_vec3f_substract(target, eye)); // forward
@@ -380,7 +375,7 @@ math_mat4f_inverse
 See https://stackoverflow.com/a/1148405/8313359
 ====================
 */
-inline static Mat4f math_mat4f_inverse(const Mat4f mat) {
+inline Mat4f math_mat4f_inverse(const Mat4f mat) {
     float inverse[16];
 
     inverse[0] = (mat.elements[5] * mat.elements[10] * mat.elements[15]) -

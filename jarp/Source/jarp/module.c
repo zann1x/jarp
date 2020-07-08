@@ -1,7 +1,3 @@
-#include "module.h"
-
-#include <stdlib.h>
-
 void* loaded_modules;
 
 ADD(add) {

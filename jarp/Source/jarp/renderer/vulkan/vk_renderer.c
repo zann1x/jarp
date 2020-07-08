@@ -1,21 +1,3 @@
-#include "vk_renderer.h"
-
-#include <stb_image.h>
-#include <volk.h>
-
-#include "jarp/file.h"
-#include "jarp/log.h"
-#include "jarp/shared.h"
-#include "jarp/math/math.h"
-#include "jarp/renderer/camera.h"
-
-#ifdef VK_USE_PLATFORM_WIN32_KHR
-#include "jarp/platform/win32/win32_main.h"
-#endif
-
-#include <stdlib.h>
-#include <string.h>
-
 // TODO: proper handling of VkResult return values
 
 struct Vertex {
@@ -1054,7 +1036,7 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
     // Surface
     // ===============
     {
-#if VK_USE_PLATFORM_WIN32_KHR
+#ifdef VK_USE_PLATFORM_WIN32_KHR
         VkWin32SurfaceCreateInfoKHR surface_create_info = { 0 };
         surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         surface_create_info.pNext = NULL;
@@ -1298,10 +1280,10 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
         // TODO: replace with non-platform specific code
         char vertex_shader_path[MAX_PATH];
         strcpy(vertex_shader_path, application_path);
-        strcat(vertex_shader_path, "..\\..\\..\\jarp\\Shader\\Basic.vert.spv");
+        strcat(vertex_shader_path, "..\\..\\..\\..\\jarp\\Shader\\Basic.vert.spv");
         char fragment_shader_path[MAX_PATH];
         strcpy(fragment_shader_path, application_path);
-        strcat(fragment_shader_path, "..\\..\\..\\jarp\\Shader\\Basic.frag.spv");
+        strcat(fragment_shader_path, "..\\..\\..\\..\\jarp\\Shader\\Basic.frag.spv");
 
         struct FileContent vertex_shader_code = file_read_bin(vertex_shader_path);
         struct FileContent fragment_shader_code = file_read_bin(fragment_shader_path);
@@ -1482,38 +1464,30 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
         // TODO: use the texture and render it onto something
         char texture_path[MAX_PATH];
         strcpy(texture_path, application_path);
-        strcat(texture_path, "..\\..\\..\\Game\\Content\\sample.png");
+        strcat(texture_path, "..\\..\\..\\..\\Game\\Content\\sample.png");
 
         {
             VkBuffer staging_buffer = VK_NULL_HANDLE;
             VkDeviceMemory staging_buffer_memory = VK_NULL_HANDLE;
 
-            int texture_width;
-            int texture_height;
+            struct Texture texture_resource;
             {
-                int channels;
-                stbi_uc* pixels = stbi_load(texture_path, &texture_width, &texture_height, &channels, STBI_rgb_alpha);
-                if (!pixels) {
-                    log_error("Failed to load texture image");
-                    return false;
-                }
+                texture_load(texture_path, &texture_resource);
 
-                VkDeviceSize image_size = (VkDeviceSize)texture_width * texture_height * 4;
+                VkDeviceSize image_size = (VkDeviceSize)(texture_resource.texture_width * texture_resource.texture_height) * 4;
                 create_buffer(&staging_buffer, &staging_buffer_memory, image_size,
                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
                 void* raw_data;
                 vkMapMemory(device, staging_buffer_memory, 0, image_size, 0, &raw_data);
-                memcpy(raw_data, pixels, image_size);
+                memcpy(raw_data, texture_resource.pixels, image_size);
                 vkUnmapMemory(device, staging_buffer_memory);
-
-                stbi_image_free(pixels);
             }
 
             VkExtent2D texture_extent;
-            texture_extent.width = texture_width;
-            texture_extent.height = texture_height;
+            texture_extent.width = texture_resource.texture_width;
+            texture_extent.height = texture_resource.texture_height;
             create_2d_image_with_view(&texture_image, &texture_image_memory, &texture_image_view,
                 VK_FORMAT_R8G8B8A8_UNORM, texture_extent,
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -1533,8 +1507,8 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
             buffer_image_copy.imageOffset.x = 0;
             buffer_image_copy.imageOffset.y = 0;
             buffer_image_copy.imageOffset.z = 0;
-            buffer_image_copy.imageExtent.width = texture_width;
-            buffer_image_copy.imageExtent.height = texture_height;
+            buffer_image_copy.imageExtent.width = texture_resource.texture_width;
+            buffer_image_copy.imageExtent.height = texture_resource.texture_height;
             buffer_image_copy.imageExtent.depth = 1;
 
             {
@@ -1548,6 +1522,8 @@ bool vk_renderer_init(void* platform_window, char* application_path) {
 
             vkFreeMemory(device, staging_buffer_memory, NULL);
             vkDestroyBuffer(device, staging_buffer, NULL);
+
+            texture_unload(&texture_resource);
         }
 
         VkSamplerCreateInfo sampler_create_info = { 0 };

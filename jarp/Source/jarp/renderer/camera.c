@@ -1,8 +1,3 @@
-#include "camera.h"
-
-#include "jarp/input/input.h"
-#include "jarp/math/math.h"
-
 #define CAMERA_SPEED 0.0005f
 
 static Mat4f camera_projection = { 0.0f };

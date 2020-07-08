@@ -1,24 +1,19 @@
 #include "win32_main.h"
 
-#include <stdio.h>
-#include <string.h>
+#include "../ThirdParty/stb/stb_image_impl.c"
+#include "../ThirdParty/volk/volk.c"
 
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include <SDL_vulkan.h>
+#include "jarp/log.c"
+#include "jarp/file.c"
+//#include "jarp/module.c"
+#include "jarp/renderer/camera.c"
+#include "jarp/renderer/texture.c"
+#include "jarp/renderer/vulkan/vk_renderer.c"
 
-#include "jarp/file.h"
-#include "jarp/log.h"
-#include "jarp/platform.h"
-#include "jarp/shared.h"
-#include "jarp/input/input.h"
-#include "jarp/renderer/camera.h"
-#include "jarp/renderer/vulkan/vk_renderer.h"
-
-int win32_input_mouse_x = 0;
-int win32_input_mouse_y = 0;
-uint16_t win32_input_key_down[JARP_KEY_COUNT];
-uint8_t win32_input_button_down[JARP_BUTTON_COUNT];
+static int win32_input_mouse_x = 0;
+static int win32_input_mouse_y = 0;
+static uint16_t win32_input_key_down[JARP_KEY_COUNT];
+static uint8_t win32_input_button_down[JARP_BUTTON_COUNT];
 
 /*
 ====================
@@ -131,7 +126,8 @@ struct GameExport* win32_get_game_api(struct Win32GameCode* loaded_code, struct 
     }
 
     WIN32_FILE_ATTRIBUTE_DATA ignored;
-    if (!GetFileAttributesExW(loaded_code->full_lock_path, GetFileExInfoStandard, &ignored)) {
+    LPCWSTR lock_path = (LPCWSTR)loaded_code->full_lock_path;
+    if (!GetFileAttributesExW(lock_path, GetFileExInfoStandard, &ignored)) {
         loaded_code->last_dll_write_time = win32_get_last_write_time(loaded_code->full_dll_path);
         if (!CopyFileA(loaded_code->full_dll_path, loaded_code->full_transient_dll_path, FALSE)) {
             log_error("Copying the DLL did not work. Error code %d", GetLastError());
