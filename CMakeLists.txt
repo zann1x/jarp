@@ -18,7 +18,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BuildDir})
 set(J3rdPartyDir "${PROJECT_SOURCE_DIR}/jarp/ThirdParty")
 set(JarpSourceDir "${PROJECT_SOURCE_DIR}/jarp/Source")
 set(GameSourceDir "${PROJECT_SOURCE_DIR}/Game/Source")
-set(SandboxSourceDir "${PROJECT_SOURCE_DIR}/Sandbox/Source")
 
 set(SDL2Libs "${J3rdPartyDir}/SDL2/lib/x64/SDL2.lib;${J3rdPartyDir}/SDL2/lib/x64/SDL2main.lib")
 
@@ -40,7 +39,6 @@ add_compile_definitions(
 include_directories(
     ${PROJECT_SOURCE_DIR}/jarp/Source
     ${PROJECT_SOURCE_DIR}/Game/Source
-    ${PROJECT_SOURCE_DIR}/Sandbox/Source
     ${J3rdPartyDir}/SDL2/include
     ${J3rdPartyDir}/stb
     ${J3rdPartyDir}/volk
@@ -82,6 +80,3 @@ add_custom_command(
     WORKING_DIRECTORY "${BuildDir}"
     COMMENT "Deleting build lock file & renaming pdb file"
 )
-
-# Sandbox
-add_library(Sandbox SHARED "${SandboxSourceDir}/Sandbox/sandbox.c")
