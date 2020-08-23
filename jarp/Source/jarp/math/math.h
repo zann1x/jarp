@@ -283,7 +283,12 @@ inline Mat4f math_mat4f_rotation(float angle) {
 ====================
 math_mat4f_orthographic
 
+Returns the orthographic matrix based on defines for the handedness of the
+coordinate system and the depth range. The vulkan coordinate system is left
+handed and has a depth ranging from 0 to 1.
+
 See https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
+    https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
 ====================
 */
 inline Mat4f math_mat4f_orthographic(float left, float right, float bottom, float top, float z_near, float z_far) {
