@@ -20,6 +20,7 @@ set(JarpSourceDir "${PROJECT_SOURCE_DIR}/jarp/Source")
 set(GameSourceDir "${PROJECT_SOURCE_DIR}/Game/Source")
 
 set(SDL2Libs "${J3rdPartyDir}/SDL2/lib/x64/SDL2.lib;${J3rdPartyDir}/SDL2/lib/x64/SDL2main.lib")
+set(AssimpLibs "${J3rdPartyDir}/assimp/lib/Debug/assimp-vc142-mtd.lib;${J3rdPartyDir}/assimp/lib/Debug/IrrXMLd.lib;${J3rdPartyDir}/assimp/lib/Debug/zlibstaticd.lib;")
 
 set(Shaders
     ${CMAKE_SOURCE_DIR}/jarp/Shader/Basic.frag
@@ -39,6 +40,7 @@ add_compile_definitions(
 include_directories(
     ${PROJECT_SOURCE_DIR}/jarp/Source
     ${PROJECT_SOURCE_DIR}/Game/Source
+    ${J3rdPartyDir}/assimp/include
     ${J3rdPartyDir}/SDL2/include
     ${J3rdPartyDir}/stb
     ${J3rdPartyDir}/volk
@@ -52,6 +54,11 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${J3rdPartyDir}/SDL2/lib/x64/SDL2.dll" $<TARGET_FILE_DIR:jarp>
 )
+add_custom_command(
+    TARGET jarp
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${J3rdPartyDir}/assimp/bin/Debug/assimp-vc142-mtd.dll" $<TARGET_FILE_DIR:jarp>
+)
 foreach(Shader ${Shaders})
     add_custom_command(
         TARGET jarp
@@ -60,7 +67,7 @@ foreach(Shader ${Shaders})
         DEPENDS ${Shader}
     )
 endforeach()
-target_link_libraries(jarp ${SDL2Libs})
+target_link_libraries(jarp ${SDL2Libs} ${AssimpLibs})
 
 # Game
 add_library(Game SHARED "${GameSourceDir}/game.c")

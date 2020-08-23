@@ -232,6 +232,12 @@ int main(int argc, char** argv) {
     window.hinstance = system_info.info.win.hinstance;
     window.hwnd = system_info.info.win.window;
 
+    const struct aiScene* scene = aiImportFile("E:\\code\\jarp\\Game\\Content\\backpack\\backpack.obj", aiProcess_Triangulate);
+    if (scene == NULL) {
+        log_fatal("Could not load object with assimp: %s", aiGetErrorString());
+    }
+    aiReleaseImport(scene);
+
     struct Camera camera;
     camera_init(&camera);
     if (!vk_renderer_init(&window, application_path)) {

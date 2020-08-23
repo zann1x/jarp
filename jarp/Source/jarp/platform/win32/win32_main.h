@@ -16,6 +16,9 @@
 #include <Windows.h>
 
 // Our own included libraries
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <SDL_vulkan.h>
