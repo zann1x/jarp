@@ -34,7 +34,8 @@ namespace jarp {
 		m_DepthImage = new VulkanImage();
 		m_DepthImageView = new VulkanImageView();
 		VkFormat DepthFormat = VulkanRendererAPI::s_Device->FindDepthFormat();
-		m_DepthImage->CreateImage(m_Swapchain->GetDetails().Extent.width, m_Swapchain->GetDetails().Extent.height, DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_DepthImage->CreateImage(m_Swapchain->GetDetails().Extent.width, m_Swapchain->GetDetails().Extent.height, DepthFormat,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		m_DepthImageView->CreateImageView(m_DepthImage->GetHandle(), DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		m_DepthImage->TransitionImageLayout(*m_TransientCommandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 

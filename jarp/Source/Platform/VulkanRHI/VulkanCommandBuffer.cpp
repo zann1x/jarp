@@ -37,13 +37,14 @@ namespace jarp {
 	{
 		CreateCommandBuffer();
 
-		VkCommandBufferBeginInfo commandBufferBeginInfo = {};
-		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		commandBufferBeginInfo.pNext = nullptr;
-		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		commandBufferBeginInfo.pInheritanceInfo = nullptr;
+		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferAllocateInfo.pNext = nullptr;
+		commandBufferAllocateInfo.commandPool = m_CommandPool.GetHandle();
+		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		commandBufferAllocateInfo.commandBufferCount = 1;
 
-		VK_ASSERT(vkBeginCommandBuffer(m_CommandBuffer, &commandBufferBeginInfo));
+		VK_ASSERT(vkAllocateCommandBuffers(VulkanRendererAPI::s_Device->GetInstanceHandle(), &commandBufferAllocateInfo, &m_CommandBuffer));
 	}
 
 	void VulkanCommandBuffer::EndOneTimeSubmitCommand()
