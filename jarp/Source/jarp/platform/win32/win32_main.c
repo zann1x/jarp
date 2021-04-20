@@ -212,29 +212,29 @@ int main(int argc, char** argv) {
     gi.test = win32_test;
     ge = *win32_get_game_api(&game_code, &gi);
 
-    struct Win32Window window;
-    window.width = 800;
-    window.height = 600;
-    window.title = "jarp";
+    struct Win32Window win32_window;
+    win32_window.width = 800;
+    win32_window.height = 600;
+    win32_window.title = "jarp";
 
-    window.is_framebuffer_resized = false;
-    window.is_minimized = false;
+    win32_window.is_framebuffer_resized = false;
+    win32_window.is_minimized = false;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    window.handle = SDL_CreateWindow(window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                     window.width, window.height, SDL_WINDOW_VULKAN);
-    SDL_SetWindowResizable(window.handle, true);
-    window.surface = SDL_GetWindowSurface(window.handle);
+    win32_window.handle = SDL_CreateWindow(win32_window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                           (int) win32_window.width, (int) win32_window.height, SDL_WINDOW_VULKAN);
+    SDL_SetWindowResizable(win32_window.handle, true);
+    win32_window.surface = SDL_GetWindowSurface(win32_window.handle);
     
     SDL_SysWMinfo system_info;
     SDL_VERSION(&system_info.version);
-    SDL_GetWindowWMInfo(window.handle, &system_info);
-    window.hinstance = system_info.info.win.hinstance;
-    window.hwnd = system_info.info.win.window;
+    SDL_GetWindowWMInfo(win32_window.handle, &system_info);
+    win32_window.hinstance = system_info.info.win.hinstance;
+    win32_window.hwnd = system_info.info.win.window;
 
     struct Camera camera;
     camera_init(&camera);
-    if (!vk_renderer_init(&window, application_path)) {
+    if (!vk_renderer_init(&win32_window, application_path)) {
         vk_renderer_shutdown();
         return 1;
     }
@@ -293,24 +293,24 @@ int main(int argc, char** argv) {
                     switch (event.window.event) {
                         case SDL_WINDOWEVENT_SIZE_CHANGED:
                         case SDL_WINDOWEVENT_RESIZED: {
-                            window.width = event.window.data1;
-                            window.height = event.window.data2;
-                            window.is_framebuffer_resized = true;
+                            win32_window.width = event.window.data1;
+                            win32_window.height = event.window.data2;
+                            win32_window.is_framebuffer_resized = true;
                             log_trace("Window resized to (%d, %d)", event.window.data1, event.window.data2);
                             break;
                         }
                         case SDL_WINDOWEVENT_MINIMIZED: {
-                            window.is_minimized = true;
+                            win32_window.is_minimized = true;
                             log_trace("Window was minimized");
                             break;
                         }
                         case SDL_WINDOWEVENT_RESTORED: {
-                            window.is_minimized = false;
+                            win32_window.is_minimized = false;
                             log_trace("Window was restored");
                             break;
                         }
                         default: {
-                            log_warn("Unhandled window event type %d", event.window.event);
+                            log_warn("Unhandled win32_window event type %d", event.window.event);
                             break;
                         }
                     }
@@ -352,15 +352,15 @@ int main(int argc, char** argv) {
         ++frames;
         if (delta_ms > 1000) {
             char buffer[32];
-            sprintf(buffer, "%s - %d fps", window.title, frames);
-            SDL_SetWindowTitle(window.handle, buffer);
+            sprintf(buffer, "%s - %d fps", win32_window.title, frames);
+            SDL_SetWindowTitle(win32_window.handle, buffer);
 
             last_fps_time = current_fps_time;
             frames = 0;
         }
     }
 
-    SDL_DestroyWindow(window.handle);
+    SDL_DestroyWindow(win32_window.handle);
     SDL_Quit();
 
     vk_renderer_shutdown();
