@@ -3,6 +3,7 @@
 .vscode/
 **/Build/
 **/BuildCache/
+cmake-build-debug/
 
 # Files
 *.sln
