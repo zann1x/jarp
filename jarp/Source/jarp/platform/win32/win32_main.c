@@ -127,31 +127,32 @@ struct GameExport* win32_get_game_api(struct Win32GameCode* loaded_code, struct 
 
     WIN32_FILE_ATTRIBUTE_DATA ignored;
     LPCWSTR lock_path = (LPCWSTR)loaded_code->full_lock_path;
-    if (!GetFileAttributesExW(lock_path, GetFileExInfoStandard, &ignored)) {
-        loaded_code->last_dll_write_time = win32_get_last_write_time(loaded_code->full_dll_path);
-        if (!CopyFileA(loaded_code->full_dll_path, loaded_code->full_transient_dll_path, FALSE)) {
-            log_error("Copying the DLL did not work. Error code %d", GetLastError());
-        }
+    if (GetFileAttributesExW(lock_path, GetFileExInfoStandard, &ignored)) {
+        return NULL;
+    }
 
-        loaded_code->dll = LoadLibraryA(loaded_code->full_transient_dll_path);
-        if (loaded_code->dll) {
-            loaded_code->is_valid = true;
-            void* function = GetProcAddress(loaded_code->dll, "game_get_api");
-            if (function) {
-                game_get_api = (GameGetAPI*)function;
-            } else {
-                log_fatal("Failed loading DLL function. Error code %d", GetLastError());
-                loaded_code->is_valid = false;
-            }
-        }
-        else {
-            log_fatal("Failed loading the DLL. Error code %d", GetLastError());
-        }
+    loaded_code->last_dll_write_time = win32_get_last_write_time(loaded_code->full_dll_path);
+    if (!CopyFileA(loaded_code->full_dll_path, loaded_code->full_transient_dll_path, FALSE)) {
+        log_error("Copying the DLL did not work. Error code %d", GetLastError());
+    }
 
-        if (!loaded_code->is_valid) {
-            log_error("Loaded code is invalid. Unloading the code again.");
-            win32_unload_game_code(loaded_code);
+    loaded_code->dll = LoadLibraryA(loaded_code->full_transient_dll_path);
+    if (loaded_code->dll) {
+        loaded_code->is_valid = true;
+        void* function = GetProcAddress(loaded_code->dll, "game_get_api");
+        if (function) {
+            game_get_api = (GameGetAPI*)function;
+        } else {
+            log_fatal("Failed loading DLL function. Error code %d", GetLastError());
+            loaded_code->is_valid = false;
         }
+    } else {
+        log_fatal("Failed loading the DLL. Error code %d", GetLastError());
+    }
+
+    if (!loaded_code->is_valid) {
+        log_error("Loaded code is invalid. Unloading the code again.");
+        win32_unload_game_code(loaded_code);
     }
 
     if (game_get_api) {
@@ -207,10 +208,11 @@ int main(int argc, char** argv) {
     strcat(game_code.full_transient_dll_path, "GameTemp.dll");
     strcpy(game_code.full_lock_path, application_path);
     strcat(game_code.full_lock_path, "BuildLock.tmp");
-    struct GameExport ge = { 0 };
+
     struct GameImport gi = { 0 };
     gi.test = win32_test;
-    ge = *win32_get_game_api(&game_code, &gi);
+
+    struct GameExport ge = *win32_get_game_api(&game_code, &gi);
 
     struct Win32Window win32_window;
     win32_window.width = 800;
@@ -225,7 +227,7 @@ int main(int argc, char** argv) {
                                            (int) win32_window.width, (int) win32_window.height, SDL_WINDOW_VULKAN);
     SDL_SetWindowResizable(win32_window.handle, true);
     win32_window.surface = SDL_GetWindowSurface(win32_window.handle);
-    
+
     SDL_SysWMinfo system_info;
     SDL_VERSION(&system_info.version);
     SDL_GetWindowWMInfo(win32_window.handle, &system_info);
@@ -243,7 +245,6 @@ int main(int argc, char** argv) {
     uint32_t last_fps_time = current_fps_time;
     uint32_t frames = 0;
     uint32_t delta_ms = 0;
-    double delta_sec = 0.0;
 
     bool is_running = true;
     while (is_running) {
@@ -282,7 +283,8 @@ int main(int argc, char** argv) {
                     break;
                 }
                 case SDL_MOUSEMOTION: {
-                    log_trace("Mouse moved (%d, %d) and is now at (%d, %d)", event.motion.xrel, event.motion.yrel, win32_input_mouse_x, win32_input_mouse_x);
+                    log_trace("Mouse moved (%d, %d) and is now at (%d, %d)", event.motion.xrel, event.motion.yrel,
+                              win32_input_mouse_x, win32_input_mouse_x);
                     break;
                 }
                 case SDL_MOUSEWHEEL: {
@@ -348,7 +350,6 @@ int main(int argc, char** argv) {
         // frame time
         current_fps_time = SDL_GetTicks();
         delta_ms = current_fps_time - last_fps_time;
-        delta_sec = (double)delta_ms / 1000.0;
         ++frames;
         if (delta_ms > 1000) {
             char buffer[32];

@@ -15,9 +15,13 @@ struct GameMemory {
 #define GAME_UPDATE_AND_RENDER(name) void name()
 typedef GAME_UPDATE_AND_RENDER(GameUpdateAndRender);
 
+// General usage functions of the engine that can get called by the game.
 struct GameImport {
     PlatformTest* test;
 };
+
+// Callback functions into the game.
+// The functions here generally define the game loop.
 struct GameExport {
     GameUpdateAndRender* update_and_render;
 };
