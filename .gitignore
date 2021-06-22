@@ -1,14 +1,1 @@
-# Directories
-.vs/
-.vscode/
-**/Build/
-**/BuildCache/
 cmake-build-debug/
-
-# Files
-*.sln
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
-**/*.spv
-**/Makefile

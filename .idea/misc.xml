@@ -3,9 +3,8 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
     <excludeRoots>
-      <file path="$PROJECT_DIR$/.vs" />
-      <file path="$PROJECT_DIR$/Build" />
-      <file path="$PROJECT_DIR$/BuildCache" />
+      <file path="$PROJECT_DIR$/cmake-build-debug" />
+      <file path="$PROJECT_DIR$/lib" />
     </excludeRoots>
   </component>
 </project>
