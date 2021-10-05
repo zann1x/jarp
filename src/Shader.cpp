@@ -33,13 +33,13 @@ Shader::Shader(const std::string& vertex_filepath, const std::string& fragment_f
         SPDLOG_ERROR("Fragment shader compilation failed: {}", info_log);
     }
 
-    program_id = glCreateProgram();
-    glAttachShader(program_id, vertex_shader);
-    glAttachShader(program_id, fragment_shader);
-    glLinkProgram(program_id);
-    glGetProgramiv(program_id, GL_LINK_STATUS, &success);
+    this->program_id = glCreateProgram();
+    glAttachShader(this->program_id, vertex_shader);
+    glAttachShader(this->program_id, fragment_shader);
+    glLinkProgram(this->program_id);
+    glGetProgramiv(this->program_id, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(program_id, MAX_INFO_LOG_LENGTH, nullptr, info_log);
+        glGetProgramInfoLog(this->program_id, MAX_INFO_LOG_LENGTH, nullptr, info_log);
         SPDLOG_ERROR("Shader program linking failed: {}", info_log);
     }
     glDeleteShader(vertex_shader);
@@ -48,11 +48,11 @@ Shader::Shader(const std::string& vertex_filepath, const std::string& fragment_f
 
 void Shader::bind()
 {
-    glUseProgram(program_id);
+    glUseProgram(this->program_id);
 }
 
 void Shader::set_mat4(const std::string& name, const glm::mat4& value)
 {
-    GLint matrix_id = glGetUniformLocation(program_id, name.c_str());
+    GLint matrix_id = glGetUniformLocation(this->program_id, name.c_str());
     glUniformMatrix4fv(matrix_id, 1, GL_FALSE, glm::value_ptr(value));
 }
