@@ -4,9 +4,10 @@
 #include <SDL_syswm.h>
 #include <glad/glad.h>
 #include "Renderer.h"
-#include "log.h"
 #include "Win32Window.h"
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
+#include <spdlog/spdlog.h>
 
 Win32Window win32_window;
 Renderer renderer;
@@ -128,9 +129,9 @@ void handle_events() {
 }
 
 int main() {
-    log_set_level(LOG_LEVEL_TRACE);
     win32_window.init();
     renderer.init();
+    spdlog::set_level(spdlog::level::trace);
 
     uint32_t current_fps_time = SDL_GetTicks();
     uint32_t last_fps_time = current_fps_time;
@@ -149,7 +150,7 @@ int main() {
         delta_ms = (double) (current_fps_time - last_fps_time) / 1000;
         ++frames;
         if (delta_ms > 1.0) {
-            log_info("%d fps", frames);
+            SPDLOG_TRACE("{:d} fps", frames);
             last_fps_time = current_fps_time;
             frames = 0;
         }
