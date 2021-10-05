@@ -2,6 +2,8 @@ include(FetchContent)
 
 message(STATUS "Fetching third party libraries")
 
+add_subdirectory(glad)
+
 FetchContent_Declare(
         glm
         GIT_REPOSITORY "https://github.com/g-truc/glm"
@@ -16,6 +18,5 @@ FetchContent_Declare(
 )
 add_subdirectory(SDL2)
 
-add_subdirectory(glad)
 
 message(STATUS "Done fetching third party libraries")

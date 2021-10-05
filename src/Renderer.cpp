@@ -1,8 +1,6 @@
-#include "renderer.h"
+#include "Renderer.h"
+#include "FileSystem.h"
 #include <glad/glad.h>
-#include <cstdio>
-#include <fstream>
-#include <sstream>
 #include <string>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,22 +10,9 @@ unsigned int vao;
 
 #define BUFFER_SIZE 1024
 
-std::string load_as_string(const char *path) {
-    std::ifstream filestream;
-    filestream.open(path, std::ifstream::in);
-    if (filestream.is_open()) {
-        std::stringstream sstream;
-        sstream << filestream.rdbuf();
-        filestream.close();
-        return sstream.str();
-    } else {
-        throw std::runtime_error("Could not open file");
-    }
-}
-
-void renderer_init() {
-    std::string vertex_string = load_as_string("../shaders/basic.vert");
-    std::string fragment_string = load_as_string("../shaders/basic.frag");
+void Renderer::init() {
+    std::string vertex_string = FileSystem::load_as_string("../shaders/basic.vert");
+    std::string fragment_string = FileSystem::load_as_string("../shaders/basic.frag");
     const GLchar *vertex_shader_source = vertex_string.c_str();
     const GLchar *fragment_shader_source = fragment_string.c_str();
 
@@ -81,7 +66,7 @@ void renderer_init() {
     glBindVertexArray(0);
 }
 
-void renderer_draw(double delta) {
+void Renderer::draw(double delta) {
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 800 / (float) 600, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(
             glm::vec3(0, 3, 3), // Camera is at (4,3,3), in World Space

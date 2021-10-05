@@ -3,21 +3,13 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <glad/glad.h>
-#include "renderer.h"
+#include "Renderer.h"
 #include "log.h"
+#include "Win32Window.h"
 
-struct Win32Window {
-    int width;
-    int height;
-    const char *title;
-    bool is_minimized;
-    bool is_resized;
 
-    struct SDL_Window *handle;
-
-    SDL_GLContext gl_context;
-    SDL_SysWMinfo system_info;
-} win32_window;
+Win32Window win32_window;
+Renderer renderer;
 
 enum EButton {
     JARP_BUTTON_UNKNOWN = 0,
@@ -49,44 +41,6 @@ int win32_input_mouse_x = 0;
 int win32_input_mouse_y = 0;
 static uint16_t win32_input_key_down[JARP_KEY_COUNT];
 static uint8_t win32_input_button_down[JARP_BUTTON_COUNT];
-
-void window_init() {
-    win32_window.width = 800;
-    win32_window.height = 600;
-    win32_window.title = "jarp";
-    win32_window.is_minimized = false;
-
-    SDL_Init(SDL_INIT_EVERYTHING);
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetSwapInterval(0);
-    win32_window.handle = SDL_CreateWindow(win32_window.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                           win32_window.width, win32_window.height,
-                                           SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    win32_window.gl_context = SDL_GL_CreateContext(win32_window.handle);
-
-    SDL_VERSION(&win32_window.system_info.version)
-    SDL_GetWindowWMInfo(win32_window.handle, &win32_window.system_info);
-
-    gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
-
-    glClearColor(0.f, 0.f, 0.f, 1.f);
-}
-
-void window_clear() {
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void window_swap() {
-    SDL_GL_SwapWindow(win32_window.handle);
-}
-
-void window_shutdown() {
-    SDL_GL_DeleteContext(win32_window.gl_context);
-    SDL_DestroyWindow(win32_window.handle);
-    SDL_Quit();
-}
 
 enum EKey window_input_remap_key(SDL_Scancode scancode) {
     switch (scancode) {
@@ -175,8 +129,8 @@ void handle_events() {
 
 int main() {
     log_set_level(LOG_LEVEL_TRACE);
-    window_init();
-    renderer_init();
+    win32_window.init();
+    renderer.init();
 
     uint32_t current_fps_time = SDL_GetTicks();
     uint32_t last_fps_time = current_fps_time;
@@ -187,9 +141,9 @@ int main() {
     while (is_running) {
         handle_events();
 
-        window_clear();
-        renderer_draw(delta_ms);
-        window_swap();
+        win32_window.clear();
+        renderer.draw(delta_ms);
+        win32_window.swap();
 
         current_fps_time = SDL_GetTicks();
         delta_ms = (double) (current_fps_time - last_fps_time) / 1000;
@@ -200,7 +154,7 @@ int main() {
             frames = 0;
         }
     }
-    window_shutdown();
+    win32_window.shutdown();
 
     return 0;
 }
