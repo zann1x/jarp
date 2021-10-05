@@ -10,7 +10,6 @@
 #include <spdlog/spdlog.h>
 
 Win32Window win32_window;
-Renderer renderer;
 
 enum EButton {
     JARP_BUTTON_UNKNOWN = 0,
@@ -129,12 +128,13 @@ void handle_events() {
 }
 
 int main() {
-    win32_window.init();
-    renderer.init();
     spdlog::set_level(spdlog::level::trace);
 
     uint32_t current_fps_time = SDL_GetTicks();
     uint32_t last_fps_time = current_fps_time;
+    win32_window.create_and_load_gl();
+    Renderer renderer;
+    renderer.load_sample_render_data();
     uint32_t frames = 0;
     double delta_ms = 0.0;
 
@@ -142,8 +142,9 @@ int main() {
     while (is_running) {
         handle_events();
 
-        win32_window.clear();
-        renderer.draw(delta_ms);
+        if (!win32_window.is_minimized) {
+            renderer.draw(delta_ms);
+        }
         win32_window.swap();
 
         current_fps_time = SDL_GetTicks();
@@ -155,7 +156,6 @@ int main() {
             frames = 0;
         }
     }
-    win32_window.shutdown();
 
     return 0;
 }

@@ -1,39 +1,45 @@
 #include "Renderer.h"
-#include "FileSystem.h"
 #include <glad/glad.h>
 #include <string>
-
+#include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "FileSystem.h"
 
 unsigned int shader_program;
 unsigned int vao;
 
 #define BUFFER_SIZE 1024
+#define MAX_INFO_LOG_LENGTH 512
 
-void Renderer::init() {
+Renderer::Renderer() {
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+}
+
+void Renderer::load_sample_render_data() {
     std::string vertex_string = FileSystem::load_as_string("../shaders/basic.vert");
     std::string fragment_string = FileSystem::load_as_string("../shaders/basic.frag");
     const GLchar *vertex_shader_source = vertex_string.c_str();
     const GLchar *fragment_shader_source = fragment_string.c_str();
 
     int success;
-    char info_log[512];
+    char info_log[MAX_INFO_LOG_LENGTH];
 
     unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(vertex_shader, 512, nullptr, info_log);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", info_log);
+        glGetShaderInfoLog(vertex_shader, MAX_INFO_LOG_LENGTH, nullptr, info_log);
+        SPDLOG_ERROR("Vertex shader compilation failed: {}", info_log);
     }
     unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragment_shader_source, nullptr);
     glCompileShader(fragment_shader);
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(fragment_shader, 512, nullptr, info_log);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", info_log);
+        glGetShaderInfoLog(fragment_shader, MAX_INFO_LOG_LENGTH, nullptr, info_log);
+        SPDLOG_ERROR("Fragment shader compilation failed: {}", info_log);
     }
 
     shader_program = glCreateProgram();
@@ -42,8 +48,8 @@ void Renderer::init() {
     glLinkProgram(shader_program);
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(shader_program, 512, nullptr, info_log);
-        printf("ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n", info_log);
+        glGetProgramInfoLog(shader_program, MAX_INFO_LOG_LENGTH, nullptr, info_log);
+        SPDLOG_ERROR("Shader program linking failed: {}", info_log);
     }
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
@@ -67,10 +73,12 @@ void Renderer::init() {
 }
 
 void Renderer::draw(double delta) {
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 800 / (float) 600, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(
-            glm::vec3(0, 3, 3), // Camera is at (4,3,3), in World Space
-            glm::vec3(0, 0, 0), // and looks at the origin
+            glm::vec3(0, 3, 3), // Camera is at (4,3,3), in world space
+            glm::vec3(0, 0, 0), // Look at the origin
             glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
     glm::mat4 model = glm::mat4(1.0f);

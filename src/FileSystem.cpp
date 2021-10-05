@@ -11,8 +11,7 @@ std::string FileSystem::load_as_string(const char* path) {
         sstream << filestream.rdbuf();
         filestream.close();
         return sstream.str();
-    }
-    else {
+    } else {
         throw std::runtime_error("Could not open file");
     }
 }
