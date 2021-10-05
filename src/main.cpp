@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <glad/glad.h>
+#include <chrono>
 #include "Renderer.h"
 #include "Win32Window.h"
 
@@ -130,11 +131,12 @@ void handle_events() {
 int main() {
     spdlog::set_level(spdlog::level::trace);
 
-    uint32_t current_fps_time = SDL_GetTicks();
-    uint32_t last_fps_time = current_fps_time;
     win32_window.create_and_load_gl();
     Renderer renderer;
     renderer.load_sample_render_data();
+
+    auto current_fps_time = std::chrono::high_resolution_clock::now();
+    auto last_fps_time = current_fps_time;
     uint32_t frames = 0;
     double delta_ms = 0.0;
 
@@ -147,8 +149,9 @@ int main() {
         }
         win32_window.swap();
 
-        current_fps_time = SDL_GetTicks();
-        delta_ms = (double) (current_fps_time - last_fps_time) / 1000;
+        current_fps_time = std::chrono::high_resolution_clock::now();
+        auto time_diff = std::chrono::duration_cast<std::chrono::milliseconds>(current_fps_time - last_fps_time);
+        delta_ms = (double) (time_diff.count()) / 1000;
         ++frames;
         if (delta_ms > 1.0) {
             SPDLOG_TRACE("{:d} fps", frames);
