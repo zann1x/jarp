@@ -1,66 +1,21 @@
 #define SDL_MAIN_HANDLED
-
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <glad/glad.h>
+#include <spdlog/spdlog.h>
+#include <array>
 #include <chrono>
 #include "Renderer.h"
 #include "Win32Window.h"
 
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
-#include <spdlog/spdlog.h>
-
 Win32Window win32_window;
-
-enum EButton {
-    JARP_BUTTON_UNKNOWN = 0,
-    JARP_BUTTON_LEFT,
-    JARP_BUTTON_MIDDLE,
-    JARP_BUTTON_RIGHT,
-    JARP_BUTTON_BACK,
-    JARP_BUTTON_FORWARD,
-
-    JARP_BUTTON_COUNT = 512,
-};
-
-enum EKey {
-    JARP_KEY_UNKNOWN = 0,
-
-    JARP_KEY_A,
-    JARP_KEY_D,
-    JARP_KEY_S,
-    JARP_KEY_W,
-    JARP_KEY_SPACE,
-    JARP_KEY_LEFT,
-    JARP_KEY_RIGHT,
-
-    JARP_KEY_COUNT = 512,
-};
 
 bool is_running = false;
 int win32_input_mouse_x = 0;
 int win32_input_mouse_y = 0;
-static uint16_t win32_input_key_down[JARP_KEY_COUNT];
-static uint8_t win32_input_button_down[JARP_BUTTON_COUNT];
-
-enum EKey window_input_remap_key(SDL_Scancode scancode) {
-    switch (scancode) {
-        case SDL_SCANCODE_UNKNOWN:
-            return JARP_KEY_UNKNOWN;
-        case SDL_SCANCODE_A:
-            return JARP_KEY_A;
-        case SDL_SCANCODE_D:
-            return JARP_KEY_D;
-        case SDL_SCANCODE_S:
-            return JARP_KEY_S;
-        case SDL_SCANCODE_W:
-            return JARP_KEY_W;
-        case SDL_SCANCODE_SPACE:
-            return JARP_KEY_SPACE;
-        default:
-            return JARP_KEY_UNKNOWN;
-    }
-}
+std::array<bool, SDL_NUM_SCANCODES> win32_input_key_down;
+std::array<bool, SDL_MAX_UINT8> win32_input_button_down;
 
 void handle_events() {
     SDL_Event event;
@@ -72,33 +27,31 @@ void handle_events() {
             }
             case SDL_KEYDOWN: {
                 if (event.key.repeat == 0) {
-                    enum EKey key = window_input_remap_key(event.key.keysym.scancode);
-                    win32_input_key_down[key] = true;
+                    win32_input_key_down.at(event.key.keysym.scancode) = true;
                 }
                 break;
             }
             case SDL_KEYUP: {
-                enum EKey key = window_input_remap_key(event.key.keysym.scancode);
-                win32_input_key_down[key] = false;
+                win32_input_key_down.at(event.key.keysym.scancode) = false;
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
-                win32_input_button_down[event.button.button] = true;
+                win32_input_button_down.at(event.button.button) = true;
                 break;
             }
             case SDL_MOUSEBUTTONUP: {
-                win32_input_button_down[event.button.button] = false;
+                win32_input_button_down.at(event.button.button) = false;
                 break;
             }
-//                case SDL_MOUSEMOTION: {
-//                    // Movement: (event.motion.xrel, event.motion.yrel)
-//                    // Position: (win32_input_mouse_x, win32_input_mouse_y)
-//                    break;
-//                }
-//                case SDL_MOUSEWHEEL: {
-//                    // Movement: (event.wheel.x, event.wheel.y)
-//                    break;
-//                }
+            case SDL_MOUSEMOTION: {
+                // Movement: (event.motion.xrel, event.motion.yrel)
+                // Position: (win32_input_mouse_x, win32_input_mouse_y)
+                break;
+            }
+            case SDL_MOUSEWHEEL: {
+                // Movement: (event.wheel.x, event.wheel.y)
+                break;
+            }
             case SDL_WINDOWEVENT: {
                 switch (event.window.event) {
                     case SDL_WINDOWEVENT_SIZE_CHANGED:
