@@ -1,59 +1,16 @@
 #include "Renderer.h"
 #include <glad/glad.h>
-#include <string>
-#include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "FileSystem.h"
-
-unsigned int shader_program;
 unsigned int vao;
 
-#define BUFFER_SIZE 1024
-#define MAX_INFO_LOG_LENGTH 512
-
-Renderer::Renderer() {
+Renderer::Renderer()
+    : shader{ std::make_unique<Shader>("../shaders/basic.vert", "../shaders/basic.frag") }
+{
     glClearColor(0.f, 0.f, 0.f, 1.f);
 }
 
 void Renderer::load_sample_render_data() {
-    std::string vertex_string = FileSystem::load_as_string("../shaders/basic.vert");
-    std::string fragment_string = FileSystem::load_as_string("../shaders/basic.frag");
-    const GLchar *vertex_shader_source = vertex_string.c_str();
-    const GLchar *fragment_shader_source = fragment_string.c_str();
-
-    int success;
-    char info_log[MAX_INFO_LOG_LENGTH];
-
-    unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr);
-    glCompileShader(vertex_shader);
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex_shader, MAX_INFO_LOG_LENGTH, nullptr, info_log);
-        SPDLOG_ERROR("Vertex shader compilation failed: {}", info_log);
-    }
-    unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_source, nullptr);
-    glCompileShader(fragment_shader);
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment_shader, MAX_INFO_LOG_LENGTH, nullptr, info_log);
-        SPDLOG_ERROR("Fragment shader compilation failed: {}", info_log);
-    }
-
-    shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shader_program, MAX_INFO_LOG_LENGTH, nullptr, info_log);
-        SPDLOG_ERROR("Shader program linking failed: {}", info_log);
-    }
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
-
     float vertices[] = {
             -0.5f, -0.5f, 0.0f, // left
             0.5f, -0.5f, 0.0f, // right
@@ -84,9 +41,8 @@ void Renderer::draw(double delta) {
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 mvp = projection * view * model;
 
-    glUseProgram(shader_program);
-    int matrix_id = glGetUniformLocation(shader_program, "mvp");
-    glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
+    shader->bind();
+    shader->set_mat4("mvp", mvp);
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
