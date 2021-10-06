@@ -1,7 +1,6 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <memory>
 #include "Shader.h"
 
 class Renderer {
@@ -11,7 +10,7 @@ public:
     void draw(double delta);
 
 private:
-    std::unique_ptr<Shader> shader;
+    Shader shader;
 };
 
 #endif

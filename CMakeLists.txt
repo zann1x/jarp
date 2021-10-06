@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(lib)
 
-add_executable(jarp src/main.cpp "src/Renderer.h" "src/Renderer.cpp" "src/Win32Window.cpp" "src/Win32Window.h" "src/FileSystem.h" "src/FileSystem.cpp" "src/Window.h" "src/Shader.h" "src/Shader.cpp")
+add_executable(jarp "src/main.cpp" "src/Renderer.h" "src/Renderer.cpp" "src/Win32Window.cpp" "src/Win32Window.h" "src/FileSystem.h" "src/FileSystem.cpp" "src/Window.h" "src/Shader.h" "src/Shader.cpp" )
 target_link_libraries(jarp PRIVATE glad glm SDL2 spdlog)
 
 if(WIN32)
