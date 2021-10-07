@@ -10,6 +10,8 @@ public:
     Shader(const std::string& vertex_filepath, const std::string& fragment_filepath);
 
     void bind();
+
+    void set_vec4(const std::string& name, const glm::vec4& value);
     void set_mat4(const std::string& name, const glm::mat4& value);
 private:
     GLuint program_id;
