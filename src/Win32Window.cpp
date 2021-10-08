@@ -1,14 +1,10 @@
 #include "Win32Window.h"
-#include <SDL.h>
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
-Win32Window::Win32Window() {
-    SDL_Init(SDL_INIT_EVERYTHING);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetSwapInterval(0);
+Win32Window::~Win32Window() {
+    SDL_GL_DeleteContext(this->gl_context);
+    SDL_DestroyWindow(this->handle);
 }
 
 void Win32Window::create_and_load_gl() {
@@ -24,12 +20,6 @@ void Win32Window::create_and_load_gl() {
         throw std::runtime_error("Failed to initialize OpenGL context");
     }
     SPDLOG_INFO("OpenGL {:d}.{:d}", GLVersion.major, GLVersion.minor);
-}
-
-Win32Window::~Win32Window() {
-    SDL_GL_DeleteContext(this->gl_context);
-    SDL_DestroyWindow(this->handle);
-    SDL_Quit();
 }
 
 void Win32Window::swap() {

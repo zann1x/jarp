@@ -1,13 +1,11 @@
 #ifndef WIN32_WINDOW_H
 #define WIN32_WINDOW_H
 
-#include "Window.h"
-//#include <SDL.h>
+#include <SDL.h>
 #include <SDL_syswm.h>
 
-class Win32Window : public Window {
+class Win32Window {
 public:
-    Win32Window();
     ~Win32Window();
 
     void create_and_load_gl();
