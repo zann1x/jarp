@@ -1,8 +1,16 @@
 #include "Renderer.h"
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <array>
 
 GLuint vao;
+GLuint vbo;
+
+struct Vertex {
+    glm::vec3 position;
+    glm::vec4 color;
+};
 
 Renderer::Renderer()
     : shader{ "../shaders/basic.vert", "../shaders/basic.frag" }
@@ -11,34 +19,50 @@ Renderer::Renderer()
 }
 
 void Renderer::load_sample_render_data() {
-    GLfloat vertices[] = {
-        // vec3 position    // vec4 color
-        -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // left
-         0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // right
-         0.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f  // top
-    };
-
-    GLuint vbo;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(offsetof(Vertex, position)));
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), reinterpret_cast<const void*>(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(offsetof(Vertex, color)));
     glEnableVertexAttribArray(1);
 
     GLuint indices[] = {
-        0, 1, 2
+        0, 1, 2,
+        2, 3, 0
     };
     GLuint ibo;
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), static_cast<const void*>(indices), GL_STATIC_DRAW);
+}
+
+static std::array<Vertex, 4> create_quad(float x, float y) {
+    float size = 1.0f;
+
+    Vertex bottom_left = {
+        .position = glm::vec3(x, y, 0.0f),
+        .color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)
+    };
+    Vertex bottom_right = {
+        .position = glm::vec3(x + size,  y, 0.0f),
+        .color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)
+    };
+    Vertex top_right = {
+        .position = glm::vec3(x + size, y - size, 0.0f),
+        .color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
+    };
+    Vertex top_left = {
+        .position = glm::vec3(x, y - size, 0.0f ),
+        .color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+    };
+
+    return { bottom_left, bottom_right, top_right, top_left };
 }
 
 void Renderer::draw(double delta) {
@@ -59,6 +83,18 @@ void Renderer::draw(double delta) {
     this->shader.bind();
     this->shader.set_mat4("mvp", mvp);
 
+    //GLfloat vertices[] = {
+    //    // vec3 position    // vec4 color
+    //    -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // bottom left
+    //     0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // bottom right
+    //     0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+    //    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f  // top left
+    //};
+    auto vertices = create_quad(-0.5f, 0.5f);
+
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices.data());
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
