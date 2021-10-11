@@ -6,30 +6,12 @@
 #include <stdexcept>
 #include <spdlog/spdlog.h>
 
-#include "Renderer.h"
-
 std::array<bool, SDL_NUM_SCANCODES> win32_input_key_down;
 std::array<bool, SDL_MAX_UINT8> win32_input_button_down;
 int win32_input_mouse_x = 0;
 int win32_input_mouse_y = 0;
 
-Application::Application() {
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-        SPDLOG_ERROR("SDL initialization failed: {:s}", SDL_GetError());
-    }
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetSwapInterval(0);
-}
-
-Application::~Application() {
-    SDL_Quit();
-}
-
 void Application::run() {
-    this->win32_window.create_and_load_gl();
-    Renderer renderer;
     renderer.load_sample_render_data();
 
     auto current_fps_time = std::chrono::high_resolution_clock::now();
@@ -51,7 +33,7 @@ void Application::run() {
         delta_ms = (double)(time_diff.count()) / 1000;
         ++frames;
         if (delta_ms > 1.0) {
-            SPDLOG_TRACE("{:d} fps", frames);
+            spdlog::trace("{:d} fps", frames);
             last_fps_time = current_fps_time;
             frames = 0;
         }

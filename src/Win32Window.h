@@ -6,9 +6,9 @@
 
 class Win32Window {
 public:
+    Win32Window();
     ~Win32Window();
 
-    void create_and_load_gl();
     void swap();
 
     int width{ 800 };
