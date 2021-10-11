@@ -13,7 +13,7 @@ struct Vertex {
 };
 
 Renderer::Renderer()
-    : shader{ "../shaders/basic.vert", "../shaders/basic.frag" }
+    : shader{ "../shaders/basic.vert.glsl", "../shaders/basic.frag.glsl" }
 {
     glClearColor(0.f, 0.f, 0.f, 1.f);
 }

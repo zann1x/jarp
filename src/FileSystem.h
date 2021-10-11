@@ -5,7 +5,7 @@
 
 class FileSystem {
 public:
-    static std::string load_as_string(const char* path);
+    static std::string load_as_string(const std::string& path);
 };
 
 #endif
