@@ -1,28 +1,43 @@
 #define SDL_MAIN_HANDLED
 #include <cstdlib>
 #include <ctime>
+
 #include <spdlog/spdlog.h>
+#include <SDL.h>
+#include <glad/glad.h>
 
 #include "Application.h"
 #include "VersionConfig.h"
+#include "Win32Window.h"
 
 int main() {
     spdlog::set_level(spdlog::level::trace);
     spdlog::info("{:s} Version {:s}", PROJECT_NAME, PROJECT_VERSION);
     std::srand(std::time(nullptr));
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-        spdlog::error("SDL initialization failed: {:s}", SDL_GetError());
+    try {
+        if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+            spdlog::error("SDL initialization failed: {:s}", SDL_GetError());
+        }
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+        SDL_GL_SetSwapInterval(0);
+
+        Win32Window window;
+        gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+        if (!gladLoadGL()) {
+            throw std::runtime_error("Failed to load OpenGL");
+        }
+
+        Application application(window);
+        application.run();
+
+        SDL_Quit();
     }
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetSwapInterval(0);
-
-    Application application;
-    application.run();
-
-    SDL_Quit();
+    catch (const std::exception &exception) {
+        spdlog::critical("{:s}", exception.what());
+    }
 
     return 0;
 }

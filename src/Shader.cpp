@@ -7,7 +7,6 @@
 
 Shader::Shader(const std::string& vertex_filepath, const std::string& fragment_filepath)
 {
-    // TODO: error handling
     std::string vertex_string = FileSystem::load_as_string(vertex_filepath);
     std::string fragment_string = FileSystem::load_as_string(fragment_filepath);
     const GLchar* vertex_shader_source = vertex_string.c_str();

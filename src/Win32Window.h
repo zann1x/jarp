@@ -2,7 +2,6 @@
 #define WIN32_WINDOW_H
 
 #include <SDL.h>
-#include <SDL_syswm.h>
 
 class Win32Window {
 public:
@@ -10,6 +9,7 @@ public:
     ~Win32Window();
 
     void swap();
+    void make_current();
 
     int width{ 800 };
     int height{ 600 };
@@ -19,9 +19,7 @@ public:
 
 private:
     SDL_Window* handle{ nullptr };
-
     SDL_GLContext gl_context{ nullptr };
-    SDL_SysWMinfo system_info{};
 };
 
 #endif WIN32_WINDOW_H

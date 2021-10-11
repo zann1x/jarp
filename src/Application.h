@@ -6,11 +6,13 @@
 
 class Application {
 public:
+    Application(Win32Window &window);
     void run();
 
 private:
     void handle_events();
 
+private:
     Win32Window win32_window;
     Renderer renderer;
 
