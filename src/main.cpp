@@ -4,9 +4,11 @@
 #include <spdlog/spdlog.h>
 
 #include "Application.h"
+#include "VersionConfig.h"
 
 int main() {
     spdlog::set_level(spdlog::level::trace);
+    spdlog::info("{:s} Version {:s}", PROJECT_NAME, PROJECT_VERSION);
     std::srand(std::time(nullptr));
 
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
