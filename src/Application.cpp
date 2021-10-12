@@ -3,19 +3,12 @@
 #include <SDL.h>
 #include <array>
 #include <chrono>
-#include <stdexcept>
 #include <spdlog/spdlog.h>
 
 std::array<bool, SDL_NUM_SCANCODES> win32_input_key_down;
 std::array<bool, SDL_MAX_UINT8> win32_input_button_down;
 int win32_input_mouse_x = 0;
 int win32_input_mouse_y = 0;
-
-Application::Application(Win32Window &window)
-    : win32_window{ window }
-{
-    this->win32_window.make_current();
-}
 
 void Application::run() {
     renderer.load_sample_render_data();

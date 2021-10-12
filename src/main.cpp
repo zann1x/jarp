@@ -16,21 +16,11 @@ int main() {
     std::srand(std::time(nullptr));
 
     try {
-        if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-            spdlog::error("SDL initialization failed: {:s}", SDL_GetError());
-        }
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-        SDL_GL_SetSwapInterval(0);
-
-        Win32Window window;
-        gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
-        if (!gladLoadGL()) {
-            throw std::runtime_error("Failed to load OpenGL");
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
+            throw std::runtime_error(SDL_GetError());
         }
 
-        Application application(window);
+        Application application;
         application.run();
 
         SDL_Quit();

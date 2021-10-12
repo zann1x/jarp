@@ -6,7 +6,6 @@
 
 class Application {
 public:
-    Application(Win32Window &window);
     void run();
 
 private:

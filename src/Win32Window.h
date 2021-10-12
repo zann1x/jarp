@@ -9,7 +9,6 @@ public:
     ~Win32Window();
 
     void swap();
-    void make_current();
 
     int width{ 800 };
     int height{ 600 };
