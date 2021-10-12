@@ -15,6 +15,8 @@ FetchContent_Declare(
 )
 add_subdirectory(glm)
 
+add_subdirectory(imgui)
+
 FetchContent_Declare(
     SDL2
     GIT_REPOSITORY "https://github.com/libsdl-org/SDL"

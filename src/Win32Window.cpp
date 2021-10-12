@@ -2,6 +2,9 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
+
 Win32Window::Win32Window() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -16,9 +19,17 @@ Win32Window::Win32Window() {
     if (!gladLoadGL()) {
         throw std::runtime_error("Failed to load OpenGL");
     }
+
+    this->imgui_context = ImGui::CreateContext();
+    ImGui_ImplSDL2_InitForOpenGL(this->handle, this->gl_context);
+    ImGui_ImplOpenGL3_Init("#version 460");
 }
 
 Win32Window::~Win32Window() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext(this->imgui_context);
+
     SDL_GL_DeleteContext(this->gl_context);
     SDL_DestroyWindow(this->handle);
 }

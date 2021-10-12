@@ -5,6 +5,10 @@
 #include <array>
 #include <stdexcept>
 
+#include <imgui.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl.h>
+
 GLuint vao;
 GLuint vbo;
 
@@ -66,8 +70,22 @@ static std::array<Vertex, 4> create_quad(float x, float y) {
     return { bottom_left, bottom_right, top_right, top_left };
 }
 
+static bool is_demo_window_open = true;
+
 void Renderer::draw(double delta) {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if (is_demo_window_open) {
+        ImGui::ShowDemoWindow(&is_demo_window_open);
+    }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glm::mat4 projection = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
     glm::mat4 view = glm::mat4(1.0f);

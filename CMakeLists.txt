@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(lib)
 
-add_executable(jarp "src/main.cpp" "src/Renderer.h" "src/Renderer.cpp" "src/Win32Window.cpp" "src/Win32Window.h" "src/FileSystem.h" "src/FileSystem.cpp"  "src/Shader.h" "src/Shader.cpp"  "src/Application.cpp"  )
-target_link_libraries(jarp PRIVATE glad glm SDL2 spdlog)
+add_executable(jarp "src/main.cpp" "src/Renderer.h" "src/Renderer.cpp" "src/Win32Window.cpp" "src/Win32Window.h" "src/FileSystem.h" "src/FileSystem.cpp"  "src/Shader.h" "src/Shader.cpp"  "src/Application.cpp" "src/ImGuiBuilder.cpp")
+target_link_libraries(jarp PRIVATE glad glm imgui SDL2 spdlog)
 target_include_directories(jarp PUBLIC "${PROJECT_BINARY_DIR}")
 
 if(WIN32)
