@@ -21,6 +21,9 @@ Win32Window::Win32Window() {
     }
 
     this->imgui_context = ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForOpenGL(this->handle, this->gl_context);
     ImGui_ImplOpenGL3_Init("#version 460");
 }

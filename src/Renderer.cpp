@@ -20,7 +20,6 @@ struct Vertex {
 Renderer::Renderer()
     : shader{ "../shaders/basic.vert.glsl", "../shaders/basic.frag.glsl" }
 {
-    glClearColor(0.f, 0.f, 0.f, 1.f);
 }
 
 void Renderer::load_sample_render_data() {
@@ -70,22 +69,43 @@ static std::array<Vertex, 4> create_quad(float x, float y) {
     return { bottom_left, bottom_right, top_right, top_left };
 }
 
-static bool is_demo_window_open = true;
+static bool show_demo_window = false;
+static bool show_another_window = false;
+static glm::vec3 clear_color = glm::vec3(0.1f, 0.1f, 0.1f);
 
 void Renderer::draw(double delta) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    glClearColor(0.f, 0.f, 0.f, 1.f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    if (show_demo_window) {
+        ImGui::ShowDemoWindow(&show_demo_window);
+    }
 
-    if (is_demo_window_open) {
-        ImGui::ShowDemoWindow(&is_demo_window_open);
+    {
+        static float f = 0.0f;
+        static int counter = 0;
+
+        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+        ImGui::Checkbox("Another Window", &show_another_window);
+
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            counter++;
+        ImGui::SameLine();
+        ImGui::Text("counter = %d", counter);
+
+        ImGui::Text("%.3f ms/frame (%.1f fps)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+        ImGui::End();
     }
 
     ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glm::mat4 projection = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
     glm::mat4 view = glm::mat4(1.0f);
@@ -115,5 +135,9 @@ void Renderer::draw(double delta) {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices.data());
 
+    glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
