@@ -22,12 +22,12 @@ int main() {
 
         Application application;
         application.run();
-
-        SDL_Quit();
     }
     catch (const std::exception &exception) {
         spdlog::critical("{:s}", exception.what());
     }
+
+    SDL_Quit();
 
     return 0;
 }

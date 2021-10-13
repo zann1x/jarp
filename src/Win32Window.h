@@ -11,8 +11,8 @@ public:
 
     void swap();
 
-    int width{ 800 };
-    int height{ 600 };
+    int width{ 1600 };
+    int height{ 900 };
     const char* title{ "jarp" };
     bool is_minimized{ false };
     bool is_resized{ false };

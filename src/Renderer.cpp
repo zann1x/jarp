@@ -90,7 +90,6 @@ void Renderer::draw(float delta) {
 
         ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
         ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
 
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -107,14 +106,14 @@ void Renderer::draw(float delta) {
 
     ImGui::Render();
 
-    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(-1.6f, 1.6f, 0.9f, -0.9f, -1.0f, 1.0f);
     glm::mat4 view = glm::mat4(1.0f);
-    //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 800 / (float) 600, 0.1f, 100.0f);
-    //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 800 / (float) 600, -1.0f, 1.0f);
+    //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1600 / (float) 900, 0.1f, 100.0f);
+    //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1600 / (float) 900, -1.0f, 1.0f);
     //glm::mat4 view = glm::lookAt(
-    //        glm::vec3(0, 0, -1),
-    //        glm::vec3(0, 0, 0),
-    //        glm::vec3(0, -1, 0)
+    //        glm::vec3(0.0f, 0.0f, -10.0f),
+    //        glm::vec3(0.0f, 0.0f, 0.0f),
+    //        glm::vec3(0.0f, -1.0f, 0.0f)
     //);
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 mvp = projection * view * model;
@@ -135,7 +134,7 @@ void Renderer::draw(float delta) {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices.data());
 
-    glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
+    glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
