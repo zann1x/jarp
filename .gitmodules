@@ -1,3 +1,6 @@
 [submodule "lib/imgui"]
 	path = lib/imgui
 	url = git@github.com:zann1x-forks/imgui.git
+[submodule "lib/stb"]
+	path = lib/stb
+	url = git@github.com:zann1x-forks/stb.git
