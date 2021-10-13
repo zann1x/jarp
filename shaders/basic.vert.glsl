@@ -1,14 +1,17 @@
 #version 460 core
 
-layout (location = 0) in vec3 pos;
-layout (location = 1) in vec4 color;
+layout (location = 0) in vec3 i_pos;
+layout (location = 1) in vec4 i_color;
+layout (location = 2) in vec2 i_texture;
 
-uniform mat4 mvp;
+uniform mat4 u_mvp;
 
-out vec4 passColor;
+out vec4 p_color;
+out vec2 p_texture;
 
 void main()
 {
-   passColor = color;
-   gl_Position = mvp * vec4(pos.xyz, 1.0);
+    p_color = i_color;
+    p_texture = i_texture;
+    gl_Position = u_mvp * vec4(i_pos.xyz, 1.0);
 }

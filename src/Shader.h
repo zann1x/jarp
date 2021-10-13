@@ -11,6 +11,7 @@ public:
 
     void bind();
 
+    void set_int(const std::string& name, GLint value);
     void set_vec4(const std::string& name, const glm::vec4& value);
     void set_mat4(const std::string& name, const glm::mat4& value);
 private:

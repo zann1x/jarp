@@ -1,9 +1,13 @@
 #version 460 core
 
-in vec4 passColor;
-out vec4 FragColor;
+uniform sampler2D u_texture_position;
+
+in vec4 p_color;
+in vec2 p_texture;
+
+out vec4 o_color;
 
 void main()
 {
-   FragColor = passColor;
+    o_color = texture(u_texture_position, p_texture) * p_color;
 }

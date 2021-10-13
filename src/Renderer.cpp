@@ -4,17 +4,22 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
 #include <stdexcept>
+#include <spdlog/spdlog.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl.h>
 
+#include <stb_image.h>
+
 GLuint vao;
 GLuint vbo;
+GLuint texture_id;
 
 struct Vertex {
     glm::vec3 position;
     glm::vec4 color;
+    glm::vec2 texture;
 };
 
 Renderer::Renderer()
@@ -36,6 +41,9 @@ void Renderer::load_sample_render_data() {
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(offsetof(Vertex, color)));
     glEnableVertexAttribArray(1);
 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(offsetof(Vertex, texture)));
+    glEnableVertexAttribArray(2);
+
     GLuint indices[] = {
         0, 1, 2,
         2, 3, 0
@@ -44,6 +52,29 @@ void Renderer::load_sample_render_data() {
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), static_cast<const void*>(indices), GL_STATIC_DRAW);
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glActiveTexture(GL_TEXTURE0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    int x, y, n;
+    stbi_set_flip_vertically_on_load(true);
+    stbi_uc* data = stbi_load("../assets/icebear.png", &x, &y, &n, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    }
+    else {
+        spdlog::error("{:s}", stbi_failure_reason());
+    }
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    this->shader.bind();
+    this->shader.set_int("u_texture_position", 0);
 }
 
 static std::array<Vertex, 4> create_quad(float x, float y) {
@@ -51,19 +82,23 @@ static std::array<Vertex, 4> create_quad(float x, float y) {
 
     Vertex bottom_left = {
         .position = glm::vec3(x, y, 0.0f),
-        .color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)
+        .color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+        .texture = glm::vec2(0.0f, 0.0f)
     };
     Vertex bottom_right = {
         .position = glm::vec3(x + size,  y, 0.0f),
-        .color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)
+        .color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+        .texture = glm::vec2(1.0f, 0.0f)
     };
     Vertex top_right = {
-        .position = glm::vec3(x + size, y - size, 0.0f),
-        .color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
+        .position = glm::vec3(x + size, y + size, 0.0f),
+        .color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+        .texture = glm::vec2(1.0f, 1.0f)
     };
     Vertex top_left = {
-        .position = glm::vec3(x, y - size, 0.0f ),
-        .color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+        .position = glm::vec3(x, y + size, 0.0f ),
+        .color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),
+        .texture = glm::vec2(0.0f, 1.0f)
     };
 
     return { bottom_left, bottom_right, top_right, top_left };
@@ -106,20 +141,23 @@ void Renderer::draw(float delta) {
 
     ImGui::Render();
 
-    glm::mat4 projection = glm::ortho(-1.6f, 1.6f, 0.9f, -0.9f, -1.0f, 1.0f);
+#if 0
+    glm::mat4 projection = glm::ortho(-1.6f, 1.6f, -0.9f, 0.9f, -1.0f, 1.0f);
     glm::mat4 view = glm::mat4(1.0f);
-    //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1600 / (float) 900, 0.1f, 100.0f);
-    //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1600 / (float) 900, -1.0f, 1.0f);
-    //glm::mat4 view = glm::lookAt(
-    //        glm::vec3(0.0f, 0.0f, -10.0f),
-    //        glm::vec3(0.0f, 0.0f, 0.0f),
-    //        glm::vec3(0.0f, -1.0f, 0.0f)
-    //);
+#else
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1600 / (float) 900, 0.1f, 100.0f);
+    glm::vec3 camera_position = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::mat4 view = glm::lookAt(
+        camera_position,
+        camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+#endif
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 mvp = projection * view * model;
 
     this->shader.bind();
-    this->shader.set_mat4("mvp", mvp);
+    this->shader.set_mat4("u_mvp", mvp);
 
     //GLfloat vertices[] = {
     //    // vec3 position    // vec4 color
@@ -128,14 +166,17 @@ void Renderer::draw(float delta) {
     //     0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
     //    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f  // top left
     //};
-    auto vertices = create_quad(-0.5f, 0.5f);
+    auto vertices = create_quad(-0.5f, -0.5f);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices.data());
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+
     glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
