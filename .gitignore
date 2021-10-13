@@ -1,3 +1,4 @@
 .vs/
+build/
 cmake-build-debug/
 cmake-build-x64-debug-vs/

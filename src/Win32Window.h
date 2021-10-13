@@ -23,4 +23,4 @@ private:
     ImGuiContext* imgui_context{ nullptr };
 };
 
-#endif WIN32_WINDOW_H
+#endif
