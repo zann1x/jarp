@@ -73,7 +73,7 @@ static bool show_demo_window = false;
 static bool show_another_window = false;
 static glm::vec3 clear_color = glm::vec3(0.1f, 0.1f, 0.1f);
 
-void Renderer::draw(double delta) {
+void Renderer::draw(float delta) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -100,7 +100,7 @@ void Renderer::draw(double delta) {
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
 
-        ImGui::Text("%.3f ms/frame (%.1f fps)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("%.3f ms/frame (%.1f fps)", delta, ImGui::GetIO().Framerate);
 
         ImGui::End();
     }

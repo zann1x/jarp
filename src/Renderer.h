@@ -8,7 +8,7 @@ public:
     Renderer();
 
     void load_sample_render_data();
-    void draw(double delta);
+    void draw(float delta);
 
 private:
     Shader shader;

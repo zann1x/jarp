@@ -16,28 +16,21 @@ void Application::run() {
     renderer.load_sample_render_data();
 
     auto current_fps_time = std::chrono::high_resolution_clock::now();
-    auto last_fps_time = current_fps_time;
-    uint32_t frames = 0;
-    double delta_ms = 0.0;
+    auto last_frame_time = current_fps_time;
+    float frame_time = 0.0f;
 
     is_running = true;
     while (is_running) {
         handle_events();
 
         if (!win32_window.is_minimized) {
-            renderer.draw(delta_ms);
+            renderer.draw(frame_time);
         }
         win32_window.swap();
 
         current_fps_time = std::chrono::high_resolution_clock::now();
-        auto time_diff = std::chrono::duration_cast<std::chrono::milliseconds>(current_fps_time - last_fps_time);
-        delta_ms = (double)(time_diff.count()) / 1000;
-        ++frames;
-        if (delta_ms > 1.0) {
-            spdlog::trace("{:d} fps", frames);
-            last_fps_time = current_fps_time;
-            frames = 0;
-        }
+        frame_time = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(current_fps_time - last_frame_time).count()) / 1000;
+        last_frame_time = current_fps_time;
     }
 }
 
