@@ -7,10 +7,17 @@
 
 #include <backends/imgui_impl_sdl.h>
 
+#include "event/EventBus.h"
+
 std::array<bool, SDL_NUM_SCANCODES> win32_input_key_down;
 std::array<bool, SDL_MAX_UINT8> win32_input_button_down;
 int win32_input_mouse_x = 0;
 int win32_input_mouse_y = 0;
+
+Application::Application()
+{
+    EventBus::get_instance().subscribe(EventType::WINDOW_CLOSE_EVENT, std::bind(&Application::on_window_close, this));
+}
 
 void Application::run() {
     renderer.load_sample_render_data();
@@ -24,7 +31,7 @@ void Application::run() {
         handle_events();
 
         if (!win32_window.is_minimized) {
-            renderer.draw(frame_time);
+            renderer.draw(frame_time, this->camera);
         }
         win32_window.swap();
 
@@ -45,7 +52,7 @@ void Application::handle_events() {
 
         switch (event.type) {
         case SDL_QUIT:
-            is_running = false;
+            EventBus::get_instance().publish(EventType::WINDOW_CLOSE_EVENT);
             break;
         case SDL_KEYDOWN:
             if (event.key.repeat == 0) {
@@ -83,7 +90,7 @@ void Application::handle_events() {
                 win32_window.is_minimized = false;
                 break;
             case SDL_WINDOWEVENT_CLOSE:
-                this->is_running = false;
+                EventBus::get_instance().publish(EventType::WINDOW_CLOSE_EVENT);
                 break;
             }
             break;
@@ -95,4 +102,9 @@ void Application::handle_events() {
     else {
         SDL_GetMouseState(&win32_input_mouse_x, &win32_input_mouse_y);
     }
+}
+
+void Application::on_window_close()
+{
+    this->is_running = false;
 }

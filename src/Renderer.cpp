@@ -108,7 +108,7 @@ static bool show_demo_window = false;
 static bool show_another_window = false;
 static glm::vec3 clear_color = glm::vec3(0.1f, 0.1f, 0.1f);
 
-void Renderer::draw(float delta) {
+void Renderer::draw(float delta, const Camera& camera) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -145,13 +145,8 @@ void Renderer::draw(float delta) {
     glm::mat4 projection = glm::ortho(-1.6f, 1.6f, -0.9f, 0.9f, -1.0f, 1.0f);
     glm::mat4 view = glm::mat4(1.0f);
 #else
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1600 / (float) 900, 0.1f, 100.0f);
-    glm::vec3 camera_position = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::mat4 view = glm::lookAt(
-        camera_position,
-        camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-    );
+    glm::mat4 projection = camera.get_projection();
+    glm::mat4 view = camera.get_view();
 #endif
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 mvp = projection * view * model;
